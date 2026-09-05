@@ -426,10 +426,10 @@ implementer (or reviewer) can verify a specific page against it directly:
   populated with placeholder content on a live page (the design-system
   preview's clearly-labeled "Example" content is explicitly excluded from
   ever appearing on a real page — see `docs/decisions.md` ADR-005).
-- **Fabricated metrics** — `Metric`/`Testimonial`/`Review`/`CaseStudyCard`
+- **Fabricated metrics** — `Metric`/`Testimonial`/`Review`/`ShowcaseCard`
   components already carry doc-comment warnings against this
-  (`docs/decisions.md` ADR-005); this document's CRM/analytics design is
-  what would eventually supply real numbers to them.
+  (`docs/decisions.md` ADR-005, ADR-008); this document's CRM/analytics
+  design is what would eventually supply real numbers to them.
 - **Dark patterns** — no pre-checked opt-ins, no confirm-shaming, no
   hidden opt-outs proposed anywhere above.
 - **Hidden fees** — every tier page states inclusions/exclusions explicitly

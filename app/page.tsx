@@ -8,15 +8,15 @@ import { Hero } from '@/components/marketing/Hero'
 import { TransformationCompare } from '@/components/marketing/TransformationCompare'
 import { TrustSignals } from '@/components/marketing/TrustSignals'
 import { ProcessSteps } from '@/components/marketing/ProcessStep'
-import { MetricRow } from '@/components/marketing/Metric'
+import { Metric } from '@/components/marketing/Metric'
 import { FAQ } from '@/components/marketing/FAQ'
 import { CTA } from '@/components/marketing/CTA'
 import { PricingTierGrid } from '@/components/pricing/PricingTierGrid'
 import { AuditForm } from '@/components/audit/AuditForm'
-import { ShowcaseProofCard, type ShowcaseFrontmatter } from '@/components/showcases/ShowcaseProofCard'
+import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { CapacityStrip } from '@/components/conversion/CapacityStrip'
-import { getAllContent, getContentBySlug } from '@/lib/content'
+import { getFeaturedShowcases, getShowcaseBySlug } from '@/lib/showcases'
 import { AUDIT_CTA_LABEL, AUDIT_HREF, MAINTENANCE_PLANS, CAPACITY } from '@/lib/constants'
 
 export const metadata = buildMetadata({
@@ -108,9 +108,8 @@ const FAQ_ITEMS = [
 ]
 
 export default function HomePage() {
-  const showcaseEntries = getAllContent('showcases').filter((entry) => entry.slug !== 'example-showcase')
-  const featuredReview = getContentBySlug('showcases', 'smile-care-dental')
-  const featuredReviewFm = featuredReview?.frontmatter as ShowcaseFrontmatter | undefined
+  const featuredShowcases = getFeaturedShowcases(6)
+  const smileCare = getShowcaseBySlug('smile-care-dental')
 
   return (
     <>
@@ -235,10 +234,10 @@ export default function HomePage() {
             See all showcases
           </Button>
         </div>
-        {showcaseEntries.length > 0 ? (
+        {featuredShowcases.length > 0 ? (
           <div className="grid gap-5 md:grid-cols-3">
-            {showcaseEntries.map((entry) => (
-              <ShowcaseProofCard key={entry.slug} entry={entry} />
+            {featuredShowcases.map((showcase) => (
+              <ShowcaseCard key={showcase.slug} showcase={showcase} />
             ))}
           </div>
         ) : (
@@ -305,14 +304,9 @@ export default function HomePage() {
           </Text>
         </div>
 
-        {featuredReviewFm?.rating && (
+        {smileCare?.fm.metrics?.[0] && (
           <div className="mb-8 max-w-xs">
-            <MetricRow
-              metrics={[
-                { value: `${featuredReviewFm.rating.toFixed(1)}★`, label: `${featuredReviewFm.business}` },
-                { value: String(featuredReviewFm.reviewCount ?? ''), label: 'Google reviews' },
-              ]}
-            />
+            <Metric value={smileCare.fm.metrics[0].value} label={`${smileCare.fm.metrics[0].label} · ${smileCare.fm.name}`} />
           </div>
         )}
 

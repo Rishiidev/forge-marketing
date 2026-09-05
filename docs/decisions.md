@@ -294,3 +294,87 @@ with a raw native listener before concluding it wasn't
 `audit_started`'s React `onFocus` handler at fault. Real user
 interaction bubbles normally; this only affects automated testing of
 focus-triggered events in this tool.
+
+### ADR-008: Showcase system — data model, one card component, review architecture deferred
+
+Date: 2026-09-05
+Status: accepted
+
+Context: The showcase-system brief asked for `/showcases` and
+`/showcases/[slug]` built to an exact data model (name, industry,
+location, websiteUrl, description, problem, solution, services, review/
+reviewAuthor/reviewRole/reviewRating, screenshots, featuredImage,
+launchDate, featured, metrics), explicit anti-fabrication rules, SEO
+structured content, and a review-system architecture that supports
+future request/approve/associate/display/link workflows without
+building a customer dashboard or automated collection now.
+
+The homepage build (ADR-007) had already shipped a narrower, ad hoc
+shape (`business`/`category`/`city`/`liveUrl`/`outcome`) rendered by a
+single `ShowcaseProofCard` that combined everything into one homepage
+tile, plus an unused `CaseStudyCard` demonstrated only in
+`/design-system`. Neither matched the brief's full data model, and
+having a homepage-only card and a generic-but-thin index-page card
+(`ShowcaseCard`, previously title/description only) meant the same real
+client data was modeled two different ways in two different places.
+
+Decision:
+1. Centralized the data model and all filtering logic in a new
+   `lib/showcases.ts` (same justification as ADR-002's `lib/content.ts`
+   addition) — `ShowcaseFrontmatter` matches the brief's field list
+   exactly, and `isPublishable()` gates every listing and detail lookup
+   on the four fields a page can't honestly render without
+   (name/industry/websiteUrl/description), rather than each page
+   re-implementing that check or relying on a hardcoded slug exclusion
+   (the homepage previously filtered out `example-showcase` by name —
+   fragile, and it wouldn't have scaled to a second placeholder).
+2. Retired `ShowcaseProofCard` and `CaseStudyCard` in favor of one
+   `ShowcaseCard` used by both `/showcases` and the homepage's Showcases
+   section. The brief specifies exactly what a showcase grid card shows
+   (business, industry, image, short description, review excerpt if
+   available, CTA) — that's a link into the detail page, which now
+   carries the full proof (problem, solution, services, review, metrics,
+   live link), not a second place for the same proof to live.
+3. Deleted `content/showcases/example-showcase.mdx`. It predated the
+   real client entries and its own body text claimed they were "not
+   reproduced here" — false since ADR-007. It no longer satisfies
+   `ShowcaseFrontmatter`'s required fields either. `/design-system`'s
+   `ShowcaseCard` demo now uses an inline example object (same pattern
+   already used for `Testimonial`/`Review` there) instead of reading a
+   content file, so no example data flows through the real content
+   pipeline.
+4. Rewrote the three real entries' frontmatter to the new field names.
+   No new facts were added beyond what `legacy/5000-setup.html` and
+   `docs/forge-business-rules.md` §6 already established: `services` is
+   the ₹5,000 (Launch) tier's real, sourced `included` list personalized
+   per client (all three are documented Launch-tier builds); `problem`/
+   `solution` restate the same GBP-to-website narrative already in each
+   file's body, just promoted to structured fields; Smile Care's 4.9★/82
+   reviews and We Health Care's "booked in 47 minutes" moved into
+   `metrics` (real, sourced numbers) rather than `reviewRating` — neither
+   is a quoted, attributed review, so modeling them as one would imply a
+   named customer said something no one is on record saying. No
+   `review`/`reviewAuthor`/`screenshots`/`featuredImage` exists for any
+   of the three; those fields are simply absent, not stubbed.
+5. Review-system architecture: `review`, `reviewAuthor`, `reviewRole`,
+   `reviewRating` are four independent optional frontmatter fields,
+   deliberately shaped so a future `reviews` collection (keyed by
+   customer + showcase slug, with a `status: pending | approved` field)
+   could populate exactly these fields later without a rename. No
+   request/approval workflow, storage, or dashboard was built — the
+   brief explicitly excluded that, and nothing today needs it.
+6. Wired `showcase_viewed` (defined in the taxonomy since the homepage
+   build, left unwired per ADR-007's own note) via a new, minimal
+   `ShowcaseViewTracker` client component — the one Client Component
+   this system needs; both the index and detail pages otherwise remain
+   Server Components.
+
+Consequences: Adding a 4th showcase means adding one `.mdx` file with
+the required fields — no component or page changes, satisfying "scale
+to hundreds without changing page implementation." Pagination for
+`/showcases` was not built; with 3 real entries, building it now would
+be speculative. The formal review-request/approval workflow (asking a
+customer for a review, routing it for approval) remains unbuilt by
+design — see item 5 — and should be designed for real once Human
+Decision #7 (testimonial consent policy, `docs/forge-business-rules.md`
+§15) is resolved.

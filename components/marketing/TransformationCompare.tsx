@@ -11,8 +11,8 @@ import { Text } from '@/components/ui/Text'
  * "Studio Mysa" is the same illustrative example business used
  * throughout the legacy codebase for this exact purpose — a mockup of
  * the mechanism, not a claimed real client. Real clients are the
- * Showcases section (components/showcases/ShowcaseProofCard.tsx), never
- * this one.
+ * Showcases section (/showcases, components/showcases/ShowcaseCard.tsx),
+ * never this one.
  */
 export function TransformationCompare() {
   return (

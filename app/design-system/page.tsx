@@ -24,12 +24,12 @@ import { FAQ } from '@/components/marketing/FAQ'
 import { PriceCard } from '@/components/pricing/PriceCard'
 import { BlogCard } from '@/components/blog/BlogCard'
 import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
-import { CaseStudyCard } from '@/components/showcases/CaseStudyCard'
 import { ToolCard } from '@/components/tools/ToolCard'
 import { AuditForm } from '@/components/audit/AuditForm'
 
 import { WEBSITE_TIERS } from '@/lib/constants'
 import { getContentBySlug } from '@/lib/content'
+import type { Showcase } from '@/lib/showcases'
 
 export const metadata: Metadata = {
   title: 'Design system — Forge (internal)',
@@ -73,7 +73,22 @@ const fontSizeEntries = Object.entries(tokens.fontSize)
 const radiusEntries = Object.entries(tokens.borderRadius).filter(([name]) => name !== 'none')
 const shadowEntries = Object.entries(tokens.boxShadow).filter(([name]) => name !== 'none')
 
-const exampleShowcase = getContentBySlug('showcases', 'example-showcase')
+// Example content only — not read from content/showcases (no real client
+// is fabricated for a design-system preview). docs/forge-business-rules.md §16.
+const exampleShowcase: Showcase = {
+  slug: 'example-showcase',
+  content: '',
+  fm: {
+    title: 'Example showcase',
+    description: 'A one-line description of the real work delivered.',
+    date: '2026-01-01',
+    slug: 'example-showcase',
+    name: 'Example Business',
+    industry: 'Example industry',
+    location: 'Example City',
+    websiteUrl: 'https://example.com',
+  },
+}
 const exampleBlog = getContentBySlug('blog', 'hello-world')
 
 export default function DesignSystemPage() {
@@ -532,31 +547,16 @@ export default function DesignSystemPage() {
             </div>
           </div>
 
-          {exampleShowcase && (
-            <div>
-              <Text as="span" size="caption" className="mb-4 block">
-                ShowcaseCard
-              </Text>
-              <div className="max-w-sm">
-                <ShowcaseCard entry={exampleShowcase} />
-              </div>
-            </div>
-          )}
-
           <div>
             <Text as="span" size="caption" className="mb-4 block">
-              CaseStudyCard
+              ShowcaseCard
             </Text>
             <Text size="body-sm" className="mb-3 italic">
-              Example content and metric only (docs/forge-business-rules.md §16/§18).
+              Example content only — not a real client (docs/forge-business-rules.md §16).
             </Text>
-            <CaseStudyCard
-              href="/showcases/example-showcase"
-              title="Example case study title"
-              category="Example category"
-              description="A richer showcase variant with a category badge and one sourced metric, for a featured client story."
-              metric={{ value: 'Example', label: 'example metric label' }}
-            />
+            <div className="max-w-sm">
+              <ShowcaseCard showcase={exampleShowcase} />
+            </div>
           </div>
 
           <div>

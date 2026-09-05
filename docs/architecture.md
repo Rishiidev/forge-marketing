@@ -122,7 +122,7 @@ components/
   conversion/  WhatsAppFloat, CapacityStrip
   pricing/     PriceCard ("PricingCard"), PricingTierGrid, WebsiteTierPage (shared tier template)
   audit/       AuditForm
-  showcases/   ShowcaseCard, ShowcaseGrid, CaseStudyCard
+  showcases/   ShowcaseCard, ShowcaseGrid, ShowcaseViewTracker
   tools/       ToolCard, ToolGrid
   blog/        BlogCard, BlogList
   forms/       TextField, SelectField, Honeypot, SubmitButton, FormStatus, useLeadForm
@@ -142,6 +142,8 @@ lib/
   utils.ts          cn(), formatINR(), slugify()
   content.ts        MDX filesystem loader — an addition beyond the five files named in
                      the brief; logged as ADR-002 in docs/decisions.md
+  showcases.ts      Showcase domain layer on top of content.ts — typed frontmatter,
+                     publishable-entry filtering, featured selection. ADR-008.
 ```
 
 ## The homepage
@@ -156,17 +158,15 @@ Components on the page are the ones that genuinely need interactivity
 (`AuditForm`, `FAQ`/`Accordion`, `TrackedCtaLink`, `SiteHeader`'s mobile
 menu) — per capita page JS is 922 B (see the build output).
 
-**Real showcase content.** `content/showcases/` now has three real
-entries (Smile Care Dental Clinic, Asquare Venture, We Health Care
-Diagnostic Centre) sourced verbatim from `legacy/5000-setup.html`,
-rendered by `components/showcases/ShowcaseProofCard.tsx` — business,
-work, context, review (only where a real one exists — e.g. Smile Care's
-real 4.9★/82-review Google aggregate), and live link, deliberately kept
-together in one component rather than split across several, per the
-homepage brief. This treats `forge-business-rules.md` Human Decision #8
-(showcase consent) as resolved-by-instruction for this pass — the
-content was already public on the live legacy site, so carrying it
-forward isn't a new disclosure — logged as ADR-007.
+**Real showcase content.** `content/showcases/` has three real entries
+(Smile Care Dental Clinic, Asquare Venture, We Health Care Diagnostic
+Centre) sourced verbatim from `legacy/5000-setup.html`. The homepage
+shows up to 6 via `getFeaturedShowcases()` — see "The showcase system"
+below for the full route/data-model design. This treats
+`forge-business-rules.md` Human Decision #8 (showcase consent) as
+resolved-by-instruction — the content was already public on the live
+legacy site, so carrying it forward isn't a new disclosure — logged as
+ADR-007.
 
 **Pricing ladder naming.** `lib/constants.ts` `WEBSITE_TIERS[].name` is
 now `Launch` / `Growth` / `Pro` (was `"₹5,000 Website"` etc.) — a
@@ -185,6 +185,74 @@ different pages used three different phrasings.
 `docs/conversion-architecture.md`: no urgency is better than fake
 urgency. It will render again automatically once a real, current
 `remaining`/`nextReset` is set and `status` flips to `'confirmed'`.
+
+## The showcase system
+
+`/showcases` (index) and `/showcases/[slug]` (detail), backed by
+`lib/showcases.ts` on top of `lib/content.ts`. Purpose: prove actual
+Forge work, not a generic portfolio — every detail page answers who the
+business is, what Forge built, why they needed it, what it looks like,
+what the customer says (only if real), where to see it live, and closes
+with "could Forge do this for my business?"
+
+**Data model.** `ShowcaseFrontmatter` (`lib/showcases.ts`) carries every
+field the brief named — `name`, `industry`, `location`, `websiteUrl`,
+`description`, `problem`, `solution`, `services`, `review`/
+`reviewAuthor`/`reviewRole`/`reviewRating`, `screenshots`,
+`featuredImage`, `launchDate`, `featured`, `metrics` — all optional
+except `name`/`industry`/`websiteUrl`/`description`. A showcase missing
+those four is filtered out of every listing and 404s at its own slug
+(`isPublishable()` in `lib/showcases.ts`) rather than rendering a page
+with holes in it. No field is ever defaulted to a placeholder value —
+every conditional in `app/showcases/[slug]/page.tsx` renders nothing
+when the real data doesn't exist, per the brief's "do not fabricate"
+instruction.
+
+**One card, one detail page.** `components/showcases/ShowcaseCard.tsx`
+is the single grid-card component, used by both `/showcases` and the
+homepage's Showcases section (`getFeaturedShowcases(6)`) — business,
+industry, image (a CSS background, not `<img>`/`next/image`, so an
+arbitrary future client-hosted URL never needs a `next.config.mjs`
+domain change), short description, review excerpt if one exists, and a
+CTA into the detail page. This replaces the homepage-only
+`ShowcaseProofCard` and the unused `CaseStudyCard` from the earlier
+homepage pass — one card design, not two overlapping ones. Logged as
+ADR-008.
+
+**Scaling to hundreds of showcases.** Both routes are fully data-driven:
+`generateStaticParams` comes from `getAllShowcases()`, and no page
+hard-codes a slug, count, or per-client branch. Adding the 4th (or
+400th) showcase means adding one `.mdx` file — no component or page
+changes. Pagination for the index page isn't built, on purpose — with 3
+real entries today, it would be speculative; the "scale to hundreds"
+requirement is met at the data layer, not by pre-building UI for a
+volume that doesn't exist yet.
+
+**SEO.** Every showcase page routes through `buildMetadata()` (as
+always) plus a JSON-LD `CreativeWork`/`LocalBusiness` block built
+directly from the same frontmatter — no separate SEO content to keep in
+sync, and no field appears in the structured data unless it's also real
+enough to appear on the page itself.
+
+**Review system — designed, not built.** The brief asked for an
+architecture that lets reviews later be requested, approved, associated
+with a customer, displayed, and linked to a showcase, without building
+the collection workflow or a customer dashboard now. `review`,
+`reviewAuthor`, `reviewRole`, and `reviewRating` are modeled as four
+independent optional fields (deliberately separate from `metrics`, which
+covers real aggregate numbers like a Google star rating that aren't a
+quoted, attributed review) so that a future `reviews` record — keyed by
+customer and showcase slug, with a `status: pending | approved` field —
+can populate exactly these four fields without a rename or a data
+migration. Until that workflow exists, a review is added the same way
+every other showcase fact is: edited directly into the MDX frontmatter,
+by a person, with the customer's consent already in hand.
+
+**`showcase_viewed` is now wired.** `components/showcases/
+ShowcaseViewTracker.tsx` fires it once per page view — the homepage
+build deliberately left this event unwired because no page existed yet
+where "viewed" meant something more specific than "saw the homepage."
+`/showcases/[slug]` is that page.
 
 ## Out of scope (deliberately not built)
 
