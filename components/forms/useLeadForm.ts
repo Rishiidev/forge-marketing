@@ -14,17 +14,16 @@ export function useLeadForm(source: LeadSource) {
   function submit(formData: FormData) {
     setStatus('pending')
     setError(null)
-    trackEvent({ name: 'lead_form_submit', props: { source } })
 
     startTransition(async () => {
       const result = await submitLeadAction(source, formData)
       if (result.ok) {
         setStatus('success')
-        trackEvent({ name: 'lead_form_success', props: { source, leadId: result.leadId } })
+        trackEvent({ name: 'lead_submitted', props: { source, leadId: result.leadId } })
       } else {
         setStatus('error')
         setError(result.error ?? null)
-        trackEvent({ name: 'lead_form_error', props: { source, error: result.error } })
+        trackEvent({ name: 'lead_submit_error', props: { source, error: result.error } })
       }
     })
   }

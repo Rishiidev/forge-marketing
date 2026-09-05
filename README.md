@@ -14,11 +14,12 @@ feature branches.
 
 Rebuild in progress. The public marketing site's architecture (Next.js
 App Router, TypeScript, Tailwind, MDX content, CRM/analytics
-abstractions) is scaffolded and every listed route exists, but most
-pages hold minimal placeholder content — no customer-facing design or
-copy pass has happened yet, and the homepage (`/`) is deliberately left
-unbuilt. See `docs/decisions.md` ADR-001. The customer application
-(`app.forge.bruuhh.com`) has not been started.
+abstractions), design system (`/design-system`, internal), and the
+homepage are built — see `docs/decisions.md` ADR-001/ADR-005/ADR-007.
+Inner pages (`/audit`, `/websites`, `/maintenance`, `/showcases`,
+`/blog`, `/tools`) still hold minimal placeholder content pending a full
+copy pass. The customer application (`app.forge.bruuhh.com`) has not
+been started.
 
 ## Docs
 

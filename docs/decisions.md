@@ -237,3 +237,60 @@ three unconsented legacy examples. Six open business decisions (HD#2,
 #3, #6, #8, #12, and the standing #13 contact-channel gap) block parts
 of this from being implementation-ready; they're listed at the end of
 the new document rather than guessed at.
+
+### ADR-007: Homepage built; real showcase consent treated as resolved-by-instruction
+
+Date: 2026-09-05
+Status: accepted
+
+Context: The homepage brief said "use actual Forge work where
+available" for the Showcases section. `docs/forge-business-rules.md`
+§16 and Human Decision #8 flag that the three real client names/metrics
+in `legacy/5000-setup.html` (Smile Care Dental Clinic, Asquare Venture,
+We Health Care Diagnostic Centre) have no on-record consent-to-showcase
+confirmation in the codebase.
+
+Decision: Carried the three real entries into
+`content/showcases/*.mdx` and onto the homepage, treating the direct
+"use actual Forge work" instruction as the business owner resolving
+HD#8 for this content. Key mitigating fact: this isn't new disclosure —
+the same names, cities, and metrics were already public on the live
+legacy site (`legacy/5000-setup.html`) before this rebuild touched them.
+No metric or quote was invented; the one real aggregate rating (Smile
+Care's 4.9★/82 reviews) is reproduced exactly, and the two clients
+without a stated rating show only the same factual outcome line the
+legacy site already published for them.
+
+Consequences: HD#8's formal question (a documented consent *process*
+for future clients) remains open — this decision only covers carrying
+forward content that was already public and already shipped by Forge
+itself. A future client's showcase entry still needs real, on-record
+consent before publishing, per §16.
+
+Also in this pass: `lib/constants.ts` gained `AUDIT_CTA_LABEL` (one
+consistent CTA string, replacing three different phrasings across
+`SiteHeader`/`PriceCard`/`WebsiteTierPage`), tier names changed to
+Launch/Growth/Pro (a naming decision given directly in the brief), and
+`CAPACITY` gained a `status` field so `CapacityStrip` can safely stay
+silent until real numbers exist. The analytics taxonomy from
+`docs/conversion-architecture.md` §7 replaced the prior ad hoc event
+names in `lib/analytics.ts` (`lead_form_submit` → `audit_started` +
+`lead_submitted`, `whatsapp_click` → `whatsapp_clicked`, etc.) — this is
+the "implementation work for the homepage build" ADR-006 deferred.
+`pricing_viewed`/`showcase_viewed` are defined but not wired to a
+scroll-observer this pass, per "avoid unnecessary client-side
+JavaScript" — wire them if/when a real need for that granularity shows
+up, not speculatively.
+
+Verified live in a browser, not just a green build: desktop (1440px)
+and mobile (375px) layouts, the mobile nav toggle, the FAQ accordion's
+open/close state, and a full form → Server Action → `captureLead()`
+round trip from the homepage-embedded audit form (a fresh lead ID was
+generated and logged server-side). One environment limitation surfaced
+and was isolated, not misdiagnosed as an app bug: programmatic
+`.focus()` in this browser-automation tool doesn't dispatch a bubbling
+native `focusin` event even to a plain `addEventListener` — confirmed
+with a raw native listener before concluding it wasn't
+`audit_started`'s React `onFocus` handler at fault. Real user
+interaction bubbles normally; this only affects automated testing of
+focus-triggered events in this tool.

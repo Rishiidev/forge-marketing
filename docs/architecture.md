@@ -144,12 +144,53 @@ lib/
                      the brief; logged as ADR-002 in docs/decisions.md
 ```
 
+## The homepage
+
+Built per `docs/conversion-architecture.md`, in the exact 12-section
+order specified there: Hero, Transformation (static, illustrative —
+`components/marketing/TransformationCompare.tsx`), GBP→website
+explanation, embedded Free Audit form, Problem, Process, Showcases (real
+clients — see below), Pricing, Maintenance, Reviews/proof, FAQ, Final
+CTA. All 12 sections are plain Server Components; the only Client
+Components on the page are the ones that genuinely need interactivity
+(`AuditForm`, `FAQ`/`Accordion`, `TrackedCtaLink`, `SiteHeader`'s mobile
+menu) — per capita page JS is 922 B (see the build output).
+
+**Real showcase content.** `content/showcases/` now has three real
+entries (Smile Care Dental Clinic, Asquare Venture, We Health Care
+Diagnostic Centre) sourced verbatim from `legacy/5000-setup.html`,
+rendered by `components/showcases/ShowcaseProofCard.tsx` — business,
+work, context, review (only where a real one exists — e.g. Smile Care's
+real 4.9★/82-review Google aggregate), and live link, deliberately kept
+together in one component rather than split across several, per the
+homepage brief. This treats `forge-business-rules.md` Human Decision #8
+(showcase consent) as resolved-by-instruction for this pass — the
+content was already public on the live legacy site, so carrying it
+forward isn't a new disclosure — logged as ADR-007.
+
+**Pricing ladder naming.** `lib/constants.ts` `WEBSITE_TIERS[].name` is
+now `Launch` / `Growth` / `Pro` (was `"₹5,000 Website"` etc.) — a
+business-naming decision given directly in the homepage brief, applied
+at the single source of truth so every consumer (`PriceCard`,
+`WebsiteTierPage`) picked it up automatically.
+
+**CTA consistency.** `lib/constants.ts` `AUDIT_CTA_LABEL` ("Get your
+free audit") is now the one string every "go do the audit" CTA uses
+site-wide (`SiteHeader`, `Hero`, `PriceCard`, `WebsiteTierPage`, the
+homepage's repeated in-page CTAs, the final CTA) — previously three
+different pages used three different phrasings.
+
+**Capacity strip stays hidden.** `CAPACITY.status` (new field) is
+`'tbd'`, and `CapacityStrip` renders nothing when it is — per
+`docs/conversion-architecture.md`: no urgency is better than fake
+urgency. It will render again automatically once a real, current
+`remaining`/`nextReset` is set and `status` flips to `'confirmed'`.
+
 ## Out of scope (deliberately not built)
 
 Per the rebuild brief: no customer dashboard, no authentication, no
 payment processing, no CMS, and no code for `app.forge.bruuhh.com` (the
-customer application). The homepage (`/`) is also intentionally left as
-a bare placeholder in this pass — see `app/page.tsx`.
+customer application).
 
 ## Constraints carried forward from the legacy codebase
 

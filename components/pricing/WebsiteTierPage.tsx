@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getWebsiteTier, type WebsiteTierSlug, AUDIT_HREF } from '@/lib/constants'
+import { getWebsiteTier, type WebsiteTierSlug, AUDIT_HREF, AUDIT_CTA_LABEL } from '@/lib/constants'
 import { PageHero } from '@/components/marketing/PageHero'
 import { Section } from '@/components/ui/Section'
 import { Badge } from '@/components/ui/Badge'
@@ -30,7 +30,7 @@ export function WebsiteTierPage({ slug }: { slug: WebsiteTierSlug }) {
         )}
         <div className="mt-8">
           <Button href={AUDIT_HREF} size="lg">
-            {isTbd ? 'Ask about this tier' : 'Start with the free audit'}
+            {isTbd ? 'Ask about this tier' : AUDIT_CTA_LABEL}
           </Button>
         </div>
       </PageHero>

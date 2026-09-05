@@ -37,6 +37,7 @@ export type WebsiteTierSlug = '5000' | '15000' | '25000'
 
 export interface WebsiteTier {
   slug: WebsiteTierSlug
+  /** Short product-line name (Launch / Growth / Pro) — the primary label on the pricing ladder. */
   name: string
   /** Price in INR, or null when the price itself is unconfirmed. */
   price: number | null
@@ -54,12 +55,13 @@ export interface WebsiteTier {
 export const WEBSITE_TIERS: WebsiteTier[] = [
   {
     slug: '5000',
-    name: '₹5,000 Website',
+    name: 'Launch',
     price: 5000,
     priceLabel: '₹5,000',
-    tagline: 'Live in about 45 minutes, built from your Google Business Profile. You see it before you pay.',
+    tagline:
+      'A complete, professional website — live in about 45 minutes, built from your Google Business Profile. Intentionally simple: you see it live and approve it before paying anything, so there is nothing to revise.',
     deliveryTime: '~45 minutes',
-    revisionPolicy: 'No revisions included — template-based delivery.',
+    revisionPolicy: 'None needed — you see the finished site before you pay, not after.',
     included: [
       'Real website built from your Google Business Profile',
       'Mobile-first, Google-Maps-ready layout',
@@ -83,7 +85,7 @@ export const WEBSITE_TIERS: WebsiteTier[] = [
   },
   {
     slug: '15000',
-    name: '₹15,000 Website',
+    name: 'Growth',
     price: 15000,
     priceLabel: '₹15,000',
     tagline: 'Everything in the ₹5,000 tier, plus a custom design built specifically for your business.',
@@ -102,7 +104,7 @@ export const WEBSITE_TIERS: WebsiteTier[] = [
   },
   {
     slug: '25000',
-    name: '₹25,000 Website',
+    name: 'Pro',
     price: null,
     priceLabel: '₹25,000 — pending confirmation',
     tagline:
@@ -196,6 +198,15 @@ export interface CapacityConfig {
   remaining: number
   nextReset: string
   waitlistSize: number
+  /**
+   * 'confirmed' = these are real, currently-accurate numbers safe to show.
+   * 'tbd' = mechanism is real (legacy/README.md: "real monthly launch cap,
+   * 6 websites per month") but the CURRENT period's numbers aren't set.
+   * components/conversion/CapacityStrip.tsx renders nothing when this is
+   * 'tbd' — per docs/conversion-architecture.md: "If the cap isn't real
+   * for this launch, do not display urgency here at all."
+   */
+  status: 'confirmed' | 'tbd'
 }
 
 export const CAPACITY: CapacityConfig = {
@@ -203,6 +214,7 @@ export const CAPACITY: CapacityConfig = {
   remaining: 6,
   nextReset: 'TBD — set the real reset date before launch',
   waitlistSize: 12,
+  status: 'tbd',
 }
 
 // ---------------------------------------------------------------------
@@ -257,6 +269,14 @@ export const NAV_LINKS = [
 ] as const
 
 export const AUDIT_HREF = '/audit'
+
+/**
+ * The one label every "go take the free audit" CTA uses, site-wide.
+ * docs/conversion-architecture.md: "Use CTA language consistently." The
+ * audit form's own submit button ("Send my free audit") is a distinct
+ * micro-moment (submitting vs. navigating) and is not required to match.
+ */
+export const AUDIT_CTA_LABEL = 'Get your free audit'
 
 /**
  * The business-category options used on the legacy audit/waitlist forms

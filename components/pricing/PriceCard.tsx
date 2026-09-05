@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Heading } from '@/components/ui/Heading'
 import { Text } from '@/components/ui/Text'
-import { AUDIT_HREF } from '@/lib/constants'
+import { AUDIT_HREF, AUDIT_CTA_LABEL } from '@/lib/constants'
 
 /**
  * Renders one WebsiteTier from lib/constants.ts. Never hard-code a price
@@ -53,7 +53,7 @@ export function PriceCard({ tier, featured = false }: { tier: WebsiteTier; featu
           </Button>
         ) : (
           <Button href={AUDIT_HREF} className="w-full justify-center">
-            Start with the free audit
+            {AUDIT_CTA_LABEL}
           </Button>
         )}
       </div>

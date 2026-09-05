@@ -17,16 +17,30 @@
  * Client Components.
  */
 
+/**
+ * Event taxonomy per docs/conversion-architecture.md §7. Client-side
+ * events only — the CRM-lifecycle events in that table (audit_completed,
+ * qualified, contacted, etc.) are backend-triggered and belong to
+ * lib/crm.ts's trackLeadEvent(), not here.
+ *
+ * Not every event below is wired to a real call site yet — pricing_viewed
+ * and showcase_viewed in particular are defined for pages that use a
+ * scroll-observer or per-visit tracking later; adding that observer
+ * everywhere isn't done in this pass (see "avoid unnecessary client-side
+ * JavaScript" in the homepage build brief). Wire them when a real need
+ * arises rather than adding an observer speculatively.
+ */
 export type AnalyticsEvent =
-  | { name: 'lead_form_view'; props: { source: string } }
-  | { name: 'lead_form_submit'; props: { source: string } }
-  | { name: 'lead_form_success'; props: { source: string; leadId?: string } }
-  | { name: 'lead_form_error'; props: { source: string; error?: string } }
-  | { name: 'whatsapp_click'; props: { location: string } }
-  | { name: 'pricing_tier_view'; props: { tier: string } }
-  | { name: 'showcase_view'; props: { slug: string } }
-  | { name: 'tool_view'; props: { slug: string } }
-  | { name: 'blog_view'; props: { slug: string } }
+  | { name: 'audit_started'; props: { source: string } }
+  | { name: 'lead_submitted'; props: { source: string; leadId?: string } }
+  | { name: 'lead_submit_error'; props: { source: string; error?: string } }
+  | { name: 'website_cta_clicked'; props: { location: string } }
+  | { name: 'whatsapp_clicked'; props: { location: string } }
+  | { name: 'pricing_viewed'; props: { tier?: string } }
+  | { name: 'showcase_viewed'; props: { slug: string } }
+  | { name: 'maintenance_plan_viewed'; props: Record<string, never> }
+  | { name: 'tool_used'; props: { slug: string } }
+  | { name: 'blog_viewed'; props: { slug: string } }
 
 export interface AnalyticsProvider {
   name: string

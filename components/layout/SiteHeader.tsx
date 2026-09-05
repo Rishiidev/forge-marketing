@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
 import { Button } from '@/components/ui/Button'
-import { NAV_LINKS, AUDIT_HREF, SITE } from '@/lib/constants'
+import { NAV_LINKS, AUDIT_HREF, AUDIT_CTA_LABEL, SITE } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 /** The brief calls this "Navbar"; kept the established SiteHeader name (docs/architecture.md) — same component. */
@@ -36,7 +36,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <Button href={AUDIT_HREF} size="md" className="hidden md:inline-flex">
-            Get the free audit
+            {AUDIT_CTA_LABEL}
           </Button>
           <button
             type="button"
@@ -82,7 +82,7 @@ export function SiteHeader() {
               </Link>
             ))}
             <Button href={AUDIT_HREF} size="md" className="mt-2 justify-center">
-              Get the free audit
+              {AUDIT_CTA_LABEL}
             </Button>
           </Container>
         </div>

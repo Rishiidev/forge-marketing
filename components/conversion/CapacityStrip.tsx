@@ -9,6 +9,11 @@ import { Text } from '@/components/ui/Text'
  * CAPACITY once, every usage of this component updates.
  */
 export function CapacityStrip() {
+  // Real mechanism, unconfirmed current numbers — see lib/constants.ts
+  // CAPACITY.status and docs/conversion-architecture.md: no urgency is
+  // better than fake urgency.
+  if (CAPACITY.status === 'tbd') return null
+
   const isFull = CAPACITY.remaining <= 0
   const fillPct = Math.round(((CAPACITY.total - CAPACITY.remaining) / CAPACITY.total) * 100)
 

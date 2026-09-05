@@ -20,7 +20,7 @@ export function WhatsAppFloat({ location = 'float' }: { location?: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => trackEvent({ name: 'whatsapp_click', props: { location } })}
+      onClick={() => trackEvent({ name: 'whatsapp_clicked', props: { location } })}
       aria-label="Chat with Forge on WhatsApp"
       className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-ground text-mark shadow-lg transition-transform hover:-translate-y-0.5"
     >

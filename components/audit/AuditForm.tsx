@@ -1,11 +1,13 @@
 'use client'
 
+import { useRef } from 'react'
 import { TextField } from '@/components/forms/TextField'
 import { SelectField } from '@/components/forms/SelectField'
 import { Honeypot } from '@/components/forms/Honeypot'
 import { SubmitButton } from '@/components/forms/SubmitButton'
 import { FormStatus } from '@/components/forms/FormStatus'
 import { useLeadForm } from '@/components/forms/useLeadForm'
+import { trackEvent } from '@/lib/analytics'
 import { CATEGORY_OPTIONS } from '@/lib/constants'
 
 /**
@@ -15,9 +17,16 @@ import { CATEGORY_OPTIONS } from '@/lib/constants'
  */
 export function AuditForm() {
   const { submit, status, error, isPending } = useLeadForm('audit')
+  const hasStarted = useRef(false)
+
+  function trackStart() {
+    if (hasStarted.current) return
+    hasStarted.current = true
+    trackEvent({ name: 'audit_started', props: { source: 'audit' } })
+  }
 
   return (
-    <form action={submit} className="grid gap-4 rounded-2xl border border-border bg-white p-7 shadow-md">
+    <form action={submit} onFocus={trackStart} className="grid gap-4 rounded-2xl border border-border bg-white p-7 shadow-md">
       <Honeypot />
       <TextField label="Your name" name="name" type="text" placeholder="e.g. Priya Shah" required />
       <div className="grid gap-4 sm:grid-cols-2">
