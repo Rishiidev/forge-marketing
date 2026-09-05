@@ -12,7 +12,13 @@ feature branches.
 
 ## Status
 
-`[PLACEHOLDER — fill in current phase: baseline / rebuild-in-progress / launched]`
+Rebuild in progress. The public marketing site's architecture (Next.js
+App Router, TypeScript, Tailwind, MDX content, CRM/analytics
+abstractions) is scaffolded and every listed route exists, but most
+pages hold minimal placeholder content — no customer-facing design or
+copy pass has happened yet, and the homepage (`/`) is deliberately left
+unbuilt. See `docs/decisions.md` ADR-001. The customer application
+(`app.forge.bruuhh.com`) has not been started.
 
 ## Docs
 
@@ -22,9 +28,21 @@ feature branches.
 
 ## Local development
 
-`[PLACEHOLDER — confirm/update: the legacy README documents running the
-static site with `python3 -m http.server`. Confirm this still applies once
-the rebuild's tooling is chosen.]`
+```bash
+npm install
+npm run dev       # http://localhost:3000
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Requires Node 18.18+. No environment variables are required to run
+locally — `lib/crm.ts` and `lib/analytics.ts` both default to
+console-only providers when unconfigured. To point lead capture at a
+real webhook, set `CRM_PROVIDER=webhook` and `CRM_WEBHOOK_URL=...`.
+
+The legacy static site (`python3 -m http.server` from its own directory)
+still works unmodified from [legacy/](legacy/), for reference.
 
 ## Branches
 
