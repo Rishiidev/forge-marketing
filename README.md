@@ -1,44 +1,32 @@
-# Forge
+# Forge Marketing — Rebuild
 
-Conversion-strong, honest landing page and supporting funnel for the **Google Business Profile -> professional website** product.
+This repository is the componentized rebuild of the Forge marketing website.
+The `main` branch holds the untouched baseline of the existing static site
+(see the baseline commit). All new work happens on `rebuild` and other
+feature branches.
 
-Brand: Forge
-Mark: the double-chevron from the logo (olive + warm pale green)
-Capacity mechanism: real monthly launch cap, 6 websites per month, with a real waitlist for the months the cap is full
+> The original product README (run instructions, the capacity-cap mechanism,
+> the "honest line" content principle) is preserved as-is at
+> [docs/legacy-readme.md](docs/legacy-readme.md). Nothing from it has been
+> changed or removed.
 
-## Pages
+## Status
 
-- `index.html` - main conversion page, with the live capacity strip and a hidden waitlist form that only shows when the cap is full
-- `audit.html` - lead magnet. A free 7-point website audit in exchange for an email
-- `operator.html` - Operator Prospectus. The ongoing-management plan for businesses that have outgrown a one-time website
-- `thanks.html` - follow-up funnel. Confirmation page that adapts its message based on the source (preview, audit, waitlist, operator)
+`[PLACEHOLDER — fill in current phase: baseline / rebuild-in-progress / launched]`
 
-## Run locally
+## Docs
 
-```bash
-cd ~/Documents/forge
-python3 -m http.server 4174
-```
+- [docs/forge-business-rules.md](docs/forge-business-rules.md) — pricing, offers, funnel rules
+- [docs/architecture.md](docs/architecture.md) — target architecture for the rebuild
+- [docs/decisions.md](docs/decisions.md) — architecture decision log
 
-Then:
+## Local development
 
-- http://127.0.0.1:4174/ - main page
-- http://127.0.0.1:4174/audit.html - lead magnet
-- http://127.0.0.1:4174/operator.html - operator prospectus
-- http://127.0.0.1:4174/thanks.html - confirmation page
+`[PLACEHOLDER — confirm/update: the legacy README documents running the
+static site with `python3 -m http.server`. Confirm this still applies once
+the rebuild's tooling is chosen.]`
 
-## The cap is the single source of truth
+## Branches
 
-Open `index.html` and find this line near the bottom of the script:
-
-```js
-const CAP = { total: 6, remaining: 4, nextReset: '1 August', waitlistSize: 12 };
-```
-
-That one constant drives the hero capacity strip, the pricing capacity block, and the entire page's behaviour when the cap is full. When `remaining` is zero, the waitlist form appears, every CTA flips to "Join the waitlist", and the final section rewrites itself.
-
-## The honest line
-
-Every claim on every page is defensible in a customer DM. There is no fake scarcity, no shame copy, no "your business is losing X daily", no fabricated testimonials, no decorative countdown timers, and no em-dashes. The monthly cap is real, the waitlist cap is real, and the operator plan client cap is real.
-
-See the README in this folder for the full build brief and what to wire up before launch.
+- `main` — baseline + reviewed rebuild work
+- `rebuild` — active rebuild work, branched from the baseline commit
