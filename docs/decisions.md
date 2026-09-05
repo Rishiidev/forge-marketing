@@ -134,3 +134,74 @@ production build has no dev-runtime eval calls to trip the CSP, so
 Verified by starting the dev server and submitting the audit form in a
 live browser (see session notes); the lead reached
 `lib/crm.ts`'s console provider correctly after the fix.
+
+### ADR-005: Design system — token architecture and positioning
+
+Date: 2026-09-05
+Status: accepted
+
+Context: The brief asked for a coherent visual language before building
+major pages, with an explicit positioning brief (premium, clear, modern,
+confident, practical, technical, trustworthy, productized — explicitly
+**not** generic-agency, freelancer-portfolio, template-marketplace, or
+"AI-generated SaaS landing page"), a full token set (color, type,
+spacing, radius, border, shadow, container, breakpoint, motion, focus),
+a fixed list of primitives and marketing components, and an internal
+preview route. It also asked to use 21st.dev "where it improves the
+experience." 21st.dev's MCP integration (server name `magic`) was
+unauthenticated for this session (confirmed at connection time — see the
+error surfaced to the user) — no real 21st.dev component was fetched.
+Every component below was hand-built against Forge's own tokens instead
+of adapted from a fetched reference.
+
+Decision:
+- Token values live in one place, `lib/design-tokens.ts`, imported by
+  both `tailwind.config.ts` (to actually apply them) and
+  `app/design-system/page.tsx` (to render them for inspection) — never
+  duplicated between the two.
+- Replaced Tailwind's default color palette and font-size scale entirely
+  (not `extend`ed) for `colors` and `fontSize`, so no component can
+  accidentally reach for a generic `blue-500` or `text-lg` outside the
+  named Forge scale. Verified nothing in the existing codebase depended
+  on a default-palette color before doing this; every existing
+  `text-{size}` usage was migrated to the new named scale
+  (`text-caption`/`body-sm`/`body`/`body-lg`/`heading-sm`/`heading-md`/
+  `heading-lg`/`heading-xl`/`display`) as part of this change, not left
+  on two parallel scales.
+- `borderRadius` and `boxShadow` are similarly a small, closed set (radii
+  sm through 2xl plus full; three shadow elevations, ground-tinted rather
+  than neutral black) — a deliberately narrow palette of choices is part
+  of what reads as "a repeatable system" rather than an assortment of
+  one-off values.
+- Motion is restricted to hover/active feedback, focus states, and
+  expand/collapse (Accordion, mobile nav) using one easing token
+  (`ease-forge`, legacy's own cubic-bezier) — no scroll-triggered reveal
+  animations were rebuilt from the legacy site's `IntersectionObserver`
+  pattern; the brief asked for motion only where it aids hierarchy/
+  understanding/feedback, not decoration.
+- Every primitive and marketing component named in the brief was built:
+  ui/ (Container, Section, Heading, Text, Button, Link, Badge, Card,
+  Input, Textarea, Select, Accordion, Divider) and marketing components
+  (CTA, ProcessStep, Metric, Testimonial, Review, FAQ, plus the
+  already-existing PriceCard/ShowcaseCard/BlogCard/ToolCard/AuditForm,
+  and a new CaseStudyCard). Navbar/Footer were not duplicated under new
+  names — the existing SiteHeader/SiteFooter (docs/architecture.md) were
+  extended in place (SiteHeader gained a working mobile menu, which it
+  was missing) rather than creating parallel components with the brief's
+  literal naming.
+- `Metric`, `Testimonial`, `Review`, and `CaseStudyCard` carry explicit
+  doc-comment warnings against fabricated content, tying back to
+  docs/forge-business-rules.md §15/§18. `/design-system` demonstrates
+  them with content clearly labeled "Example" — this is the ONLY place
+  in the app they currently appear, since no real testimonial, review,
+  or metric exists yet (Human Decisions #7/#8).
+
+Consequences: `/design-system` (noindex, not in `NAV_LINKS`) is a live,
+buildable inventory of every token and component — verified in a real
+browser, not just a passing build (see the ADR-004 lesson: this session
+independently caught a real bug, duplicate React keys in the `Metric`
+demo, via the Next.js dev overlay during that same verification pass,
+not via typecheck/lint/build). Because 21st.dev couldn't be used, there
+is no external reference to compare these components against — if the
+business owner has specific 21st.dev components in mind, that requires
+re-authenticating the `magic` MCP server in a future session.

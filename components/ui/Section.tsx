@@ -7,11 +7,18 @@ interface SectionProps {
   className?: string
   containerClassName?: string
   id?: string
+  /** 'default' = generous section rhythm. 'tight' = for sections stacked closely (e.g. right after a hero). */
+  spacing?: 'default' | 'tight'
 }
 
-export function Section({ children, className, containerClassName, id }: SectionProps) {
+const spacingClass = {
+  default: 'py-[clamp(5rem,11vw,8.75rem)]',
+  tight: 'py-[clamp(3.5rem,8vw,6rem)]',
+}
+
+export function Section({ children, className, containerClassName, id, spacing = 'default' }: SectionProps) {
   return (
-    <section id={id} className={cn('py-20', className)}>
+    <section id={id} className={cn(spacingClass[spacing], className)}>
       <Container className={containerClassName}>{children}</Container>
     </section>
   )

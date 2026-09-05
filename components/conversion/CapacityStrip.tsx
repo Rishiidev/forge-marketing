@@ -1,4 +1,5 @@
 import { CAPACITY } from '@/lib/constants'
+import { Text } from '@/components/ui/Text'
 
 /**
  * The legacy capacity-cap mechanism (legacy/index.html), reimplemented as
@@ -13,28 +14,30 @@ export function CapacityStrip() {
 
   return (
     <div
-      className="max-w-md rounded-2xl border border-ink/10 bg-paper-2 p-5"
+      className="max-w-md rounded-2xl border border-border bg-paper-2 p-5"
       data-state={isFull ? 'full' : 'open'}
       aria-live="polite"
     >
-      <div className="mb-2 flex items-baseline justify-between text-[13px] text-muted">
+      <div className="mb-2 flex items-baseline justify-between text-body-sm text-muted">
         <strong className="text-ink">This month</strong>
         <span>{isFull ? 'Cap full' : 'Live capacity'}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-paper-3">
         <div
-          className="h-full rounded-full bg-ground transition-[width]"
+          className="h-full rounded-full bg-ground transition-[width] duration-300 ease-forge"
           style={{ width: `${fillPct}%` }}
         />
       </div>
-      <div className="mt-2 flex justify-between text-xs text-muted">
-        <span>
+      <div className="mt-2 flex justify-between">
+        <Text as="span" size="caption" className="font-normal normal-case tracking-normal">
           <strong className="text-ink">
             {isFull ? 'Cap full' : `${CAPACITY.remaining} of ${CAPACITY.total} launch slots`}
           </strong>{' '}
           {isFull ? '— waitlist open' : 'remain this month'}
-        </span>
-        <span>{isFull ? '' : `Resets ${CAPACITY.nextReset}`}</span>
+        </Text>
+        <Text as="span" size="caption" className="font-normal normal-case tracking-normal">
+          {isFull ? '' : `Resets ${CAPACITY.nextReset}`}
+        </Text>
       </div>
     </div>
   )

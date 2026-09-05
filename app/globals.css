@@ -6,3 +6,31 @@ body {
   background-color: theme('colors.paper.DEFAULT');
   color: theme('colors.ink.DEFAULT');
 }
+
+@layer utilities {
+  /*
+   * The one focus treatment used by every interactive primitive (Button,
+   * Link, Input, Textarea, Select, Accordion trigger). Consistent focus
+   * states are an explicit design-token category in this system — this
+   * class is how that consistency is enforced, rather than each
+   * component inventing its own outline.
+   */
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid theme('colors.mark.DEFAULT');
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

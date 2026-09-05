@@ -1,10 +1,22 @@
-import type { ReactNode } from 'react'
+import type { ElementType, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-export function Card({ children, className }: { children: ReactNode; className?: string }) {
+interface CardProps {
+  as?: ElementType
+  children: ReactNode
+  className?: string
+  /** 'flat' (default) sits on a paper background; 'raised' adds a soft shadow, for cards on a busier background. */
+  elevation?: 'flat' | 'raised'
+  [key: `data-${string}`]: string | boolean | undefined
+}
+
+export function Card({ as: Tag = 'div', children, className, elevation = 'flat', ...rest }: CardProps) {
   return (
-    <div className={cn('rounded-2xl border border-ink/10 bg-white p-7', className)}>
+    <Tag
+      className={cn('rounded-2xl border border-border bg-white p-7', elevation === 'raised' && 'shadow-md', className)}
+      {...rest}
+    >
       {children}
-    </div>
+    </Tag>
   )
 }

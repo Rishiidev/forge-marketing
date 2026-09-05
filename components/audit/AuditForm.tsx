@@ -1,10 +1,12 @@
 'use client'
 
 import { TextField } from '@/components/forms/TextField'
+import { SelectField } from '@/components/forms/SelectField'
 import { Honeypot } from '@/components/forms/Honeypot'
 import { SubmitButton } from '@/components/forms/SubmitButton'
 import { FormStatus } from '@/components/forms/FormStatus'
 import { useLeadForm } from '@/components/forms/useLeadForm'
+import { CATEGORY_OPTIONS } from '@/lib/constants'
 
 /**
  * The free 7-point audit request form. Field set matches
@@ -15,13 +17,21 @@ export function AuditForm() {
   const { submit, status, error, isPending } = useLeadForm('audit')
 
   return (
-    <form action={submit} className="grid gap-4 rounded-2xl border border-ink/10 bg-white p-7">
+    <form action={submit} className="grid gap-4 rounded-2xl border border-border bg-white p-7 shadow-md">
       <Honeypot />
       <TextField label="Your name" name="name" type="text" placeholder="e.g. Priya Shah" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label="Email" name="email" type="email" placeholder="you@business.com" required />
         <TextField label="Business name" name="business" type="text" placeholder="e.g. Studio Mysa" required />
       </div>
+      <SelectField label="Category" name="category" defaultValue="" required>
+        <option value="" disabled>
+          Select your category
+        </option>
+        {CATEGORY_OPTIONS.map((option) => (
+          <option key={option}>{option}</option>
+        ))}
+      </SelectField>
       <TextField
         label="Google Business Profile link"
         name="googleProfileUrl"

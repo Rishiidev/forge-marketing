@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { Section } from '@/components/ui/Section'
+import { Heading } from '@/components/ui/Heading'
+import { Text } from '@/components/ui/Text'
 
 interface PageHeroProps {
   eyebrow?: string
@@ -11,15 +13,21 @@ interface PageHeroProps {
 /** Generic hero block reused across every non-homepage marketing page. */
 export function PageHero({ eyebrow, title, description, children }: PageHeroProps) {
   return (
-    <Section className="pb-10 pt-16">
+    <Section spacing="tight" className="pb-6">
       <div className="max-w-2xl">
         {eyebrow && (
-          <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-ground">
+          <Text as="span" size="caption" tone="ink" className="mb-4 block text-ground">
             {eyebrow}
-          </span>
+          </Text>
         )}
-        <h1 className="text-4xl font-semibold tracking-tight text-ink md:text-5xl">{title}</h1>
-        {description && <p className="mt-5 text-lg leading-relaxed text-muted">{description}</p>}
+        <Heading as="h1" size="heading-xl">
+          {title}
+        </Heading>
+        {description && (
+          <Text size="body-lg" className="mt-5">
+            {description}
+          </Text>
+        )}
         {children}
       </div>
     </Section>

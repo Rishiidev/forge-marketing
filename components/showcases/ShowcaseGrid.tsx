@@ -1,9 +1,10 @@
 import type { ContentEntry } from '@/lib/content'
+import { Text } from '@/components/ui/Text'
 import { ShowcaseCard } from './ShowcaseCard'
 
 export function ShowcaseGrid({ entries }: { entries: ContentEntry[] }) {
   if (entries.length === 0) {
-    return <p className="text-sm text-muted">No showcases published yet.</p>
+    return <Text size="body-sm">No showcases published yet.</Text>
   }
 
   return (

@@ -9,11 +9,11 @@ export function FormStatus({ status, error }: { status: FormStatusState; error?:
     <p
       role="status"
       aria-live="polite"
-      className={cn('mt-3 text-sm', status === 'success' ? 'text-success' : 'text-warm')}
+      className={cn('mt-3 text-body-sm', status === 'success' ? 'text-success' : 'text-warm')}
     >
       {status === 'success'
         ? "Request received. We'll follow up shortly."
-        : error ?? 'Something went wrong. Please try again.'}
+        : (error ?? 'Something went wrong. Please try again.')}
     </p>
   )
 }

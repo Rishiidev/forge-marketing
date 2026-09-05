@@ -1,49 +1,47 @@
 import type { Config } from 'tailwindcss'
 import typography from '@tailwindcss/typography'
+import { colors, fontSize, borderRadius, boxShadow, maxWidth, transitionTimingFunction } from './lib/design-tokens'
 
-// Palette carried forward from legacy/index.html's :root custom properties
-// (the most complete of the several slightly-divergent palettes found in
-// the baseline — see docs/forge-business-rules.md). Treat this as a
-// starting design token set, not a final brand decision.
+/**
+ * Forge design tokens.
+ *
+ * The actual values live in lib/design-tokens.ts (imported below) so that
+ * app/design-system/page.tsx can render the real tokens without importing
+ * this file (and its Tailwind plugin machinery). This file's job is only
+ * to wire those values into Tailwind's theme.
+ *
+ * Colors are carried forward from legacy/index.html's :root custom
+ * properties (the most complete of several slightly-divergent legacy
+ * palettes — see docs/forge-business-rules.md) — a starting design token
+ * set, not a confirmed final brand decision. Everything else (type scale,
+ * radius, shadow, motion) is new for this rebuild, designed to read as
+ * premium/confident/technical rather than a generic SaaS template — see
+ * docs/decisions.md ADR-005.
+ */
 const config: Config = {
   content: ['./app/**/*.{ts,tsx,mdx}', './components/**/*.{ts,tsx}', './content/**/*.{mdx,md}'],
   theme: {
+    // Deliberately not using `extend` for colors/radius/shadow/fontSize —
+    // Forge's palette and type scale are specific enough that inheriting
+    // Tailwind's generic defaults (blue-500, rounded-md, shadow-md, the
+    // default text-* scale) invites exactly the "looks AI-generated"
+    // sameness the brief warns against. `spacing` and `screens` DO stay
+    // at Tailwind's defaults — those scales are genuinely generic and fine.
+    colors,
+    fontFamily: {
+      sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+      mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+    },
+    fontSize,
+    borderRadius,
+    boxShadow,
     extend: {
-      colors: {
-        ground: {
-          DEFAULT: '#3A3B1F',
-          2: '#2A2B16',
-          3: '#4A4B2A',
-        },
-        mark: {
-          DEFAULT: '#D6DDA0',
-          2: '#B7C074',
-        },
-        paper: {
-          DEFAULT: '#F5F3EC',
-          2: '#EDEAE0',
-          3: '#E2DFD3',
-        },
-        ink: {
-          DEFAULT: '#1B1B12',
-          2: '#2C2C1B',
-          3: '#4A4A36',
-        },
-        muted: {
-          DEFAULT: '#6B6A55',
-          2: '#8E8D74',
-        },
-        warm: '#B85A2E',
-        success: '#4A7C2A',
-      },
-      fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-      },
-      maxWidth: {
-        wrap: '1200px',
-      },
+      maxWidth,
+      transitionTimingFunction,
+      // screens (breakpoints) intentionally left at Tailwind's defaults —
+      // sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536. Documented in
+      // lib/design-tokens.ts `screens`, not overridden here.
     },
   },
   plugins: [typography],

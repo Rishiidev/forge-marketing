@@ -1,15 +1,23 @@
 import Link from 'next/link'
 import type { ContentEntry } from '@/lib/content'
+import { Heading } from '@/components/ui/Heading'
+import { Text } from '@/components/ui/Text'
 
 export function BlogCard({ entry }: { entry: ContentEntry }) {
   return (
     <Link
       href={`/blog/${entry.slug}`}
-      className="block rounded-2xl border border-ink/10 bg-white p-6 transition-colors hover:border-ground/40"
+      className="focus-ring block rounded-2xl border border-border bg-white p-6 transition-colors duration-200 ease-forge hover:border-border-strong"
     >
-      <span className="text-xs uppercase tracking-wide text-muted">{entry.frontmatter.date}</span>
-      <h3 className="mt-2 text-lg font-semibold text-ink">{entry.frontmatter.title}</h3>
-      <p className="mt-2 text-sm text-muted">{entry.frontmatter.description}</p>
+      <Text as="span" size="caption" className="font-normal normal-case tracking-normal">
+        {entry.frontmatter.date}
+      </Text>
+      <Heading as="h3" size="heading-sm" className="mt-2">
+        {entry.frontmatter.title}
+      </Heading>
+      <Text size="body-sm" className="mt-2">
+        {entry.frontmatter.description}
+      </Text>
     </Link>
   )
 }

@@ -257,3 +257,22 @@ export const NAV_LINKS = [
 ] as const
 
 export const AUDIT_HREF = '/audit'
+
+/**
+ * The business-category options used on the legacy audit/waitlist forms
+ * (legacy/audit.html, legacy/index.html waitlist form) — reused verbatim
+ * as existing, working content rather than replaced with the narrower
+ * six-item INDUSTRY_TEMPLATES list above, which serves a different
+ * purpose (website template selection, not lead categorization).
+ */
+export const CATEGORY_OPTIONS = [
+  'Salon or spa',
+  'Clinic or dental',
+  'Cafe or restaurant',
+  'Design or architecture studio',
+  'Real estate',
+  'Hotel or guesthouse',
+  'Tuition or coaching',
+  'Service business',
+  'Other',
+] as const

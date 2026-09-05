@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { buildMetadata } from '@/lib/seo'
 import { TOOLS } from '@/lib/constants'
 import { Section } from '@/components/ui/Section'
+import { Heading } from '@/components/ui/Heading'
+import { Text } from '@/components/ui/Text'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -28,8 +30,10 @@ export default async function ToolPage({ params }: PageProps) {
 
   return (
     <Section>
-      <h1 className="text-3xl font-semibold text-ink">{tool.name}</h1>
-      <p className="mt-4 text-muted">{tool.description}</p>
+      <Heading as="h1" size="heading-md">
+        {tool.name}
+      </Heading>
+      <Text className="mt-4">{tool.description}</Text>
     </Section>
   )
 }

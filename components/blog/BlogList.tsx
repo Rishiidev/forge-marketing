@@ -1,9 +1,10 @@
 import type { ContentEntry } from '@/lib/content'
+import { Text } from '@/components/ui/Text'
 import { BlogCard } from './BlogCard'
 
 export function BlogList({ entries }: { entries: ContentEntry[] }) {
   if (entries.length === 0) {
-    return <p className="text-sm text-muted">No posts published yet.</p>
+    return <Text size="body-sm">No posts published yet.</Text>
   }
 
   return (

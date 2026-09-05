@@ -88,40 +88,60 @@ canonical tags on 3 of 9 pages and OpenGraph on 1 of 9
 (`docs/forge-business-rules.md`); routing every page through one helper
 is what fixes that structurally rather than page-by-page.
 
-**Design system.** Tailwind tokens in `tailwind.config.ts` are lifted
-from `legacy/index.html`'s CSS custom properties — the most complete of
-several slightly-divergent legacy palettes — as a starting point, not a
-confirmed final brand decision. `components/ui/*` are the design-system
-primitives (Button, Card, Container, Section, Badge); every other
-component folder builds on top of them.
+**Design system.** Token values live in `lib/design-tokens.ts` (colors,
+type scale, radius, shadow, container widths, motion easing, breakpoints)
+— `tailwind.config.ts` wires them into Tailwind, and
+`app/design-system/page.tsx` (an internal, `noindex`, unlinked preview
+route) renders them directly from the same file, so the preview can never
+drift from the real tokens. Colors are lifted from `legacy/index.html`'s
+CSS custom properties — the most complete of several slightly-divergent
+legacy palettes — as a starting point, not a confirmed final brand
+decision; the type scale, radius, shadow, and motion tokens are new for
+this rebuild. See `docs/decisions.md` ADR-005 for the positioning
+rationale (premium/confident/technical, not generic-SaaS or
+template-marketplace).
+
+`components/ui/*` are the design-system primitives: `Container`,
+`Section`, `Heading`, `Text`, `Button`, `Link`, `Badge`, `Card`, `Input`,
+`Textarea`, `Select`, `Accordion`, `Divider`. Every heading and body-copy
+font size in the app goes through `Heading`/`Text` (or the raw
+`text-{token}` utility class they wrap) — no component reaches for
+Tailwind's removed default `text-sm`/`text-lg`/etc. scale. Every other
+component folder builds on these primitives; `components/forms/TextField`
+and `SelectField` are labeled wrappers around `ui/Input` and `ui/Select`.
 
 ## Component structure
 
 ```
 components/
-  ui/          Design-system primitives (Button, Card, Container, Section, Badge)
-  layout/      SiteHeader, SiteFooter
-  marketing/   Generic reusable blocks (PageHero, FeatureList)
+  ui/          Design-system primitives — Container, Section, Heading, Text, Button,
+               Link, Badge, Card, Input, Textarea, Select, Accordion, Divider
+  layout/      SiteHeader ("Navbar"), SiteFooter ("Footer")
+  marketing/   Generic reusable blocks — PageHero, FeatureList, CTA, ProcessStep,
+               Metric, Testimonial, Review, FAQ
   conversion/  WhatsAppFloat, CapacityStrip
-  pricing/     PriceCard, PricingTierGrid, WebsiteTierPage (shared tier template)
+  pricing/     PriceCard ("PricingCard"), PricingTierGrid, WebsiteTierPage (shared tier template)
   audit/       AuditForm
-  showcases/   ShowcaseCard, ShowcaseGrid
+  showcases/   ShowcaseCard, ShowcaseGrid, CaseStudyCard
   tools/       ToolCard, ToolGrid
   blog/        BlogCard, BlogList
-  forms/       TextField, Honeypot, SubmitButton, FormStatus, useLeadForm
+  forms/       TextField, SelectField, Honeypot, SubmitButton, FormStatus, useLeadForm
 ```
 
 ## Lib structure
 
 ```
 lib/
-  constants.ts   Central business data — pricing, plans, capacity, nav, contact
-  analytics.ts   trackEvent() abstraction, no-op by default (see above)
-  crm.ts         captureLead()/trackLeadEvent()/updateLeadStage() + provider interface
-  seo.ts         buildMetadata() — the only page-metadata entry point
-  utils.ts       cn(), formatINR(), slugify()
-  content.ts     MDX filesystem loader — an addition beyond the five files named in
-                 the brief; logged as ADR-002 in docs/decisions.md
+  constants.ts      Central business data — pricing, plans, capacity, nav, contact
+  design-tokens.ts  Raw token data (colors, type scale, radius, shadow, motion,
+                     breakpoints) — tailwind.config.ts and app/design-system both
+                     import this; neither hand-copies a value. Logged as ADR-005.
+  analytics.ts      trackEvent() abstraction, no-op by default (see above)
+  crm.ts            captureLead()/trackLeadEvent()/updateLeadStage() + provider interface
+  seo.ts            buildMetadata() — the only page-metadata entry point
+  utils.ts          cn(), formatINR(), slugify()
+  content.ts        MDX filesystem loader — an addition beyond the five files named in
+                     the brief; logged as ADR-002 in docs/decisions.md
 ```
 
 ## Out of scope (deliberately not built)
