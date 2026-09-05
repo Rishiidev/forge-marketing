@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="See your website live in 45 minutes. Pay ₹5,000 setup only if you love it. Forge builds your business a real website from your Google Business Profile — domain, email, Cloudflare account, and Google My Business included.">
+  <meta name="theme-color" content="#262D0D">
+  <title>₹5,000 setup — see your website live in 45 minutes. Pay only if you love it. · Forge</title>
+  <meta property="og:title" content="₹5,000 setup — see your website live in 45 minutes.">
+  <meta property="og:description" content="Forge builds your business a real website from your Google Business Profile. See it live first. Pay only if you love it.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://forge.bruuhh.com/5000-setup">
+  <link rel="canonical" href="https://forge.bruuhh.com/5000-setup">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ground: #3A3B1F;
+      --ground-2: #2A2B16;
+      --ground-3: #4A4B2A;
+      --mark: #D6DDA0;
+      --mark-2: #B7C074;
+      --mark-wash: rgba(214, 221, 160, .12);
+      --mark-wash-2: rgba(214, 221, 160, .22);
+      --paper: #F5F3EC;
+      --paper-2: #EDEAE0;
+      --paper-3: #E2DFD3;
+      --ink: #1B1B12;
+      --ink-2: #2C2C1B;
+      --ink-3: #4A4A36;
+      --line: rgba(27, 27, 18, .10);
+      --line-2: rgba(27, 27, 18, .06);
+      --line-dark: rgba(245, 243, 236, .10);
+      --line-dark-2: rgba(245, 243, 236, .05);
+      --muted: #6B6A55;
+      --muted-2: #8E8D74;
+      --warm: #9F4824;
+      --warm-soft: #B85A2E;  /* kept for large/bold text only — fails AA at small sizes */
+      --success: #4A7C2A;
+      --max: 1200px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --safe-t: env(safe-area-inset-top, 0px);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(68px + var(--safe-t) + 12px); }
+    section[id] { scroll-margin-top: calc(68px + var(--safe-t) + 12px); }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.55; letter-spacing: -.005em; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: hidden; padding-bottom: var(--safe-b); }
+    @media (max-width: 880px) { body { padding-bottom: calc(52px + var(--safe-b)); } }  /* room for the bottom WA bar on mobile */
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; border: 0; background: none; }
+    img, svg { display: block; max-width: 100%; }
+    ::selection { background: var(--ground); color: var(--mark); }
+
+    .wrap { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
+    .section { padding: clamp(80px, 11vw, 140px) 0; }
+    .section-tight { padding: clamp(56px, 8vw, 96px) 0; }
+    .muted { color: var(--muted); }
+
+    .eyebrow { display: inline-flex; align-items: center; gap: 10px; color: var(--ground); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; }
+
+    h1, h2, h3, p { margin: 0; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1; font-weight: 600; }
+    h1 { font-size: clamp(2.6rem, 6.2vw, 5.6rem); letter-spacing: -.04em; }
+    h2 { font-size: clamp(2rem, 4.4vw, 3.8rem); letter-spacing: -.035em; }
+    h3 { font-size: clamp(1.15rem, 1.7vw, 1.5rem); }
+    .lede { max-width: 38ch; color: var(--muted); font-size: 18px; line-height: 1.55; }
+    .serif { font-family: "Fraunces", "Times New Roman", serif; font-style: italic; font-weight: 400; letter-spacing: -.02em; }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    :focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; border-radius: 4px; }
+
+    /* Nav (matches main site) */
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: calc(68px + var(--safe-t)); padding-top: var(--safe-t); background: rgba(245, 243, 236, .78); border-bottom: 1px solid var(--line-2); backdrop-filter: saturate(150%) blur(14px); -webkit-backdrop-filter: saturate(150%) blur(14px); }
+    .nav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
+    .brand-mark { width: 24px; height: 24px; flex-shrink: 0; border-radius: 6px; }
+    .brand-text { color: var(--ink); }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { font-size: 14px; color: var(--muted); transition: color .2s ease; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 18px; border-radius: 999px; background: var(--ground); color: var(--mark); font-weight: 600; font-size: 14px; transition: background .2s ease; }
+    .nav-cta:hover { background: var(--ground-3); }
+    @media (max-width: 880px) {
+      .nav-links { display: none; }
+      .nav-cta { display: none; }  /* rely on the bottom WA bar instead — avoids 3-stacked-CTAs at mobile */
+    }
+
+    /* Buttons */
+    .button { display: inline-flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 22px; border-radius: 999px; background: var(--ground); color: var(--mark); font-weight: 600; font-size: 15px; letter-spacing: -.01em; transition: transform .25s var(--ease), background .25s ease, box-shadow .25s ease; white-space: nowrap; }
+    .button:hover { background: var(--ground-3); transform: translateY(-1px); }
+    .button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+    .button.secondary:hover { background: var(--paper-2); border-color: rgba(27, 27, 18, .22); box-shadow: none; }
+    .button.on-dark { background: var(--mark); color: var(--ground); }
+    .button.on-dark:hover { background: #E2E9B0; box-shadow: 0 12px 24px rgba(214, 221, 160, .25); }
+    .button.large { min-height: 58px; padding: 0 28px; font-size: 16px; }
+    .button.whatsapp { background: var(--success); color: #fff; }
+    .button.whatsapp:hover { background: #5a9135; }
+    .button .arrow { transition: transform .25s var(--ease); }
+    .button:hover .arrow { transform: translateX(3px); }
+
+    /* Hero (page-specific) */
+    .hero { padding: clamp(120px, 14vw, 180px) 0 clamp(60px, 8vw, 96px); }
+    .hero-inner { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(40px, 5vw, 80px); align-items: center; }
+    .hero-copy h1 .hl { color: var(--warm); }
+    .hero-copy .pitch { margin-top: 24px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .hero-real-link {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 10px 16px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .hero-real-link:hover { background: var(--paper-3); border-color: var(--mark-2); }
+    .hero-micro { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 28px; font-size: 13px; color: var(--muted); }
+    .hero-micro span { display: inline-flex; align-items: center; gap: 8px; }
+    .hero-micro .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); display: inline-block; }
+
+    /* Visual: fake phone with live preview */
+    .hero-visual { position: relative; padding: 40px 20px; }
+    .phone-mock { max-width: 360px; margin: 0 auto; background: var(--ground); border-radius: 32px; padding: 16px; box-shadow: 0 30px 60px -20px rgba(0,0,0,.4), 0 0 0 8px var(--ground-3); position: relative; }
+    .phone-screen { background: var(--paper); border-radius: 22px; overflow: hidden; min-height: 480px; display: flex; flex-direction: column; }
+    .phone-bar { padding: 12px 16px; background: var(--ground); color: var(--mark); font-size: 11px; display: flex; justify-content: space-between; align-items: center; font-family: "JetBrains Mono", monospace; }
+    .phone-url { background: rgba(255,255,255,.1); padding: 4px 10px; border-radius: 6px; }
+    .phone-content { padding: 24px 20px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .phone-name { font-family: "Fraunces", serif; font-style: italic; font-size: 28px; font-weight: 500; color: var(--ink); letter-spacing: -.02em; }
+    .phone-tagline { font-size: 14px; color: var(--muted); }
+    .phone-rating { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+    .phone-rating .stars { color: var(--warm); letter-spacing: 1px; }
+    .phone-services { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+    .phone-service { padding: 10px 12px; background: var(--paper-2); border-radius: 10px; font-size: 11px; color: var(--ink-3); border: 1px solid var(--line); }
+    .phone-cta { margin-top: auto; padding: 12px; background: var(--success); color: #fff; text-align: center; border-radius: 12px; font-weight: 600; font-size: 13px; }
+    .phone-badge { position: absolute; top: -12px; right: -8px; background: var(--warm); color: var(--paper); padding: 8px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 8px 20px rgba(184, 90, 46, .3); }
+
+    @media (max-width: 880px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-visual { order: 2; }
+      .hero-copy { order: 1; }
+    }
+
+    /* The 4-step flow */
+    .flow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 56px; }
+    .flow-step { padding: 24px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 16px; position: relative; }
+    .flow-step .num { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--warm); font-weight: 600; }
+    .flow-step .step-title { font-family: "Fraunces", serif; font-style: italic; font-size: 22px; margin-top: 12px; color: var(--ink); font-weight: 500; letter-spacing: -.02em; }
+    .flow-step .step-body { font-size: 14px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .flow-step .step-time { display: inline-block; margin-top: 16px; font-size: 11px; color: var(--success); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; background: rgba(74, 124, 42, .08); border-radius: 6px; }
+    @media (max-width: 880px) { .flow-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
+    @media (max-width: 520px) { .flow-grid { grid-template-columns: 1fr; } }
+
+    /* Includes/Excludes grid */
+    .includes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 56px; }
+    @media (max-width: 880px) { .includes-grid { grid-template-columns: 1fr; gap: 16px; } }
+    .includes-card { padding: 32px 28px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; }
+    .includes-card h3 { font-family: "Fraunces", serif; font-style: italic; font-weight: 500; letter-spacing: -.02em; font-size: 24px; }
+    .includes-card ul { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-direction: column; gap: 0; }
+    .includes-card li { display: flex; gap: 12px; padding: 12px 0; font-size: 14px; color: var(--ink-3); border-bottom: 1px solid var(--line-2); align-items: flex-start; line-height: 1.5; }
+    .includes-card li:last-child { border-bottom: none; }
+    .includes-card li::before { content: "✓"; color: var(--success); font-weight: 700; flex-shrink: 0; }
+    .includes-card.excludes li::before { content: "—"; color: var(--muted-2); }
+    .includes-card.excludes li { color: var(--muted); }
+    .includes-card .pill-cost { display: inline-block; margin-top: 16px; font-size: 11px; color: var(--warm); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+
+    /* Upsell ladder */
+    .ladder { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 56px; }
+    @media (max-width: 880px) { .ladder { grid-template-columns: 1fr; } }
+    .ladder-card { padding: 28px; border-radius: 18px; border: 1px solid var(--line); background: var(--paper); display: flex; flex-direction: column; position: relative; }
+    .ladder-card .tier { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .ladder-card .tname { font-family: "Fraunces", serif; font-style: italic; font-size: 26px; margin-top: 8px; font-weight: 500; letter-spacing: -.02em; }
+    .ladder-card .price { font-size: 40px; font-weight: 600; letter-spacing: -.03em; color: var(--ink); margin-top: 12px; line-height: 1; font-feature-settings: "tnum"; }
+    .ladder-card .price small { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 6px; letter-spacing: 0; }
+    .ladder-card .desc { font-size: 14px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
+    .ladder-card .when { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line-2); font-size: 13px; color: var(--ink-3); }
+    .ladder-card .when strong { color: var(--ink); display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+
+    /* Inline mid-page CTA strip */
+    .inline-cta { padding: clamp(40px, 5vw, 64px) 0; background: var(--ground); color: var(--mark); }
+    .inline-cta-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .inline-cta p { font-size: 17px; margin: 0; max-width: 56ch; line-height: 1.4; }
+    .inline-cta p strong { color: var(--paper); font-weight: 600; }
+    .inline-cta .inline-cta-btn { background: var(--success); color: #fff; flex-shrink: 0; }
+    .inline-cta .inline-cta-btn:hover { background: #5a9135; }
+    @media (max-width: 720px) { .inline-cta-inner { flex-direction: column; align-items: stretch; text-align: center; } .inline-cta .inline-cta-btn { width: 100%; justify-content: center; } }
+
+    /* Proof */
+    .proof-grid { margin-top: 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 880px) { .proof-grid { grid-template-columns: 1fr; } }
+    .proof-card {
+      padding: 0;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform .25s var(--ease), border-color .25s ease, box-shadow .25s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .proof-card:hover { transform: translateY(-2px); border-color: var(--mark-2); box-shadow: 0 18px 40px -20px rgba(27,27,18,.18); }
+    .proof-thumb {
+      aspect-ratio: 16/9;
+      background: var(--ground);
+      position: relative;
+      overflow: hidden;
+    }
+    .proof-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(245,243,236,.12);
+      border-radius: 8px;
+      background: linear-gradient(140deg, rgba(214,221,160,.10), rgba(214,221,160,.02));
+    }
+    .proof-thumb-smile::before,
+    .proof-thumb-vc::before,
+    .proof-thumb-clinic::before {
+      content: "";
+      position: absolute;
+      left: 18px; right: 18px; top: 22px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(245,243,236,.4);
+    }
+    .proof-thumb-smile::after { border-color: rgba(11,94,84,.45); }
+    .proof-thumb-smile { background: linear-gradient(160deg, #0b5e54 0%, #073f37 100%); }
+    .proof-thumb-vc { background: linear-gradient(160deg, #1e3a5f 0%, #122642 100%); }
+    .proof-thumb-clinic { background: linear-gradient(160deg, #2c7a7b 0%, #1d5556 100%); }
+    .proof-text { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .proof-text h4 { font-family: "Fraunces", serif; font-style: italic; font-size: 19px; font-weight: 500; letter-spacing: -.02em; line-height: 1.2; color: var(--ink); }
+    .proof-text p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .proof-text .proof-meta { font-size: 12px; color: var(--muted-2); letter-spacing: .02em; }
+    .proof-cta { margin-top: auto; padding-top: 6px; font-size: 13px; font-weight: 600; color: var(--warm); }
+
+    /* FAQ */
+    .faq { margin-top: 56px; display: flex; flex-direction: column; gap: 0; max-width: 820px; margin-left: auto; margin-right: auto; }
+    .faq details { padding: 20px 0; border-bottom: 1px solid var(--line); }
+    .faq details:first-of-type { border-top: 1px solid var(--line); }
+    .faq summary { font-weight: 600; font-size: 17px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; font-size: 24px; color: var(--muted); font-weight: 400; transition: transform .2s ease; }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq .answer { margin-top: 14px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+    /* Final CTA */
+    .final-cta { text-align: center; padding: clamp(80px, 10vw, 120px) 0; }
+    .final-cta h2 { max-width: 18ch; margin: 0 auto; }
+    .final-cta p { max-width: 48ch; margin: 24px auto 0; color: var(--muted); font-size: 18px; }
+    .final-cta .button { margin-top: 40px; }
+
+    /* Footer */
+    footer { padding: 40px 0; border-top: 1px solid var(--line); margin-top: 60px; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a:hover { color: var(--ink); }
+
+    /* WhatsApp float — desktop: corner orb, mobile (≤880px): full-width thumb-zone bar */
+    .wa-float { position: fixed; right: 20px; bottom: calc(20px + var(--safe-b)); width: 56px; height: 56px; border-radius: 50%; background: var(--success); color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(74, 124, 42, .35); z-index: 40; transition: transform .25s var(--ease), background .2s ease; }
+    .wa-float:hover { transform: scale(1.08); background: #5a9135; }
+    .wa-float svg { width: 26px; height: 26px; }
+    .wa-float .label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-width: 880px) {
+      .wa-float { right: 12px; left: 12px; bottom: var(--safe-b); width: auto; height: 52px; border-radius: 14px 14px 0 0; padding-bottom: 0; gap: 10px; font-size: 15px; font-weight: 600; }
+      .wa-float svg { width: 22px; height: 22px; }
+      .wa-float .label { position: static; width: auto; height: auto; padding: 0; margin: 0; overflow: visible; clip: auto; white-space: nowrap; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html" aria-label="Forge home">
+        <img src="logo.png" alt="Forge" class="brand-mark">
+        <span class="brand-text">Forge</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#flow">The flow</a>
+        <a href="#includes">What's included</a>
+        <a href="#upsell">Need more</a>
+        <a href="#faq">Questions</a>
+      </nav>
+      <a class="nav-cta" href="#start">Start now <span aria-hidden="true">→</span></a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <span class="eyebrow">₹5,000 setup · one-time</span>
+          <h1>Your business website, <span class="hl">live</span> in 45 minutes. ₹5,000, only if you love it.</h1>
+          <p class="lede pitch">Send your Google Business Profile link. Forge builds your business a real website — using your photos, your hours, your reviews. You see it on a live URL before you pay a rupee.</p>
+          <div class="hero-actions">
+            <a class="button large whatsapp" href="#start" id="heroCta">
+              Send my GBP link on WhatsApp
+              <span class="arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="button large secondary" href="#flow">See how it works</a>
+          </div>
+          <div class="hero-micro">
+            <span><span class="dot"></span> Live in 45 min or less</span>
+            <span><span class="dot"></span> No payment before you see it</span>
+            <span><span class="dot"></span> Domain stays in your name</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="Layout preview of what your live website will look like">
+          <div class="phone-mock">
+            <div class="phone-badge">Your site, live</div>
+            <div class="phone-screen">
+              <div class="phone-bar">
+                <span>9:41</span>
+                <span class="phone-url">yourbusiness.com</span>
+                <span>●</span>
+              </div>
+              <div class="phone-content">
+                <div class="phone-name">Your business name</div>
+                <div class="phone-tagline">Hero line · from your GBP</div>
+                <div class="phone-rating">
+                  <span class="stars">★★★★★</span>
+                  <span>Google reviews · pulled from your GBP</span>
+                </div>
+                <div class="phone-services">
+                  <div class="phone-service">Your services</div>
+                  <div class="phone-service">Your hours</div>
+                  <div class="phone-service">Your photos</div>
+                  <div class="phone-service">Your reviews</div>
+                </div>
+                <div class="phone-cta">Call or WhatsApp →</div>
+              </div>
+            </div>
+          </div>
+          <a class="hero-real-link" href="https://we-health-care-diagnostic-centre.vercel.app" target="_blank" rel="noopener" aria-label="Open a real site shipped by Forge">
+            See a real shipped site →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- The flow -->
+    <section class="section" id="flow">
+      <div class="wrap">
+        <span class="eyebrow">The flow</span>
+        <h2>Four steps. Forty-five <span class="serif">minutes</span>.</h2>
+        <p class="lede">No calls, no contracts, no waiting on a designer. The website is real and live before you decide anything.</p>
+
+        <div class="flow-grid">
+          <div class="flow-step">
+            <span class="num">01</span>
+            <div class="step-title">You send the link</div>
+            <div class="step-body">Your Google Business Profile link — the URL customers see when they search your business. That's the only input we need.</div>
+            <span class="step-time">~2 min</span>
+          </div>
+          <div class="flow-step">
+            <span class="num">02</span>
+            <div class="step-title">We forge the site</div>
+            <div class="step-body">Forge pulls your photos, services, hours, and reviews. We pair them with a template designed for your industry. Live URL appears.</div>
+            <span class="step-time">~30 min</span>
+          </div>
+          <div class="flow-step">
+            <span class="num">03</span>
+            <div class="step-title">You see it on a call</div>
+            <div class="step-body">A 5-minute walk-through on WhatsApp. We'll tell you on the call whether the template fits your business. If it doesn't, there's no charge and no site goes up under your name.</div>
+            <span class="step-time">~10 min</span>
+          </div>
+          <div class="flow-step">
+            <span class="num">04</span>
+            <div class="step-title">We hand over</div>
+            <div class="step-body">Domain in your name. Email set up. Cloudflare account created and shared. Google Business Profile linked and optimised. Done.</div>
+            <span class="step-time">By tomorrow</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- What's included -->
+    <section class="section section-tight" id="includes" style="background: var(--paper-2);">
+      <div class="wrap">
+        <span class="eyebrow">What's in the ₹5,000</span>
+        <h2>Everything you need to <span class="serif">go live</span>. Nothing you don't.</h2>
+        <p class="lede">Honest about what's in and what's not. The ₹5,000 is for setup + delivery. The website itself is built on a proven template — no revisions included.</p>
+
+        <div class="includes-grid">
+          <div class="includes-card">
+            <h3>Included</h3>
+            <ul>
+              <li>Real website built from your Google Business Profile</li>
+              <li>Mobile-first, Google-Maps-ready layout</li>
+              <li>WhatsApp + Call buttons on every page</li>
+              <li>Custom domain registered in your name</li>
+              <li>Business email setup (e.g. hello@yourbusiness.com)</li>
+              <li>Cloudflare account created and shared with you</li>
+              <li>Google My Business linking and optimization</li>
+              <li>Live preview before any payment</li>
+              <li>14-day bug support after launch</li>
+            </ul>
+          </div>
+
+          <div class="includes-card excludes">
+            <h3>Not included</h3>
+            <ul>
+              <li>Custom design from scratch (use ₹15,000 tier)</li>
+              <li>Custom copywriting beyond your GBP</li>
+              <li>Revisions to template layout or copy</li>
+              <li>Logo design</li>
+              <li>Custom photography or product shoots</li>
+              <li>Booking system, payment gateway, or CRM</li>
+              <li>Ongoing hosting beyond Cloudflare free tier</li>
+              <li>Monthly maintenance or updates</li>
+            </ul>
+            <span class="pill-cost">Need any of these? See the upgrade ladder below.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inline CTA strip (mid-page) — repeats the inversion so a scroll-converter doesn't lose the offer -->
+    <section class="inline-cta">
+      <div class="wrap inline-cta-inner">
+        <p>Ready? Send your GBP link. Your site is <strong>live in 45 minutes</strong>. You decide if you want to keep it.</p>
+        <a class="button whatsapp inline-cta-btn" href="#" id="midCta">
+          Send on WhatsApp
+        </a>
+      </div>
+    </section>
+
+    <!-- Proof -->
+    <section class="section section-tight">
+      <div class="wrap">
+        <span class="eyebrow">Already shipped</span>
+        <h2>Real builds. <span class="serif">Real businesses.</span></h2>
+
+        <div class="proof-grid">
+          <a class="proof-card" href="https://smile-care-dental-pro.vercel.app" target="_blank" rel="noopener" aria-label="Open Smile Care Dental live site">
+            <div class="proof-thumb proof-thumb-smile"></div>
+            <div class="proof-text">
+              <h4>Smile Care Dental Clinic</h4>
+              <p class="proof-meta">Pimple Saudagar, Pune · Dental · Shipped Aug 2026</p>
+              <p>4.9★ · 82 Google reviews. Booked through the site within the launch week.</p>
+              <span class="proof-cta">Open live site →</span>
+            </div>
+          </a>
+          <a class="proof-card" href="https://asquare-venture-pro.vercel.app" target="_blank" rel="noopener" aria-label="Open Asquare Venture live site">
+            <div class="proof-thumb proof-thumb-vc"></div>
+            <div class="proof-text">
+              <h4>Asquare Venture</h4>
+              <p class="proof-meta">Coworking · Private offices · Shipped 2026</p>
+              <p>Day-pass enquiry form, WhatsApp direct, plan picker. Same template, different industry.</p>
+              <span class="proof-cta">Open live site →</span>
+            </div>
+          </a>
+          <a class="proof-card" href="https://we-health-care-diagnostic-centre.vercel.app" target="_blank" rel="noopener" aria-label="Open We Health Care Diagnostic Centre live site">
+            <div class="proof-thumb proof-thumb-clinic"></div>
+            <div class="proof-text">
+              <h4>We Health Care Diagnostic Centre</h4>
+              <p class="proof-meta">Mira Road, Mumbai · Clinic · Shipped 2026</p>
+              <p>Booked in 47 minutes from a single GBP share link. 5 pages, real services, working CTAs.</p>
+              <span class="proof-cta">Open live site →</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upsell ladder -->
+    <section class="section" id="upsell">
+      <div class="wrap">
+        <span class="eyebrow">When you outgrow ₹5,000</span>
+        <h2>Upgrade when you <span class="serif">outgrow it</span>.</h2>
+        <p class="lede">The ₹5,000 setup is built to convert quickly. If your business needs custom design, ongoing maintenance, or a booking system, here's what that costs.</p>
+
+        <div class="ladder">
+          <div class="ladder-card">
+            <div class="tier">Tier 2</div>
+            <div class="tname">Custom Site</div>
+            <div class="price">₹15,000<small>one-time</small></div>
+            <div class="desc">Everything in ₹5,000 + custom design from scratch, custom copywriting, your logo, custom palette and font.</div>
+            <div class="when">
+              <strong>Best for</strong>
+              You want the site to feel specifically yours — not a great template.
+            </div>
+          </div>
+
+          <div class="ladder-card">
+            <div class="tier">Tier 3</div>
+            <div class="tname">Custom + Active</div>
+            <div class="price">₹30,000<small>one-time</small></div>
+            <div class="desc">Everything in Custom Site + a real conversion engine (booking calendar, service picker, or wizard) + 3 months of Operator plan included.</div>
+            <div class="when">
+              <strong>Best for</strong>
+              You want customers to book, pay, or enquire directly through the website.
+            </div>
+          </div>
+
+          <div class="ladder-card">
+            <div class="tier">Ongoing</div>
+            <div class="tname">Operator Plan</div>
+            <div class="price">₹1,999<small>/month</small></div>
+            <div class="desc">Monthly updates, hosting oversight, content swaps, seasonal promos. Cancel anytime. Built on top of any tier.</div>
+            <div class="when">
+              <strong>Best for</strong>
+              You don't want to think about your website after launch.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-tight" id="faq">
+      <div class="wrap">
+        <span class="eyebrow">Questions, answered honestly</span>
+        <h2>The questions you'd <span class="serif">actually ask</span>.</h2>
+
+        <div class="faq">
+          <details>
+            <summary>What if I don't have a Google Business Profile yet?</summary>
+            <div class="answer">No problem. We'll help you claim it for free as part of the build — WhatsApp us your business name and city, we'll walk you through it before we start the site. The whole thing takes about 20 minutes.</div>
+          </details>
+
+          <details>
+            <summary>What if I don't like the website after you build it?</summary>
+            <div class="answer">You walk away. We don't charge you. The build is the demo. You're not committing to anything by sending your GBP link — we're committing the work. If you say no, the site is taken down and your GBP is unchanged.</div>
+          </details>
+
+          <details>
+            <summary>How can you build a real site in 45 minutes?</summary>
+            <div class="answer">The site uses a template already designed for your industry (salon, clinic, café, service, studio, coach). Your photos, hours, services, and reviews come straight from your Google Business Profile — we don't write copy or design layouts from scratch. The 45 minutes is configuration + testing, not invention.</div>
+          </details>
+
+          <details>
+            <summary>What if my business doesn't fit one of the templates?</summary>
+            <div class="answer">The template gets you 80% of the way there for most local businesses. For the other 20%, we'll tell you on the call and offer the ₹15,000 Custom Site upgrade instead. You won't be charged the ₹5,000 if the template isn't right for you.</div>
+          </details>
+
+          <details>
+            <summary>Why ₹5,000 and not ₹9,999 or ₹24,999 like the main site shows?</summary>
+            <div class="answer">Those tiers include revisions, custom design, and longer delivery. The ₹5,000 setup is a simpler product — template-based, no revisions, see-before-you-pay. It's a different offer for a different buying pattern. If you need the heavier tier, see the upgrade ladder.</div>
+          </details>
+
+          <details>
+            <summary>Who owns the domain, the email, the Cloudflare account — everything?</summary>
+            <div class="answer">You do. Always. The domain is registered in your name (not Forge's). The Cloudflare account is created with your email and the password is shared with you. The email is set up on your domain. You can take everything with you if you ever stop using Forge.</div>
+          </details>
+
+          <details>
+            <summary>What happens after the 14-day bug support ends?</summary>
+            <div class="answer">Nothing breaks on its own — the template is solid. If you want changes, updates, or new content, you can either (a) do them yourself with the tools we hand over, or (b) subscribe to the ₹1,999/mo Operator plan and we handle it. There's no obligation to stay with us.</div>
+          </details>
+
+          <details>
+            <summary>Is the ₹5,000 really all I pay?</summary>
+            <div class="answer">Yes — one-time, no subscription. Domain costs (₹600-₹900/year for a .com or .in) are paid to the registrar directly, not to Forge. Cloudflare's free tier covers hosting. Email is part of the setup. No hidden monthly fees unless you opt into Operator plan later.</div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section final-cta" id="start">
+      <div class="wrap">
+        <span class="eyebrow">Start now</span>
+        <h2>Live in 45 minutes. <span class="serif">Pay only if you love it.</span></h2>
+        <p>One message on WhatsApp with your business link. We'll reply with the live URL in 30-60 minutes. You decide on the call.</p>
+        <a class="button large whatsapp" href="https://wa.me/919999999999?text=Hi%20Forge%2C%20I%20saw%20your%20%E2%82%B95%2C000%20setup%20offer.%20My%20business%20is%20____.%20Here%27s%20my%20GBP%20link%3A%20" id="finalCta">
+          Message Forge on WhatsApp
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <p style="margin-top: 24px; font-size: 14px;">Or email <a href="mailto:hello@forge.bruuhh.com" style="color: var(--warm); border-bottom: 1px solid currentColor;">hello@forge.bruuhh.com</a> with your GBP link.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© Forge. Forging professional online presence for local businesses.</span>
+      <div class="footer-links">
+        <a href="index.html">Main site</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="mailto:hello@forge.bruuhh.com">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <a class="wa-float" id="waFloat" href="#" aria-label="Chat with Forge on WhatsApp (opens in a new tab)" target="_blank" rel="noopener">
+    <span class="label">Chat on WhatsApp</span>
+  </a>
+
+  <script>
+    // WhatsApp float + hero CTA + final CTA: all open WhatsApp with the pre-filled offer message
+    (() => {
+      const WA_NUMBER = '919999999999';
+      const WA_BASE = 'https://wa.me/' + WA_NUMBER;
+      const MSG = 'Hi Forge, I saw your ₹5,000 setup offer. My business is ____. Here\'s my GBP link: ';
+      const waUrl = WA_BASE + '?text=' + encodeURIComponent(MSG);
+      const ids = ['waFloat', 'heroCta', 'midCta', 'finalCta'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.href = waUrl;
+      });
+    })();
+  </script>
+
+  <!-- Structured data: local service offer -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "serviceType": "Website setup for local businesses",
+    "provider": {
+      "@type": "Organization",
+      "name": "Forge",
+      "url": "https://forge.bruuhh.com"
+    },
+    "areaServed": "IN",
+    "description": "See your business website live in 45 minutes. Pay ₹5,000 only if you love it. Domain, email, Cloudflare account, and Google My Business optimization included.",
+    "offers": {
+      "@type": "Offer",
+      "price": "5000",
+      "priceCurrency": "INR"
+    }
+  }
+  </script>
+</body>
+</html>

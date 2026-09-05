@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Your request is in. Here is what happens next, and what you can do in the meantime.">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#262D0D">
+  <title>Request received - Forge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <noscript><style>[data-reveal],.stagger>*{opacity:1!important;transform:none!important}</style></noscript>
+  <style>
+    :root {
+      --ground: #3A3B1F;
+      --ground-2: #2A2B16;
+      --mark: #D6DDA0;
+      --mark-2: #B7C074;
+      --paper: #F5F3EC;
+      --paper-2: #EDEAE0;
+      --ink: #1B1B12;
+      --line: rgba(27, 27, 18, .10);
+      --line-2: rgba(27, 27, 18, .06);
+      --line-dark: rgba(245, 243, 236, .10);
+      --muted: #6B6A55;
+      --success: #4A7C2A;
+      --max: 900px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.55; letter-spacing: -.005em; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: 0; background: none; }
+    img, svg { display: block; max-width: 100%; }
+    ::selection { background: var(--ground); color: var(--mark); }
+    .wrap { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
+    .section { padding: clamp(60px, 9vw, 120px) 0; }
+    .muted { color: var(--muted); }
+    .eyebrow { display: inline-flex; align-items: center; gap: 10px; color: var(--ground); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; }
+    h1, h2, h3, p { margin: 0; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1; font-weight: 600; }
+    h1 { font-size: clamp(2.6rem, 5.4vw, 4.6rem); letter-spacing: -.04em; }
+    h2 { font-size: clamp(1.9rem, 3.6vw, 2.8rem); }
+    .lede { color: var(--muted); font-size: 18px; line-height: 1.55; max-width: 50ch; }
+    .serif { font-family: "Fraunces", "Times New Roman", serif; font-style: italic; font-weight: 400; letter-spacing: -.02em; }
+    :focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; border-radius: 4px; }
+
+    .nav { position: sticky; top: 0; z-index: 50; height: 68px; background: rgba(245, 243, 236, .85); border-bottom: 1px solid var(--line-2); backdrop-filter: saturate(150%) blur(14px); -webkit-backdrop-filter: saturate(150%) blur(14px); }
+    .nav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
+    .brand-mark { width: 24px; height: 24px; flex-shrink: 0; border-radius: 6px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; color: var(--muted); font-size: 14px; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 16px; background: var(--ground); color: var(--mark); border-radius: 999px; font-size: 13px; font-weight: 600; }
+
+    .button { display: inline-flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 22px; border-radius: 999px; background: var(--ground); color: var(--mark); font-weight: 600; font-size: 15px; transition: transform .25s var(--ease), background .25s ease; }
+    .button:hover { background: var(--ground-2); transform: translateY(-1px); }
+    .button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+    .button.secondary:hover { background: var(--paper-2); }
+    .button.large { min-height: 58px; padding: 0 28px; font-size: 16px; }
+    .button.on-dark { background: var(--mark); color: var(--ground); }
+    .button.on-dark:hover { background: #E2E9B0; }
+    .button.on-dark.secondary { background: transparent; color: var(--mark); border-color: rgba(214, 221, 160, .3); }
+    .button.on-dark.secondary:hover { background: rgba(214, 221, 160, .08); }
+
+    .hero { padding: 96px 0 60px; }
+    .hero-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+    .hero h1 { margin-bottom: 22px; }
+    .hero p { max-width: 52ch; margin: 0 auto; }
+    .success-card { margin: 36px auto 0; max-width: 580px; padding: 24px; background: #fff; border: 1px solid var(--success); border-radius: 18px; display: flex; gap: 16px; align-items: flex-start; text-align: left; }
+    .success-actions { margin: 24px auto 0; max-width: 580px; display: grid; gap: 10px; }
+    .success-actions .button { width: 100%; justify-content: center; }
+    .success-card .check { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--success); color: #fff; flex-shrink: 0; font-weight: 700; }
+    .success-card h3 { font-size: 17px; margin-bottom: 4px; }
+    .success-card p { color: var(--muted); font-size: 14px; }
+
+    .timeline { background: var(--paper-2); }
+    .timeline-head { text-align: center; margin-bottom: 40px; }
+    .timeline-head h2 { margin: 0 auto; max-width: 22ch; }
+    .timeline-head p { max-width: 56ch; margin: 14px auto 0; }
+    .timeline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .t-cell { padding: 24px 18px; border-right: 1px solid var(--line); position: relative; }
+    .t-cell:last-child { border-right: 0; }
+    .t-cell .when { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ground); margin-bottom: 10px; }
+    .t-cell strong { display: block; margin-bottom: 6px; font-size: 16px; }
+    .t-cell span { color: var(--muted); font-size: 14px; }
+
+    .checklist { background: var(--paper); }
+    .checklist-head { text-align: center; margin-bottom: 32px; }
+    .checklist-head h2 { margin: 0 auto; max-width: 22ch; }
+    .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #fff; }
+    .checklist-col { padding: 26px; }
+    .checklist-col:first-child { border-right: 1px solid var(--line); }
+    .checklist-col h3 { font-size: 16px; margin-bottom: 14px; }
+    .checklist-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; font-size: 14px; }
+    .checklist-col li { display: flex; gap: 12px; align-items: start; }
+    .checklist-col.has li::before { content: "✓"; color: var(--success); font-weight: 700; }
+    .checklist-col.need li::before { content: "→"; color: var(--ground); font-weight: 700; }
+    .checklist-col span { color: var(--muted); }
+
+    .refer { background: var(--ground); color: var(--mark); }
+    .refer-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+    .refer h2 { margin-bottom: 14px; }
+    .refer h2 .serif { color: var(--mark); }
+    .refer p { color: rgba(214, 221, 160, .75); max-width: 52ch; margin: 0 auto 22px; font-size: 17px; }
+    .refer-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .refer-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line-dark); margin-top: 48px; text-align: left; }
+    .refer-item { padding: 22px 18px; border-right: 1px solid var(--line-dark); }
+    .refer-item:last-child { border-right: 0; }
+    .refer-item .label { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(214, 221, 160, .55); margin-bottom: 8px; }
+    .refer-item strong { display: block; font-size: 15px; color: var(--mark); margin-bottom: 6px; }
+    .refer-item p { color: rgba(214, 221, 160, .7); font-size: 13px; margin: 0; }
+
+    footer { padding: 24px 0 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; background: var(--paper); }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .footer-links { display: flex; gap: 18px; }
+    .footer-links a:hover { color: var(--ink); }
+
+    [data-reveal] { opacity: 0; transform: translateY(20px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    [data-reveal].visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 980px) {
+      .nav-links { display: none; }
+      .hero { padding: 64px 0 40px; }
+      .timeline-grid { grid-template-columns: 1fr 1fr; }
+      .t-cell { border-right: 0; border-bottom: 1px solid var(--line); }
+      .t-cell:nth-child(2n) { border-right: 0; }
+      .t-cell:last-child, .t-cell:nth-last-child(2) { border-bottom: 0; }
+      .checklist-grid { grid-template-columns: 1fr; }
+      .checklist-col:first-child { border-right: 0; border-bottom: 1px solid var(--line); }
+      .refer-list { grid-template-columns: 1fr; }
+      .refer-item { border-right: 0; border-bottom: 1px solid var(--line-dark); }
+      .refer-item:last-child { border-bottom: 0; }
+    }
+    @media (max-width: 600px) {
+      .wrap { width: min(calc(100% - 28px), var(--max)); }
+      h1 { font-size: clamp(2.4rem, 11vw, 3.4rem); }
+      h2 { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+      [data-reveal] { opacity: 1; transform: none; }
+    }
+  
+    /* ---------- Floating WhatsApp button (desktop only) ---------- */
+    .wa-float {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      padding: 0;
+      background: var(--ground);
+      color: var(--mark);
+      border: 1px solid rgba(214, 221, 160, .25);
+      border-radius: 50%;
+      box-shadow: 0 10px 22px rgba(38, 45, 13, .28), 0 2px 5px rgba(38, 45, 13, .16);
+      transition: transform .25s var(--ease), box-shadow .25s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wa-float svg { width: 22px; height: 22px; flex-shrink: 0; display: block; }
+    .wa-float .label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .wa-float:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(38, 45, 13, .38), 0 3px 8px rgba(38, 45, 13, .22); }
+    .wa-float:active { transform: translateY(0) scale(.96); }
+    .wa-float:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
+    @media (min-width: 960px) { .wa-float { display: inline-flex; } }
+    @media (prefers-reduced-motion: reduce) { .wa-float { transition: none; } }
+    /* ---------- Tooltip bubble (hover only) ---------- */
+    .wa-float .bubble {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 12px);
+      min-width: 180px;
+      max-width: 240px;
+      padding: 10px 14px;
+      background: var(--ground);
+      color: var(--mark);
+      border: 1px solid rgba(214, 221, 160, .25);
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(38, 45, 13, .32);
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: left;
+      letter-spacing: 0;
+      white-space: normal;
+      opacity: 0;
+      transform: translateY(4px) scale(.98);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 41;
+    }
+    .wa-float .bubble-headline {
+      display: block;
+      font-weight: 600;
+      color: var(--mark);
+    }
+    .wa-float .bubble-sub {
+      display: block;
+      margin-top: 4px;
+      color: rgba(214, 221, 160, .75);
+      font-weight: 400;
+      font-size: 12px;
+    }
+    /* Tail */
+    .wa-float .bubble::after {
+      content: "";
+      position: absolute;
+      right: 18px;
+      bottom: -6px;
+      width: 12px;
+      height: 12px;
+      background: var(--ground);
+      border-right: 1px solid rgba(214, 221, 160, .25);
+      border-bottom: 1px solid rgba(214, 221, 160, .25);
+      transform: rotate(45deg);
+    }
+    /* Reveal on hover, keyboard focus, or touch focus-within */
+    .wa-float:hover .bubble,
+    .wa-float:focus-visible .bubble,
+    .wa-float:focus-within .bubble {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .wa-float .bubble { transition: none; transform: none; }
+    }
+
+        .ref-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 24px auto 0;
+          padding: 14px 18px;
+          max-width: 560px;
+          background: rgba(214, 221, 160, .12);
+          border: 1px solid var(--mark);
+          border-radius: 12px;
+        }
+        .ref-card .ref-label {
+          font-size: 11px;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+          color: rgba(214, 221, 160, .7);
+        }
+        .ref-card .ref-value {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--mark);
+          letter-spacing: .04em;
+        }
+        .ref-card .ref-hint {
+          font-size: 12px;
+          color: rgba(214, 221, 160, .65);
+          margin-left: auto;
+        }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html" aria-label="Forge home">
+        <img src="logo.png" alt="Forge" class="brand-mark">
+        <span>Forge</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="index.html">Home</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a>
+        <a href="audit.html">Free audit</a>
+        <a href="operator.html">Operator plan</a>
+      </nav>
+      <a class="nav-cta" href="index.html">Back to home</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner" data-reveal>
+        <div class="eyebrow" style="justify-content:center;">Request received</div>
+        <h1>You are <span class="serif">in.</span></h1>
+        <p>We will follow up on <strong>WhatsApp</strong> first — that is where the conversation happens.</p>
+        <div class="success-card" data-reveal>
+          <span class="check" aria-hidden="true">✓</span>
+          <div>
+            <h3 id="successTitle">Your request is in Forge's inbox.</h3>
+            <p id="successSub">A confirmation has been sent to your email. We will review your details and respond within one business day.</p>
+          </div>
+        </div>
+        <div class="ref-card" id="refCard" data-reveal style="display:none;">
+          <span class="ref-label">Reference</span>
+          <span class="ref-value" id="refLabel"></span>
+          <span class="ref-hint">Use this when messaging us on WhatsApp.</span>
+        </div>
+        <div class="success-actions" data-reveal>
+          <a class="button on-dark" id="whatsappCta" href="#">Open WhatsApp to confirm <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="button on-dark secondary" href="index.html">Back to home</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section timeline">
+      <div class="wrap">
+        <div class="timeline-head" data-reveal>
+          <div class="eyebrow" style="justify-content:center;">What happens next</div>
+          <h2>Four steps, predictable timing.</h2>
+          <p>No surprises. No follow-up sequences. Each step happens at the time you expect, and we tell you when the next one starts.</p>
+        </div>
+        <div class="timeline-grid" data-reveal>
+          <div class="t-cell"><div class="when">Within 24 hours</div><strong>We review</strong><span>Your Google profile, niche, and notes. We either send the private preview or the audit, depending on which one you asked for.</span></div>
+          <div class="t-cell"><div class="when">Within 48 hours</div><strong>You review</strong><span>The preview or audit lands in your inbox. You decide whether to continue. No call required.</span></div>
+          <div class="t-cell"><div class="when">When you say yes</div><strong>You reserve</strong><span>50% deposit reserves your slot. The remaining 50% is due before the domain goes live.</span></div>
+          <div class="t-cell"><div class="when">48 hours after approval</div><strong>We launch</strong><span>Conditional on approval, deposit, and the required domain access. Otherwise your deposit is refunded.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section checklist">
+      <div class="wrap">
+        <div class="checklist-head" data-reveal>
+          <div class="eyebrow" style="justify-content:center;">While you wait</div>
+          <h2>Two lists, one for each side.</h2>
+        </div>
+        <div class="checklist-grid" data-reveal>
+          <div class="checklist-col has">
+            <h3>You do not need to</h3>
+            <ul>
+              <li>Create a Vercel, GitHub, or hosting account <span>(we handle it)</span></li>
+              <li>Write the website copy <span>(we draft from your Google profile)</span></li>
+              <li>Find a designer <span>(we are the designer)</span></li>
+              <li>Manage timelines <span>(we send a preview first)</span></li>
+              <li>Take new photos <span>(we use your approved existing assets)</span></li>
+            </ul>
+          </div>
+          <div class="checklist-col need">
+            <h3>You will need to</h3>
+            <ul>
+              <li>Reply to one short email <span>(with any missing details)</span></li>
+              <li>Approve the preview or audit <span>(one click)</span></li>
+              <li>If proceeding, send the 50% deposit <span>(UPI or bank transfer)</span></li>
+              <li>Provide domain access when asked <span>(we walk you through it)</span></li>
+              <li>One revision request, if needed <span>(included)</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section refer">
+      <div class="wrap refer-inner" data-reveal>
+        <div class="eyebrow on-dark" style="justify-content:center;">The bigger picture</div>
+        <h2>Forge is not just the launch.</h2>
+        <p>The website is the first layer. If the launch goes well, three more layers become available over time. The first one is the most useful to most businesses.</p>
+        <div class="refer-list">
+          <div class="refer-item"><span class="label">Phase 01 · Now</span><strong>Website</strong><p>A credible home for your business online.</p></div>
+          <div class="refer-item"><span class="label">Phase 02 · Next</span><strong>Reviews and SEO</strong><p>Get discovered, build proof, stay present.</p></div>
+          <div class="refer-item"><span class="label">Phase 03 · Soon</span><strong>Bookings and CRM</strong><p>Turn interest into customers, into repeat customers.</p></div>
+        </div>
+        <div class="refer-actions" style="margin-top: 36px;">
+          <a class="button on-dark" href="operator.html">Read the operator plan</a>
+          <a class="button on-dark secondary" href="index.html">Back to home</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© Forge. Thank you for trusting us with this.</span>
+<script>
+    (() => {
+            // ============================================================
+      // WHATSAPP NUMBER — replace with your real number.
+      // Format: country code + digits, no +, no spaces.
+      // Example: '919999999999' for India +91 99999 99999
+      // To update everywhere: search-replace this entire file's
+      // WA_NUMBER value (currently placeholder 919999999999).
+      // ============================================================
+      const WA_NUMBER = '919999999999';
+      const WA_BASE = 'https://wa.me/' + WA_NUMBER;
+
+      // ---------- Read everything we need from the URL ----------
+      const params = new URLSearchParams(window.location.search);
+      const source = (params.get('source') || 'preview').toLowerCase();
+      const reference = (params.get('ref') || '').trim();
+      const name = (params.get('name') || '').trim();
+      const biz = (params.get('biz') || '').trim();
+      const link = (params.get('link') || '').trim();
+      const whatsapp = (params.get('whatsapp') || params.get('wa') || '').trim();
+      const category = (params.get('category') || '').trim();
+      const tier = (params.get('tier') || '').trim();
+
+      // ---------- Visibility helpers ----------
+      const safe = (v) => (v || '').replace(/[<>&]/g, '');
+
+      // ---------- Build the data-aware WhatsApp message ----------
+      function buildWhatsAppMessage() {
+        // Always start with the reference — it's the search key for the operator
+        const lines = [];
+        lines.push('Hi Forge, I just ' + verbFor(source) + '.');
+        lines.push('');
+        lines.push('Reference: ' + (reference || '(none)'));
+        if (name)     lines.push('Name: ' + name);
+        if (biz)      lines.push('Business: ' + biz);
+        if (link)     lines.push('Google: ' + link);
+        if (category) lines.push('Category: ' + category);
+        if (tier)     lines.push('Plan: ' + tier);
+        lines.push('');
+        lines.push('I would prefer the report and the conversation on WhatsApp.');
+        return lines.join('\n');
+      }
+
+      function verbFor(s) {
+        if (s === 'audit')    return 'requested the free 7-point audit';
+        if (s === 'preview')  return 'requested a private preview';
+        if (s === 'waitlist') return 'joined the waitlist';
+        if (s === 'operator') return 'submitted an enquiry about the Operator plan';
+        return 'submitted the contact form';
+      }
+
+      function headlineFor(s) {
+        if (s === 'audit')    return 'Your free 7-point audit is being prepared.';
+        if (s === 'preview')  return 'Your private preview is being forged.';
+        if (s === 'waitlist') return 'You are on the waitlist for next month.';
+        if (s === 'operator') return 'Your Operator plan enquiry is in Forge’s inbox.';
+        return 'Your request is in Forge’s inbox.';
+      }
+
+      function subFor(s, ref) {
+        // Direction 1: outcome + speed. Reference already shown in the
+        // success card below, so the sub-line just needs to motivate the tap.
+        const speed = 'We reply within the hour during business hours.';
+        if (s === 'audit')    return 'Send your 7-point audit on WhatsApp. ' + speed;
+        if (s === 'preview')  return 'Send your private preview on WhatsApp. ' + speed;
+        if (s === 'waitlist') return 'Hold your spot on WhatsApp. ' + speed;
+        if (s === 'operator') return 'Talk through the right plan on WhatsApp. ' + speed;
+        return 'Chat with us on WhatsApp. ' + speed;
+      }
+
+      function ctaLabelFor(s) {
+        // Button copy. Outcome-first, not platform-first. Always short (< 30 chars).
+        if (s === 'audit')    return 'Send my audit on WhatsApp →';
+        if (s === 'preview')  return 'Send my preview on WhatsApp →';
+        if (s === 'waitlist') return 'Reserve my spot on WhatsApp →';
+        if (s === 'operator') return "Let's talk on WhatsApp →";
+        return 'Chat on WhatsApp →';
+      }
+
+      // ---------- Render the success card + WhatsApp CTA ----------
+      const title = document.getElementById('successTitle');
+      const sub = document.getElementById('successSub');
+      const waCta = document.getElementById('whatsappCta');
+      const refCard = document.getElementById('refCard');
+      const refLabel = document.getElementById('refLabel');
+
+      if (title) title.textContent = headlineFor(source);
+      if (sub)   sub.innerHTML = subFor(source, reference);
+      if (refCard && refLabel && reference) {
+        refCard.style.display = 'flex';
+        refLabel.textContent = reference;
+      }
+      if (waCta) {
+        waCta.href = WA_BASE + '?text=' + encodeURIComponent(buildWhatsAppMessage());
+        waCta.textContent = ctaLabelFor(source);
+      }
+
+      // ---------- Floating WhatsApp button (general enquiry) ----------
+      const floatBtn = document.getElementById('waFloat');
+      if (floatBtn) {
+        const url = WA_BASE + '?text=' + encodeURIComponent('Hi Forge, I was just on your site. I have a question.');
+        floatBtn.href = url;
+      }
+
+      // ---------- Scroll reveal ----------
+      const reveal = document.querySelectorAll('[data-reveal]');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce || !('IntersectionObserver' in window)) {
+        reveal.forEach(i => i.classList.add('visible'));
+      } else {
+        const obs = new IntersectionObserver((entries, o) => {
+          entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); o.unobserve(e.target); } });
+        }, { threshold: .12, rootMargin: '0px 0px -40px' });
+        reveal.forEach(i => obs.observe(i));
+      }
+    })();
+  </script>
+
+  <a class="wa-float" id="waFloat" href="#" aria-label="Chat with Forge on WhatsApp (opens in a new tab)" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6.1-.1.1-.3.3-.4.5-.1.2-.3.3-.5.5-.2.2-.3.3-.6.1-.3-.1-1.2-.4-2.2-1.3-1.7-1.5-1.8-3.1-2-3.4-.1-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4-.1-.5-.1-.1-.6-.7-.8-1-.2-.3-.5-.7-.5-1.4 0-.7.5-1.4.7-1.6.2-.2.4-.2.6-.2h.5c.2 0 .4 0 .6.2.2.2.6.7.6 1.7 0 1-.5 2.2-.6 2.4-.1.2-.2.3-.1.6.1.3.6 1 .7 1.1 1.1 1.6 2.2 2 2.5 2.2.3.2.5.2.7 0 .2-.2.8-.9 1-1.1.2-.2.4-.2.7-.1.3.1 1.9.9 2.2 1 .3.1.5.2.6.4.1.1.1.7-.1 1.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 5L2 22l5.2-1.4c1.4.8 3.1 1.2 4.8 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/>
+    </svg>
+    <span class="label">Chat with Forge on WhatsApp</span>
+    <span class="bubble" role="tooltip">
+      <span class="bubble-headline">Hi ð how can I help with your website?</span>
+      <span class="bubble-sub">Quick question? Ask here.</span>
+    </span>
+  </a>
+</body>
+</html>
