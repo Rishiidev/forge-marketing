@@ -607,6 +607,13 @@ all.
    ₹30,000) the one going into the rebuild, or does Forge intend to run
    both as separate acquisition channels on purpose? (§6, §7, §8, §11,
    §12)
+   **Working assumption adopted 2026-09-05** (see
+   `docs/conversion-architecture.md`): the brief that produced the
+   conversion architecture states the primary funnel as
+   `Free Audit → ₹5,000 Website`, with ₹15,000/₹25,000/Maintenance as
+   post-purchase upgrades. Conversion-architecture planning proceeds on
+   that basis. This is a planning convenience, not yet a confirmed
+   business decision — still needs explicit owner sign-off.
 2. **The ₹25,000 figure named in the original brief** doesn't exist in
    the code at any price point — clarify whether it means the ₹24,999
    tier, the ₹30,000 tier, or a new tier to be defined. (§8)

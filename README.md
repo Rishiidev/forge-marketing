@@ -24,6 +24,7 @@ unbuilt. See `docs/decisions.md` ADR-001. The customer application
 
 - [docs/forge-business-rules.md](docs/forge-business-rules.md) — pricing, offers, funnel rules
 - [docs/architecture.md](docs/architecture.md) — target architecture for the rebuild
+- [docs/conversion-architecture.md](docs/conversion-architecture.md) — funnel design, objection handling, CRM lifecycle, analytics taxonomy
 - [docs/decisions.md](docs/decisions.md) — architecture decision log
 
 ## Local development

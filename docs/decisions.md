@@ -205,3 +205,35 @@ not via typecheck/lint/build). Because 21st.dev couldn't be used, there
 is no external reference to compare these components against — if the
 business owner has specific 21st.dev components in mind, that requires
 re-authenticating the `magic` MCP server in a future session.
+
+### ADR-006: Conversion architecture written before the homepage
+
+Date: 2026-09-05
+Status: accepted
+
+Context: The brief specified an exact primary funnel
+(`Visitor → Free Audit → Qualified Lead → Sales Conversation → ₹5,000
+Website`) plus three secondary funnels, ten named objections, a required/
+prohibited persuasion-principle list, a full CRM lead lifecycle (13
+stages), minimum CRM fields, and an analytics event taxonomy — all to be
+returned as a document before any homepage implementation.
+
+Decision: Wrote `docs/conversion-architecture.md` covering all of the
+above. Treated the brief's stated primary funnel as a working-assumption
+resolution of `forge-business-rules.md` Human Decision #1 (which funnel
+is canonical) for planning purposes only, and flagged that assumption
+back on HD#1 itself rather than silently overwriting the TBD. The CRM
+lifecycle and analytics taxonomy are specified as a superset of what
+`lib/crm.ts` (`LeadStage`) and `lib/analytics.ts` (`AnalyticsEvent`)
+currently implement — this pass is design only; extending those types
+and wiring the new events/stages is future implementation work.
+
+Consequences: Every conversion mechanism proposed (capacity strip,
+showcase proof, review/referral loop, upgrade path) is written to
+degrade honestly when its prerequisite is missing — e.g. the capacity
+strip is specified as absent-not-faked when no real cap exists, showcase
+entries are specified as consent-gated rather than backfilled from the
+three unconsented legacy examples. Six open business decisions (HD#2,
+#3, #6, #8, #12, and the standing #13 contact-channel gap) block parts
+of this from being implementation-ready; they're listed at the end of
+the new document rather than guessed at.
