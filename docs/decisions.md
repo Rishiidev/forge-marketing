@@ -1558,3 +1558,153 @@ decision in this project has been logged with its own rationale
 (ADR-001, ADR-018). The stale `docs/session-state.md`/
 `docs/session-handoff.md` gap ADR-020 flagged is addressed by this ADR's
 own session-end update, not deferred further.
+
+### ADR-022: Forge Free Tools engine — reusable architecture, no individual tool built
+
+Date: 2026-09-06
+Status: accepted
+
+Context: With the zero-cost policy in place (ADR-021), the next
+instruction was explicit: build the reusable engine a `/tools` entry
+runs on, so that adding a new deterministic free tool later takes
+minimal code and automatically gets consistent UI, validation, loading/
+progress states, result rendering, findings, errors, analytics, a
+contextual CTA, SEO metadata, accessibility, security, caching hooks,
+related-tools linking, and a path back into the existing audit funnel —
+explicitly **not** building any individual tool, a database, auth, a
+customer dashboard, AI APIs, rank tracking, or scraping in this pass.
+
+Decision:
+1. `lib/tools/types.ts` (existing file from ADR-021, substantially
+   extended) gained the full engine contract on top of the cost-policy
+   shape: `ToolResultCategory` (`verified`/`inferred`/`unavailable`/
+   `not_checked`/`failed` — the honesty contract), `ToolExecutionState`
+   (the six-state machine), `ToolInputFieldDefinition` (drives the
+   generic input form), `ToolCategory`/`ToolAttribution`/
+   `ToolRunContext`/`ToolRunFn`/`ToolCtaDefinition`/`ToolSeoMetadata`/
+   `ToolFaqItem`, and a substantially larger `ToolDefinition` (added
+   `shortDescription`, `category`, `intent`, `inputType`, `inputFields`,
+   `run`, `seo`, `relatedTools`, `primaryCTA`, `secondaryCTA`, `faq`,
+   `methodology` — the original ADR-021 fields, `slug`/`name`/
+   `description`/`status`/`availability`/`costProfile`/`dataSources`/
+   `capabilities`/`securityPolicy`, are unchanged). `TOOLS` is still `[]`
+   — this is a type-contract change only, no data migration needed.
+2. Eight new `lib/tools/` files, each with a single job:
+   `registry.ts` (central lookups — `getAvailableTools()`,
+   `getToolBySlug()`, `getAvailableToolBySlug()`, `getToolsByCategory()`,
+   `getRelatedTools()` — a domain layer atop `lib/constants.ts` `TOOLS`,
+   same relationship `lib/blog.ts`/`lib/showcases.ts` already have to
+   `lib/content.ts`, ADR-002/ADR-008's precedent for this exact kind of
+   addition); `validation.ts` (schema-driven field validation, reusing
+   `lib/validation.ts`'s `isValidEmail`/`normalizeUrl`); `security.ts`
+   (SSRF-safe URL validation + `safeFetch()` — full detail
+   `docs/tool-security.md`); `execution.ts` (the state machine's
+   `nextState()` plus `executeTool()`, which calls a tool's `run()` and
+   normalizes whatever it throws); `results.ts` (the five finding
+   builders enforcing the honesty contract, `buildToolResult()`,
+   `computeOverallStatus()`); `analytics.ts` (one function per tools
+   event, `captureAttribution()`); `cache.ts` (zero-cost, file-backed
+   result cache, following `lib/file-store.ts`'s ADR-013 pattern
+   directly — the same cross-bundle reasoning applies to any tool cache
+   too); `errors.ts` (`toToolError()`/`makeToolError()`).
+3. `lib/analytics.ts` `AnalyticsEvent` gained nine `tool_*` events
+   (`tool_viewed`/`tool_started`/`tool_validation_failed`/
+   `tool_processing_started`/`tool_completed`/`tool_partial`/
+   `tool_failed`/`tool_result_engaged`/`tool_cta_clicked`) — the
+   existing, unwired `tool_used` event (present since the original
+   scaffold) was left as-is rather than reused, since its shape doesn't
+   match the new state-machine-driven taxonomy and nothing currently
+   calls it.
+4. Fourteen new `components/tools/*` components (`ToolPageShell`,
+   `ToolHeader`, `ToolInput`, `ToolProgress`, `ToolResult`,
+   `ToolFinding`, `ToolFindingList`, `ToolScore`, `ToolStatus`,
+   `ToolError`, `ToolEmptyState`, `ToolCTA`, `RelatedTools`,
+   `ToolMethodology`, `ToolFAQ`) built entirely on existing design-system
+   primitives (`Section`/`Card`/`Button`/`Badge`/`Heading`/`Text`/
+   `TextField`/`SelectField`/`Textarea`/`Honeypot`/`FAQ`/`CTA`) — no new
+   primitive, no new color, no new motion. `ToolPageShell` is the one
+   orchestrator a tool page mounts; every other component is composed by
+   it or by another engine component, never assembled ad hoc per tool.
+5. `components/tools/ToolCard.tsx` (existing, ADR-021) updated to the
+   richer `ToolDefinition` shape (category eyebrow, `shortDescription`)
+   and to distinguish `future-paid` from `planned`/`unavailable` in its
+   disabled-card label, per ADR-021 §I's existing requirement.
+   `components/tools/ToolGrid.tsx` now reads through `registry.ts`
+   `getAvailableTools()` instead of importing `TOOLS` directly, and uses
+   the new `ToolEmptyState` instead of an inline empty-state string.
+6. `app/tools/[slug]/page.tsx` rewritten: resolves via
+   `getAvailableToolBySlug()`, renders breadcrumbs +
+   `BreadcrumbList`/`WebApplication` JSON-LD (same pattern
+   `app/blog/[slug]/page.tsx` already established for `BlogPosting`),
+   and mounts `ToolPageShell` — replacing the placeholder
+   name/description-only page from ADR-021. `app/sitemap.ts`'s tool
+   routes now read through `registry.ts` too, so "what counts as
+   available" is defined in exactly one place instead of being
+   re-filtered at each call site.
+7. `lib/tools/cost-policy.ts` `validateToolDefinition()` extended to
+   check every new required field (`shortDescription`/`category`/
+   `intent`/`inputType`/`run`/`inputFields`/`seo`/`primaryCTA`/
+   `relatedTools`) — a tool missing any of them now fails `npm run test`,
+   not just a code review. `app/design-system/page.tsx`'s `ToolCard`
+   demo object and the existing cost-policy test fixture were both
+   updated to the fully-specified shape this requires.
+8. Four new test files, 47 new tests (60 total, up from 13):
+   `lib/tools/__tests__/security.test.ts` (29 tests — every explicitly
+   required SSRF rejection: localhost, `127.0.0.0/8`, private IPv4
+   ranges, IPv6 loopback/private/link-local, the cloud metadata
+   address, internal hostnames, unsupported protocols, malformed and
+   excessively long URLs, plus confirming real public IPv4/IPv6
+   addresses are allowed — scoped to inputs `validateUrlForFetch()` can
+   judge without a live network call, per the file's own doc comment);
+   `lib/tools/__tests__/results.test.ts` (12 tests — the honesty
+   contract: each finding builder produces its own distinct
+   `resultCategory`, `computeOverallStatus()`'s partial-vs-success
+   logic); `lib/tools/__tests__/registry.test.ts` (6 tests, against both
+   the real empty `TOOLS` array and a synthetic fixture, proving
+   `getRelatedTools()` never throws or resolves a slug that doesn't
+   exist). `vitest.config.ts` gained two test-only aliases (`@/*`,
+   matching `tsconfig.json`; `server-only` → an empty stub,
+   `lib/tools/__tests__/server-only-stub.ts`) — required because
+   Vitest's plain-Node runner never sets the "react-server" webpack
+   condition the real `server-only` package checks for, which would
+   otherwise make any server-only module (`lib/tools/security.ts`,
+   `lib/tools/cache.ts`, and every existing server-only file) untestable
+   at all. Production and `next build` are unaffected — they use the
+   real `tsconfig.json` `paths` and the real `server-only` package,
+   unchanged; a genuine Client-Component import of a server-only module
+   still fails the real build exactly as before.
+9. `docs/tool-architecture.md` and `docs/tool-security.md` written as
+   the authoritative references for this engine — this ADR summarizes
+   the decision; those two documents are where the full contract lives.
+
+A real bug found and fixed during this pass, not deferred: the initial
+`isDisallowedIPv6()` implementation matched an IPv4-mapped address
+(`::ffff:a.b.c.d`) against a dotted-quad regex — but the WHATWG `URL`
+parser (and `dns.lookup()`'s results) normalize that form into pure hex
+groups (`::ffff:127.0.0.1` becomes `::ffff:7f00:1`) before this code
+ever sees it, so the regex silently never matched. Caught by
+`lib/tools/__tests__/security.test.ts`'s own test for this exact case
+before this ADR was written — fixed by expanding the (possibly
+`::`-compressed) address into its 8 hextets and unwrapping the embedded
+IPv4 from the last two, rather than string-matching a form the address
+is never actually in by the time this code runs. A related bug in the
+same pass: `net.isIP()` doesn't recognize a bracketed IPv6 literal
+(`[::1]`, which is what `URL.hostname` actually returns for an IPv6
+host) — fixed by stripping brackets before the IP-literal check and
+moving that check *before* the domain-name heuristics (single-label,
+TLD-suffix), which had been incorrectly catching every bracketed IPv6
+address (including ones that should be allowed) as a "single-label
+hostname."
+
+Consequences: `npm run typecheck`/`lint`/`test`/`build` all pass (22/22
+static pages, unchanged from ADR-021 — `TOOLS` is still `[]`, so
+`/tools/[slug]` has zero pre-rendered instances; 60/60 tests). Verified
+live in a browser (`npm run dev`, not just the build): `/tools` renders
+its honest empty state with no console errors; `/design-system`'s
+`ToolCard` demo renders correctly with the new category eyebrow and
+`Planned` badge; `/tools/anything` correctly 404s (no tool exists yet to
+resolve); the homepage is unaffected. **Deliberately not built, per
+explicit instruction:** any individual tool, a database (none exists in
+this project — `docs/architecture.md` "Why no CMS" — and this pass
+doesn't add one), authentication, a customer dashboard, an AI API, rank
+tracking, or scraping of any kind.

@@ -93,7 +93,34 @@ export function validateToolDefinition(tool: ToolDefinition): string[] {
 
   if (!tool.slug) issues.push(`${ref}: missing slug`)
   if (!tool.name) issues.push(`${ref}: missing name`)
+  if (!tool.shortDescription) issues.push(`${ref}: missing shortDescription`)
   if (!tool.description) issues.push(`${ref}: missing description`)
+  if (!tool.category) issues.push(`${ref}: missing category`)
+  if (!tool.intent) issues.push(`${ref}: missing intent`)
+  if (!tool.inputType) issues.push(`${ref}: missing inputType`)
+  if (typeof tool.run !== 'function') issues.push(`${ref}: missing run function`)
+
+  if (!tool.inputFields || tool.inputFields.length === 0) {
+    issues.push(`${ref}: no inputFields declared`)
+  } else {
+    for (const field of tool.inputFields) {
+      if (field.type === 'select' && (!field.options || field.options.length === 0)) {
+        issues.push(`${ref}: inputField "${field.id}" is type 'select' but declares no options`)
+      }
+    }
+  }
+
+  if (!tool.seo || !tool.seo.title || !tool.seo.description) {
+    issues.push(`${ref}: missing or incomplete seo metadata (title/description)`)
+  }
+
+  if (!tool.primaryCTA || !tool.primaryCTA.href || !tool.primaryCTA.label || !tool.primaryCTA.headline) {
+    issues.push(`${ref}: missing or incomplete primaryCTA (needs headline/label/href)`)
+  }
+
+  if (!Array.isArray(tool.relatedTools)) {
+    issues.push(`${ref}: relatedTools must be declared (an empty array is fine — omitting the field is not)`)
+  }
 
   if (!tool.securityPolicy) {
     issues.push(`${ref}: missing securityPolicy`)

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
-import { SITE, WEBSITE_TIERS, TOOLS } from '@/lib/constants'
+import { SITE, WEBSITE_TIERS } from '@/lib/constants'
+import { getAvailableTools } from '@/lib/tools/registry'
 import { getAllShowcases } from '@/lib/showcases'
 import { getAllPosts } from '@/lib/blog'
 
@@ -47,8 +48,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Only an 'available' tool gets a sitemap entry — a planned/unavailable/
   // future-paid tool has no real page for a crawler to index (see
-  // app/tools/[slug]/page.tsx, docs/tools-cost-policy.md §I).
-  const toolRoutes: MetadataRoute.Sitemap = TOOLS.filter((tool) => tool.status === 'available').map((tool) => ({
+  // app/tools/[slug]/page.tsx, docs/tools-cost-policy.md §I). Reads
+  // through lib/tools/registry.ts so "what counts as available" is
+  // defined in exactly one place.
+  const toolRoutes: MetadataRoute.Sitemap = getAvailableTools().map((tool) => ({
     url: url(`/tools/${tool.slug}`),
     changeFrequency: 'monthly',
     priority: 0.6,

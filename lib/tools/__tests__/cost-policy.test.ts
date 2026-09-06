@@ -62,7 +62,20 @@ describe('validateToolDefinition() itself', () => {
   const validTool: ToolDefinition = {
     slug: 'example',
     name: 'Example Tool',
-    description: 'A deterministic example.',
+    shortDescription: 'A deterministic example.',
+    description: 'A deterministic example, for the validator test fixture only.',
+    category: 'business-basics',
+    intent: 'See a worked example of a valid tool declaration.',
+    inputType: 'form',
+    inputFields: [{ id: 'businessName', label: 'Business name', type: 'text', required: true, maxLength: 100 }],
+    run: () => ({
+      toolSlug: 'example',
+      generatedAt: new Date().toISOString(),
+      cached: false,
+      summary: 'Example result.',
+      findings: [],
+      overallStatus: 'success',
+    }),
     status: 'available',
     availability: 'free',
     costProfile: { classification: 'FREE_INTERNAL', monthlyCostEstimateUsd: 0, notes: 'Pure TS logic, no network call.' },
@@ -83,6 +96,9 @@ describe('validateToolDefinition() itself', () => {
       inputValidation: 'All fields validated client- and server-side before use.',
       dataRetention: 'none — computed and returned, nothing persisted',
     },
+    seo: { title: 'Example Tool', description: 'A deterministic example.' },
+    relatedTools: [],
+    primaryCTA: { headline: 'Want us to check the rest?', description: 'See what to fix first.', label: 'Get your free audit', href: '/audit', location: 'example-tool' },
   }
 
   it('accepts a fully-specified, zero-cost tool', () => {

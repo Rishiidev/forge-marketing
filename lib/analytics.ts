@@ -57,8 +57,27 @@ export type AnalyticsEvent =
   | { name: 'pricing_viewed'; props: { tier?: string } }
   | { name: 'showcase_viewed'; props: { slug: string } }
   | { name: 'maintenance_plan_viewed'; props: Record<string, never> }
-  | { name: 'tool_used'; props: { slug: string } }
   | { name: 'blog_viewed'; props: { slug: string } }
+  /**
+   * The Forge Free Tools engine's own taxonomy (lib/tools/analytics.ts,
+   * docs/tool-architecture.md). `tool_used` above predates this and is
+   * kept as-is (no current call site) — these are what a tool built on
+   * the engine actually fires, one per state-machine transition
+   * (lib/tools/types.ts ToolExecutionState). Every event carries `slug`;
+   * attribution (utm_ fields, landing page, referrer) is preserved by
+   * lib/tools/analytics.ts's helpers, not repeated in every prop type
+   * here, matching how audit_* events above don't repeat it either.
+   */
+  | { name: 'tool_used'; props: { slug: string } }
+  | { name: 'tool_viewed'; props: { slug: string } }
+  | { name: 'tool_started'; props: { slug: string } }
+  | { name: 'tool_validation_failed'; props: { slug: string; errorCount: number } }
+  | { name: 'tool_processing_started'; props: { slug: string } }
+  | { name: 'tool_completed'; props: { slug: string; findingCount: number; cached: boolean } }
+  | { name: 'tool_partial'; props: { slug: string; failedCount: number } }
+  | { name: 'tool_failed'; props: { slug: string; errorCode: string } }
+  | { name: 'tool_result_engaged'; props: { slug: string; findingId: string } }
+  | { name: 'tool_cta_clicked'; props: { slug: string; location: string; destination: string } }
 
 export interface AnalyticsProvider {
   name: string

@@ -605,7 +605,20 @@ export default function DesignSystemPage() {
                 tool={{
                   slug: 'example',
                   name: 'Example tool',
+                  shortDescription: 'Example description of a planned tool.',
                   description: 'Example description of a planned tool.',
+                  category: 'business-basics',
+                  intent: 'Demonstrate the ToolCard component with a realistic, fully-declared tool.',
+                  inputType: 'form',
+                  inputFields: [{ id: 'businessName', label: 'Business name', type: 'text', required: true, maxLength: 100 }],
+                  run: () => ({
+                    toolSlug: 'example',
+                    generatedAt: new Date().toISOString(),
+                    cached: false,
+                    summary: 'Example result.',
+                    findings: [],
+                    overallStatus: 'success',
+                  }),
                   status: 'planned',
                   availability: 'free',
                   costProfile: { classification: 'FREE_INTERNAL', monthlyCostEstimateUsd: 0, notes: 'Example only — see docs/tools-cost-policy.md.' },
@@ -620,6 +633,9 @@ export default function DesignSystemPage() {
                     inputValidation: 'All fields validated before use.',
                     dataRetention: 'none',
                   },
+                  seo: { title: 'Example tool', description: 'Example description of a planned tool.' },
+                  relatedTools: [],
+                  primaryCTA: { headline: 'Want us to check the rest?', description: 'See what to fix first.', label: 'Get your free audit', href: '/audit', location: 'design-system-example' },
                 }}
               />
             </div>

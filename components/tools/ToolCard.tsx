@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { ToolDefinition } from '@/lib/tools/types'
+import { TOOL_CATEGORY_LABEL } from '@/lib/tools/types'
 import { Badge } from '@/components/ui/Badge'
 import { Heading } from '@/components/ui/Heading'
 import { Text } from '@/components/ui/Text'
@@ -21,25 +22,29 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
     const status = tool.status
     return (
       <div className="rounded-2xl border border-border bg-white p-6 opacity-70">
+        <Text as="span" size="caption" className="mb-2 block">
+          {TOOL_CATEGORY_LABEL[tool.category]}
+        </Text>
         <div className="mb-2 flex items-center gap-2">
           <Heading as="h3" size="heading-sm">
             {tool.name}
           </Heading>
           <Badge tone="warning">{UNAVAILABLE_BADGE[status]}</Badge>
         </div>
-        <Text size="body-sm">{tool.description}</Text>
+        <Text size="body-sm">{tool.shortDescription}</Text>
       </div>
     )
   }
 
   const card = (
     <>
-      <div className="mb-2 flex items-center gap-2">
-        <Heading as="h3" size="heading-sm">
-          {tool.name}
-        </Heading>
-      </div>
-      <Text size="body-sm">{tool.description}</Text>
+      <Text as="span" size="caption" className="mb-2 block text-ground">
+        {TOOL_CATEGORY_LABEL[tool.category]}
+      </Text>
+      <Heading as="h3" size="heading-sm" className="mb-2">
+        {tool.name}
+      </Heading>
+      <Text size="body-sm">{tool.shortDescription}</Text>
     </>
   )
 
