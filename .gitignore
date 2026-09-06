@@ -19,6 +19,11 @@ build/
 .turbo/
 *.tsbuildinfo
 
+# Local file-backed dev store (lib/file-store.ts) — leads/referrals/reviews
+# written by the console CRM provider when no real CRM is configured.
+# Contains lead PII in local dev; never commit.
+.data/
+
 # Env
 .env
 .env.local

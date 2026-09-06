@@ -5,12 +5,12 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Heading } from '@/components/ui/Heading'
 import { Text } from '@/components/ui/Text'
-import { MAINTENANCE_PLANS, MAINTENANCE_CLIENT_CAP, AUDIT_HREF } from '@/lib/constants'
+import { MAINTENANCE_PLANS, MAINTENANCE_CLIENT_CAP, MAINTENANCE_EXCLUSIONS, AUDIT_HREF } from '@/lib/constants'
 import { Button } from '@/components/ui/Button'
 
 export const metadata = buildMetadata({
   title: 'Maintenance',
-  description: 'Ongoing management of your website after launch — hosting, updates, and monitoring.',
+  description: 'Ongoing technical care and improvement for your website — not just hosting. Monthly plans, cancel any time.',
   path: '/maintenance',
 })
 
@@ -19,8 +19,8 @@ export default function MaintenancePage() {
     <>
       <PageHero
         eyebrow="Maintenance"
-        title="For businesses that have outgrown a one-time website."
-        description={`Capped at ${MAINTENANCE_CLIENT_CAP} active clients. Cancel any month. This pricing structure (docs/forge-business-rules.md §9) is the more fully documented of two conflicting numbers found in the source codebase — see Human Decision #3 before treating it as final.`}
+        title="A website is not a one-time job. This is Forge staying on it."
+        description={`Hosting, security, and backups are the floor, not the offer — every plan also includes Forge actively reviewing and improving the site on a fixed rhythm. Capped at ${MAINTENANCE_CLIENT_CAP} active clients so that stays true. Cancel any month; this pricing structure (docs/forge-business-rules.md §9) is the more fully documented of two conflicting numbers found in the source codebase — see Human Decision #3 before treating it as final.`}
       />
       <Section spacing="tight" className="pt-0">
         <div className="grid gap-5 md:grid-cols-3">
@@ -59,6 +59,27 @@ export default function MaintenancePage() {
             </Card>
           ))}
         </div>
+      </Section>
+
+      <Section spacing="tight" className="pt-0">
+        <Card className="max-w-3xl">
+          <Text as="h2" size="caption" className="mb-3">
+            Not included on any plan
+          </Text>
+          <ul className="grid gap-2 text-body-sm text-ink-3">
+            {MAINTENANCE_EXCLUSIONS.map((item) => (
+              <li key={item} className="flex gap-2">
+                <span aria-hidden className="text-ink-3">
+                  ✕
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <Text size="body-sm" className="mt-4">
+            Anything on this list is scoped and quoted as a separate project, not folded into a monthly plan.
+          </Text>
+        </Card>
       </Section>
     </>
   )

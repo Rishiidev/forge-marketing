@@ -39,31 +39,58 @@ export interface WebsiteTier {
   slug: WebsiteTierSlug
   /** Short product-line name (Launch / Growth / Pro) — the primary label on the pricing ladder. */
   name: string
+  /** One line: who should pick this tier. Used on the comparison table and tier page. */
+  bestFor: string
   /** Price in INR, or null when the price itself is unconfirmed. */
   price: number | null
   priceLabel: string
   tagline: string
+  /** Fuller description of who this is (and isn't) for — rendered on the tier's own page. */
+  whoItsFor: string
   deliveryTime: string
   revisionPolicy: string
+  ownership: string
+  support: string
   included: string[]
   excluded: string[]
-  /** 'confirmed' = documented in the legacy codebase as shipped. 'tbd' = gap or conflict; see sourceNote. */
+  /** Ordered steps from first contact to launch. */
+  process: string[]
+  /** 'confirmed' = documented in the legacy codebase or set directly by the business owner. 'tbd' = gap or conflict; see sourceNote. */
   status: 'confirmed' | 'tbd'
   sourceNote: string
 }
 
+/**
+ * Commercial ladder set directly by the business owner (session
+ * 2026-09-06) — see docs/decisions.md ADR-011. This supersedes the
+ * conflicting legacy price points (₹9,999/₹24,999 on index.html,
+ * ₹30,000 on 5000-setup.html) and resolves forge-business-rules.md
+ * Human Decisions #1 (canonical funnel) and #2 (the ₹25,000 figure) —
+ * both marked resolved there, with this note as the citation. The three
+ * tiers are scoped to be genuinely different levels of build complexity
+ * and business value (build approach, revision structure, delivery time,
+ * support window, whether a conversion engine is included) — not the
+ * same product with items added to justify a higher number.
+ */
 export const WEBSITE_TIERS: WebsiteTier[] = [
   {
     slug: '5000',
     name: 'Launch',
+    bestFor: "You don't have a website yet and want a real, working one live today.",
     price: 5000,
     priceLabel: '₹5,000',
     tagline:
-      'A complete, professional website — live in about 45 minutes, built from your Google Business Profile. Intentionally simple: you see it live and approve it before paying anything, so there is nothing to revise.',
-    deliveryTime: '~45 minutes',
-    revisionPolicy: 'None needed — you see the finished site before you pay, not after.',
+      'A complete, professional website built from your Google Business Profile — live the same day. You see it live and approve it before paying anything, so there is nothing to revise before launch.',
+    whoItsFor:
+      "For businesses with no website at all, who need one to exist — professional, mobile-first, easy to find — without a design project. It is not for a business that needs a specific look, several distinct pages, or the ability to change the copy later; that is Growth, below.",
+    deliveryTime: 'Live the same day — typically under 45 minutes to your first preview.',
+    revisionPolicy:
+      'None before launch — you review the finished, live site and only pay if you want it. Bug fixes are covered for 14 days after that; changes to layout or copy are a separate Growth-tier upgrade, not a revision on this plan.',
+    ownership:
+      'The domain is registered in your name from the start. Your Cloudflare login is created and handed to you. Once paid, the site, domain, and email are entirely yours — nothing is held back if you ever leave Forge.',
+    support: '14 days of bug support after launch. No ongoing updates are included — see Maintenance for that.',
     included: [
-      'Real website built from your Google Business Profile',
+      'Real website built directly from your Google Business Profile',
       'Mobile-first, Google-Maps-ready layout',
       'WhatsApp and Call buttons on every page',
       'Custom domain registered in your name',
@@ -74,47 +101,103 @@ export const WEBSITE_TIERS: WebsiteTier[] = [
       '14-day bug support after launch',
     ],
     excluded: [
-      'Custom design from scratch',
-      'Custom copywriting beyond your Google Business Profile',
-      'Revisions to template layout or copy',
-      'Logo design',
+      'Custom design — every Launch site follows the same clean, proven layout',
+      'Custom copywriting beyond what is already on your Google Business Profile',
+      'Revisions to layout or copy',
+      'Logo design or brand identity work',
       'Booking system, payment gateway, or CRM',
+      'Any promise about rankings, leads, or revenue',
+    ],
+    process: [
+      'Send your Google Business Profile link (about 2 minutes).',
+      'Forge builds your site directly from it (about 30–45 minutes).',
+      'You review the live site — nothing is charged yet.',
+      'Approve and pay ₹5,000; domain, email, and logins are handed over the same day.',
     ],
     status: 'confirmed',
-    sourceNote: 'legacy/5000-setup.html — docs/forge-business-rules.md §6',
+    sourceNote:
+      'Scope carried forward from legacy/5000-setup.html (docs/forge-business-rules.md §6); commercial framing set by the business owner, docs/decisions.md ADR-011.',
   },
   {
     slug: '15000',
     name: 'Growth',
+    bestFor: 'You already have some traction and need the site to look and read like your business, not a fast placeholder.',
     price: 15000,
     priceLabel: '₹15,000',
-    tagline: 'Everything in the ₹5,000 tier, plus a custom design built specifically for your business.',
-    deliveryTime: 'TBD — not stated in the source codebase',
-    revisionPolicy: 'TBD — not stated in the source codebase',
+    tagline:
+      'A custom-designed website, written for your business specifically — with one structured round to get it right before it launches.',
+    whoItsFor:
+      "For businesses past the 'just need something live' stage — the site should look distinctly like theirs, use their own words, and hold up as their main online presence. Not for a business that needs multiple service pages, a booking flow, or a built-in conversion engine; that is Pro.",
+    deliveryTime: '2–4 days from kickoff to live, depending on the revision round.',
+    revisionPolicy:
+      'One structured revision round after the first preview — changes to the pages already agreed on, not a new direction or new pages. Anything beyond that is scoped and quoted separately, same as every tier.',
+    ownership:
+      'Same ownership guarantee as Launch: domain in your name, full files and logins handed over once the final payment clears.',
+    support: '30 days of bug support after launch.',
     included: [
-      'Everything in the ₹5,000 Website',
-      'Custom design from scratch',
-      'Custom copywriting',
-      'Your logo',
-      'Custom palette and font pair',
+      'Everything in Launch — domain, email, GBP linking, live preview before payment',
+      'Custom design built around your business, not a shared layout',
+      'Up to 3 pages, split by purpose (e.g. home, services, contact) instead of one long page',
+      'Copy written for your business, not lifted from your Google Business Profile',
+      'Your logo placed and sized correctly across the site',
+      'One structured revision round after preview',
+      '30-day bug support after launch',
     ],
-    excluded: [],
+    excluded: [
+      'Full brand identity work — logo creation from scratch, brand guidelines',
+      'Unlimited or open-ended revisions',
+      'Booking system, payment gateway, or CRM',
+      'Ongoing updates after launch — see Maintenance',
+    ],
+    process: [
+      'Short kickoff call or WhatsApp brief on your business and what the site should say (about 15 minutes).',
+      'Forge designs and writes the site around that brief (2–3 days).',
+      'You review the live preview and use your one revision round.',
+      'Final review, domain and email handover, launch.',
+    ],
     status: 'confirmed',
-    sourceNote: 'legacy/5000-setup.html upsell ladder, Tier 2 "Custom Site" — docs/forge-business-rules.md §7',
+    sourceNote:
+      'Scope and process defined directly by the business owner, session 2026-09-06 — see docs/decisions.md ADR-011. The prior legacy source (5000-setup.html Tier 2, "Custom Site") stated only a shorter feature list with no delivery time or revision policy; this fills that gap by explicit decision rather than leaving it TBD.',
   },
   {
     slug: '25000',
     name: 'Pro',
-    price: null,
-    priceLabel: '₹25,000 — pending confirmation',
+    bestFor: 'You have real volume — several services, a booking flow, or a story that needs more than a few pages.',
+    price: 25000,
+    priceLabel: '₹25,000',
     tagline:
-      'PLACEHOLDER. No ₹25,000 product exists in the source codebase. The two nearest real tiers are ₹24,999 ("Made-For-You Website") and ₹30,000 ("Custom + Active"). Do not present this tier as final until Human Decision #2 is resolved.',
-    deliveryTime: 'TBD',
-    revisionPolicy: 'TBD',
-    included: [],
-    excluded: [],
-    status: 'tbd',
-    sourceNote: 'No direct source. See docs/forge-business-rules.md §8 and "HUMAN DECISIONS REQUIRED" #2.',
+      "Forge's premium build: fully custom design and copy, more pages, and a conversion engine built in — for a business that needs the site to actively help convert visitors, not just represent it.",
+    whoItsFor:
+      'For businesses with enough volume or complexity that a generic contact form is not enough — several services to explain, a booking flow to run, or a story that takes more than three pages to tell. Not for a business just getting a first website live; that is Launch.',
+    deliveryTime: '5–7 days from kickoff to live.',
+    revisionPolicy:
+      'Two structured revision rounds, defined the same way as Growth — changes to the agreed pages and scope, not a new direction.',
+    ownership: 'Same ownership guarantee as every tier: domain in your name, full files and logins handed over on final payment.',
+    support:
+      '60 days of bug support after launch, plus your first month of Active maintenance included at no extra cost, so nothing is unattended in the weeks right after launch.',
+    included: [
+      'Everything in Growth — custom design, custom copy, your logo, one revision round becomes two',
+      'Up to 8 pages, scoped to your business',
+      'One conversion engine of your choice — a service picker, a booking-request form, or a quote wizard — wired to WhatsApp or email, not a generic contact form',
+      'Two structured revision rounds',
+      'Priority delivery slot',
+      '60-day bug support after launch',
+      'First month of Active maintenance included',
+    ],
+    excluded: [
+      'A full multi-year brand system or brand strategy engagement',
+      'E-commerce or online payment processing',
+      'Anything requiring a dedicated backend or database — a future Bookings/CRM layer, not part of this product',
+    ],
+    process: [
+      'Kickoff call to map pages, content, and which conversion engine fits your business (about 30 minutes).',
+      'Design and build (4–5 days).',
+      'Preview, then two structured revision rounds.',
+      'Launch, with your first month of Active maintenance already running.',
+    ],
+    status: 'confirmed',
+    sourceNote:
+      'Set directly by the business owner, session 2026-09-06 — resolves forge-business-rules.md Human Decision #2 (no ₹25,000 product previously existed at any price point; the nearest legacy figures were ₹24,999 and ₹30,000). See docs/decisions.md ADR-011.',
   },
 ]
 
@@ -139,15 +222,18 @@ export interface MaintenancePlan {
  * The three-tier structure from legacy/operator.html — the more fully
  * specified of the two conflicting maintenance-pricing structures found
  * in the legacy codebase (the other is a flat ₹1,999/mo mention in
- * legacy/5000-setup.html). See docs/forge-business-rules.md §9 and
- * Human Decision #3 — this has not been confirmed as final.
+ * legacy/5000-setup.html). Prices and tier count unchanged — see
+ * docs/forge-business-rules.md §9 and Human Decision #3, still open.
+ * Taglines reframed (session 2026-09-06, docs/decisions.md ADR-011) to
+ * read as ongoing technical care and improvement, not just hosting —
+ * a positioning change only, not a scope or price change.
  */
 export const MAINTENANCE_PLANS: MaintenancePlan[] = [
   {
     id: 'steady',
     name: 'Steady',
     priceLabel: '₹1,499 / month',
-    tagline: 'For businesses with a stable offer and a website that does not change often.',
+    tagline: 'Keeps a site that is already working online, secure, and quietly up to date — nothing breaks, nothing goes stale.',
     included: [
       'Hosting, SSL, backups, uptime monitoring',
       'One small content update per month',
@@ -159,7 +245,7 @@ export const MAINTENANCE_PLANS: MaintenancePlan[] = [
     id: 'active',
     name: 'Active',
     priceLabel: '₹3,999 / month',
-    tagline: 'For businesses that change services, photos, prices, or hours every month or two.',
+    tagline: 'Forge actively reviews and improves the site every quarter, not just keeps it running — for businesses whose offer changes month to month.',
     included: [
       'Everything in Steady',
       'Up to three content or photo updates per month',
@@ -173,7 +259,7 @@ export const MAINTENANCE_PLANS: MaintenancePlan[] = [
     id: 'forged',
     name: 'Forged',
     priceLabel: '₹7,999 / month',
-    tagline: 'For businesses building a serious online presence and want the next layers.',
+    tagline: 'A direct line to Forge and first access to every new capability — for a business treating its website as a growing asset, not a fixed cost.',
     included: [
       'Everything in Active',
       'Monthly content and photo updates',
@@ -185,6 +271,20 @@ export const MAINTENANCE_PLANS: MaintenancePlan[] = [
 ]
 
 export const MAINTENANCE_CLIENT_CAP = 8
+
+/**
+ * Excluded from every Maintenance tier, regardless of price — legacy/
+ * operator.html "Not included" section, docs/forge-business-rules.md §9.
+ * Shown on /maintenance so scope stays transparent rather than implied.
+ */
+export const MAINTENANCE_EXCLUSIONS = [
+  'New pages, sections, or features beyond what already launched',
+  'Logo design or brand identity work',
+  'Ad campaigns or social media management',
+  'Copywriting beyond light edits to existing text',
+  'Photography or video production',
+  'Major replatforming or a full site rebuild',
+] as const
 
 // ---------------------------------------------------------------------
 // Capacity strip — the "single source of truth" cap mechanism, carried
@@ -214,6 +314,31 @@ export const CAPACITY: CapacityConfig = {
   remaining: 6,
   nextReset: 'TBD — set the real reset date before launch',
   waitlistSize: 12,
+  status: 'tbd',
+}
+
+// ---------------------------------------------------------------------
+// Referral reward — lib/referrals.ts reads this to decide what, if
+// anything, to promise a referrer. No monetary or in-kind reward exists
+// anywhere in the business rules (forge-business-rules.md HD#6: "Whether
+// to build a referral program, and its mechanics — nothing currently
+// exists to base a decision on"). rewardType/rewardValue stay null,
+// status stays 'tbd', until the business owner actually decides one —
+// same pattern as CAPACITY and the ₹25,000 tier above. The referral
+// system itself (lib/referrals.ts) works fully without this being set;
+// it only gates whether a reward is ever described as "pending" instead
+// of "not applicable."
+// ---------------------------------------------------------------------
+
+export interface ReferralRewardConfig {
+  rewardType: 'credit' | 'discount' | 'cash' | null
+  rewardValue: number | null
+  status: 'confirmed' | 'tbd'
+}
+
+export const REFERRAL_REWARD_CONFIG: ReferralRewardConfig = {
+  rewardType: null,
+  rewardValue: null,
   status: 'tbd',
 }
 

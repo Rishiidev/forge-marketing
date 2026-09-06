@@ -160,9 +160,9 @@ primary conversion surface and the thing this document exists to inform
 | **Goal** | Complete the lowest-commitment step in the funnel. |
 | **Customer question** | "What exactly am I giving up by trying this?" |
 | **Psychological barrier** | Form fatigue; fear of a sales trap disguised as a "free" offer. |
-| **Evidence needed** | The explicit no-upsell-inside-the-audit promise, the exact 7 points being reviewed, and the exact field list (already minimal — name, email, business, category, GBP link, optional WhatsApp). |
-| **CTA** | Primary: submit the audit form. |
-| **Next step** | `thanks`-style confirmation → CRM stage `Audit Lead` (§5). |
+| **Evidence needed** | The explicit no-upsell-inside-the-audit promise and the exact 9 categories being reviewed. As of the rebuild in `docs/decisions.md` ADR-009, giving up nothing is literally true: the tool is self-serve and instant, and no contact info is required to see the full result — CRM capture (name/email/WhatsApp, all optional) only happens if the visitor chooses to at the very end. |
+| **CTA** | Primary: "Start my free audit," then "See my results" after answering 9 questions. |
+| **Next step** | Result screen (recommendation + CTA) shown immediately, in-page — no wait, no separate confirmation page. CRM stage `Audit Lead` (§5) is only reached if the optional follow-up form is submitted. |
 
 ### `/websites` (tier comparison)
 
@@ -259,6 +259,21 @@ primary conversion surface and the thing this document exists to inform
 
 ## 5. CRM lead lifecycle
 
+> **Superseded by [`docs/crm.md`](crm.md).** The 13-stage sketch below
+> was written before `lib/crm.ts` had a real adapter or `LeadStage` type
+> to extend — it was deliberately provisional ("extending the type... is
+> implementation work for later, not done in this pass"). That work is
+> now done: `docs/crm.md` "Lifecycle" is the authoritative 17-stage list
+> and matches `lib/crm.ts`'s actual `LeadStage` union exactly (e.g.
+> **Proposal / Offer** below is now **Offer Presented**; **Maintenance**
+> is now **Maintenance Customer**; **Delivered**/**Review
+> Requested**/**Showcase Candidate** each gained a distinct follow-on
+> stage — **Website In Production**, **Review Received**, **Showcase
+> Published** — and an explicit terminal **Inactive** was added). The
+> definitions, entry triggers, and exit logic narrative below are still
+> accurate context and kept for that reason; treat the stage *names* as
+> historical, not current — `docs/crm.md` is where the real names live.
+
 The stage list below is a **superset** of what `lib/crm.ts`'s current
 `LeadStage` type covers (`'new' | 'contacted' | 'qualified' | 'proposal' |
 'won' | 'lost'`, itself already noted there as "a forward-looking
@@ -288,6 +303,18 @@ pass.
 
 ## 6. Minimum CRM fields
 
+> **Field model now lives in [`docs/crm.md`](crm.md) "Lead model."** The
+> table below still describes *when* each field is first meaningful in
+> the funnel, which stays useful — but for the actual persisted field
+> names (`businessName`, `businessUrl`, `contactName`, `phone`,
+> `auditScore`, `auditStatus`, etc.) and which ones `lib/crm.ts` actually
+> implements today, `docs/crm.md` is authoritative. Several rows below
+> (`is_qualified`, `contacted_at`, `proposed_tier`, `tier_purchased`,
+> `showcase_consent`, `referral_code`, `expansion_flag`,
+> `maintenance_plan`, …) describe fields the lifecycle needs eventually
+> but that aren't part of the current `Lead` model — they'd extend it the
+> same way `tags` did (see `docs/crm.md` "Known limitations").
+
 Collected progressively, matching the stage table above — never all at
 once, and never more than the current stage needs. This is already the
 pattern the existing `audit` form follows (`forge-business-rules.md`
@@ -296,14 +323,22 @@ number... no name, email, or phone required"); this table extends that
 discipline through the rest of the lifecycle rather than abandoning it
 once a lead becomes a customer.
 
+**Updated by ADR-009 (`docs/decisions.md`):** the Audit Lead row below no
+longer treats `email` as required. The audit tool itself asks for
+`business_name`/`google_profile_url` up front (needed to run the audit,
+not to identify a lead), but nothing reaches the CRM at all unless the
+visitor voluntarily submits the optional follow-up form — at which point
+"identifiable" means email **or** WhatsApp, either one, not both.
+
 | Field | First collected at | Why |
 |---|---|---|
-| `email` | Audit Lead | Required to deliver the audit write-up. |
-| `name` | Audit Lead | Personalizes outreach; already asked on the existing form. |
-| `business_name` | Audit Lead | Needed to review the actual GBP. |
-| `category` | Audit Lead | Routes to the right industry template context. |
-| `google_profile_url` | Audit Lead | The entire input the audit and eventual website are built from. |
-| `whatsapp` (optional) | Audit Lead | Enables the WhatsApp-first contact pattern; explicitly optional, matching current forms. |
+| `email` (optional — one of email/whatsapp) | Audit Lead | Only if the visitor asks for follow-up; no longer required, since the result is shown instantly and nothing is "delivered" by email. |
+| `name` (optional) | Audit Lead | Personalizes outreach, when given. |
+| `business_name` | Audit Lead | Needed to run and personalize the audit itself, before any CRM capture. |
+| `category` (optional) | Audit Lead | Routes to the right industry template context. |
+| `google_profile_url` | Audit Lead | The entire input the audit is built from. |
+| `location` (optional) | Audit Lead | City, when given — added for the audit tool, not on the original form. |
+| `whatsapp` (optional — one of email/whatsapp) | Audit Lead | Enables the WhatsApp-first contact pattern. |
 | `is_qualified` (internal flag) + `qualification_note` | Qualified | Internal only — never shown to the customer, never used for external scoring/enrichment (avoids repeating the `priority_score`-vs-privacy-policy contradiction flagged in `forge-business-rules.md` §19/HD#9). |
 | `contacted_at`, `contact_channel` | Contacted | Minimum record of outreach for follow-up scheduling. |
 | `proposed_tier`, `proposed_price` | Proposal / Offer | Derived from the conversation, not asked of the customer as a form field. |
@@ -345,12 +380,22 @@ table adopts the brief's naming as the standard going forward; renaming
 the existing five events to match is implementation work for the
 homepage/pricing-page build, not done in this pass.
 
+**Updated by ADR-009 (`docs/decisions.md`), for the audit tool rebuild:**
+`audit_started`'s trigger is now the tool's own "Start my free audit"
+button, not a generic first-field focus. Three events were added that
+this table didn't originally have (`audit_submitted`,
+`audit_result_viewed`, `audit_cta_clicked`). **`audit_completed` changed
+meaning** — see the row below; it is no longer a backend/CRM event.
+
 | Event | Fires when | Properties | Funnel |
 |---|---|---|---|
 | `page_view` | Any page loads | `path` | Universal |
-| `audit_started` | Visitor interacts with the first field of the audit form | `source_page` | Primary |
+| `audit_started` | Visitor clicks "Start my free audit" on the audit tool's landing view | `source` | Primary |
+| `audit_submitted` | Visitor submits all 9 answers (input → processing) | — | Primary |
+| `audit_completed` | **Client event, not backend/CRM** — the audit tool's own instant computation has finished and a result is ready to render. This definition superseded the original one below it (kept here, struck through in spirit not in text, for the record): ~~Forge has finished and delivered a manually-written audit~~ — that delivery model doesn't exist for this route anymore; there's no backend step left for the old definition to describe. | `topCategory`, `strongCount`, `weakCount`, `missingCount` | Primary |
+| `audit_result_viewed` | Fires alongside `audit_completed`, the instant the result view actually renders to the visitor | `topCategory` | Primary |
+| `audit_cta_clicked` | The recommendation CTA (`"Here's what we'd fix first"`) is clicked | `destination` | Primary |
 | `lead_submitted` | Any lead form (audit, waitlist, maintenance enquiry) is successfully submitted | `source`, `lead_id` | Primary / all |
-| `audit_completed` | **Backend/CRM event** — Forge has finished and delivered the actual audit write-up (distinct from the form-submit event above; this one reflects Forge's delivery, not the visitor's action) | `lead_id` | Primary |
 | `qualified` | **CRM event** — lead marked Qualified | `lead_id` | Primary |
 | `contacted` | **CRM event** — first outreach sent | `lead_id`, `channel` | Primary |
 | `purchase_started` | Customer proceeds from Proposal/Offer toward a confirmed purchase | `lead_id`, `tier` | Primary |

@@ -1,16 +1,16 @@
-import type { ContentEntry } from '@/lib/content'
+import type { BlogPost } from '@/lib/blog'
 import { Text } from '@/components/ui/Text'
 import { BlogCard } from './BlogCard'
 
-export function BlogList({ entries }: { entries: ContentEntry[] }) {
-  if (entries.length === 0) {
-    return <Text size="body-sm">No posts published yet.</Text>
+export function BlogList({ posts }: { posts: BlogPost[] }) {
+  if (posts.length === 0) {
+    return <Text size="body-sm">No posts in this category yet.</Text>
   }
 
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {entries.map((entry) => (
-        <BlogCard key={entry.slug} entry={entry} />
+      {posts.map((post) => (
+        <BlogCard key={post.slug} post={post} />
       ))}
     </div>
   )

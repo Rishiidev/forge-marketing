@@ -607,16 +607,21 @@ all.
    ₹30,000) the one going into the rebuild, or does Forge intend to run
    both as separate acquisition channels on purpose? (§6, §7, §8, §11,
    §12)
-   **Working assumption adopted 2026-09-05** (see
-   `docs/conversion-architecture.md`): the brief that produced the
-   conversion architecture states the primary funnel as
-   `Free Audit → ₹5,000 Website`, with ₹15,000/₹25,000/Maintenance as
-   post-purchase upgrades. Conversion-architecture planning proceeds on
-   that basis. This is a planning convenience, not yet a confirmed
-   business decision — still needs explicit owner sign-off.
+   **Resolved 2026-09-06, directly by the business owner** (see
+   `docs/decisions.md` ADR-011): the canonical commercial ladder is
+   ₹5,000 (Launch) → ₹15,000 (Growth) → ₹25,000 (Pro), with Maintenance
+   as the post-purchase upgrade. This supersedes both legacy funnels
+   named above and the 2026-09-05 working assumption. Scope for each
+   tier is set out in `lib/constants.ts` `WEBSITE_TIERS` and rendered at
+   `/websites`, `/websites/5000`, `/websites/15000`, `/websites/25000`.
 2. **The ₹25,000 figure named in the original brief** doesn't exist in
    the code at any price point — clarify whether it means the ₹24,999
    tier, the ₹30,000 tier, or a new tier to be defined. (§8)
+   **Resolved 2026-09-06, directly by the business owner** (see
+   `docs/decisions.md` ADR-011): it is a new tier, "Pro," positioned as
+   Forge's premium/custom offering — not a relabeling of ₹24,999 or
+   ₹30,000. Full scope in `lib/constants.ts` `WEBSITE_TIERS['25000']`
+   and `/websites/25000`.
 3. **Maintenance/Operator pricing** — three tiers at ₹1,499/₹3,999/₹7,999
    (`operator.html`) vs. a flat ₹1,999/mo (`5000-setup.html`): pick one
    structure. (§9)

@@ -19,9 +19,9 @@
 
 /**
  * Event taxonomy per docs/conversion-architecture.md §7. Client-side
- * events only — the CRM-lifecycle events in that table (audit_completed,
- * qualified, contacted, etc.) are backend-triggered and belong to
- * lib/crm.ts's trackLeadEvent(), not here.
+ * events only — the CRM-lifecycle events in that table (qualified,
+ * contacted, etc.) are backend-triggered and belong to lib/crm.ts's
+ * trackLeadEvent(), not here.
  *
  * Not every event below is wired to a real call site yet — pricing_viewed
  * and showcase_viewed in particular are defined for pages that use a
@@ -29,9 +29,27 @@
  * everywhere isn't done in this pass (see "avoid unnecessary client-side
  * JavaScript" in the homepage build brief). Wire them when a real need
  * arises rather than adding an observer speculatively.
+ *
+ * `audit_submitted`, `audit_completed`, `audit_result_viewed`, and
+ * `audit_cta_clicked` were added for the Forge Free Audit tool
+ * (docs/decisions.md ADR-009). NOTE — `audit_completed`'s meaning changed
+ * from how docs/conversion-architecture.md §7 originally specified it:
+ * that table defined it as a **backend/CRM** event fired when a human at
+ * Forge finishes and delivers a manually-written audit (i.e. Forge's
+ * action, not the visitor's). The audit is no longer delivered that way —
+ * it's computed instantly, client-side, from the visitor's own answers —
+ * so there is no separate backend delivery step left for that definition
+ * to describe. `audit_completed` here means "the client-side computation
+ * finished and a result is ready to render," a client event like every
+ * other one in this file. See ADR-009 for the full reasoning; the doc
+ * table has been updated to match.
  */
 export type AnalyticsEvent =
   | { name: 'audit_started'; props: { source: string } }
+  | { name: 'audit_submitted'; props: Record<string, never> }
+  | { name: 'audit_completed'; props: { topCategory: string; strongCount: number; weakCount: number; missingCount: number } }
+  | { name: 'audit_result_viewed'; props: { topCategory: string } }
+  | { name: 'audit_cta_clicked'; props: { destination: string } }
   | { name: 'lead_submitted'; props: { source: string; leadId?: string } }
   | { name: 'lead_submit_error'; props: { source: string; error?: string } }
   | { name: 'website_cta_clicked'; props: { location: string } }

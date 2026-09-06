@@ -378,3 +378,658 @@ customer for a review, routing it for approval) remains unbuilt by
 design — see item 5 — and should be designed for real once Human
 Decision #7 (testimonial consent policy, `docs/forge-business-rules.md`
 §15) is resolved.
+
+### ADR-009: Forge Free Audit rebuilt as a self-serve interactive tool
+
+Date: 2026-09-05
+Status: accepted
+
+Context: The brief asked for `/audit` to become a full system —
+landing → input → processing → result → recommendation → CTA — evaluating
+nine named categories (business information, website presence,
+contactability, reviews, service clarity, mobile experience, online
+credibility, local discoverability, conversion friction), explicitly
+requiring that if no live API integration is available, a truthful
+fallback input flow be designed instead, that the result never be a bare
+score, and that the score never be deliberately deflated to sell Forge.
+It also specified exact CRM fields (captured only when a lead is
+"identifiable" — name/email/phone voluntary) and five analytics events
+(`audit_started`, `audit_submitted`, `audit_completed`,
+`audit_result_viewed`, `audit_cta_clicked`).
+
+There is no Google Business Profile API credential anywhere in this repo
+(confirmed — no `.env`, docs/session-handoff.md). The previous `/audit`
+page (`components/audit/AuditForm.tsx` embedded directly) was a single
+contact-form gate: submit identity + GBP link, wait up to 48 hours for a
+human-written write-up — this matches `docs/forge-business-rules.md` §5's
+description of the *legacy* 7-point manual audit exactly, and that
+description is correct and untouched. This system replaces that flow at
+the `/audit` route with something categorically different: instant,
+self-serve, no identity required to see a real result.
+
+Decision:
+1. Built a 9-question self-report questionnaire
+   (`lib/audit.ts` `AUDIT_CATEGORIES`) as the truthful fallback for the
+   missing live API — each question's three options are tagged
+   `strong`/`weak`/`missing`; nothing about a specific business is ever
+   looked up or invented, only what the visitor told us.
+2. `computeAuditResult()` is a pure function — deterministic, no
+   weighting, no randomness — the concrete mechanism behind "do not
+   deliberately make the score artificially poor to sell Forge." No
+   single numeric score is ever shown, per the brief.
+3. Recommendation logic is three fixed branches (no website → Launch;
+   has a website but another gap is worse → Growth; everything strong →
+   Maintenance), using live pricing from `lib/constants.ts` rather than
+   hard-coded numbers.
+4. `lib/crm.ts` `Lead.email` widened from required to optional (a new
+   doc comment explains why); `location?: string` added; `LeadStage`
+   gained `'audit-lead'`, wiring the stage `docs/conversion-architecture.md`
+   §5 already named but that the code had never actually set. A new,
+   separate Server Action (`submitAuditLeadAction`, `app/actions.ts`)
+   requires *either* email or WhatsApp, never both, rather than reusing
+   `submitLeadAction`'s hard email requirement — every other existing
+   form's validation is unchanged.
+5. Added the three events the taxonomy was missing
+   (`audit_submitted`, `audit_result_viewed`, `audit_cta_clicked`) to
+   `lib/analytics.ts`. **`audit_completed` changes meaning**:
+   `docs/conversion-architecture.md` §7 originally defined it as a
+   backend/CRM event fired when a human at Forge finishes a manual
+   write-up — that delivery model no longer exists for this route, so
+   there's nothing left for that definition to describe. It now means
+   "the client-side computation finished and a result is ready to
+   render," a client event like every other one in the file. The doc
+   table has been updated to match; this is flagged explicitly rather
+   than silently reinterpreted, since it's a real change in what the
+   event name means, not just an implementation detail.
+6. `components/audit/AuditForm.tsx` (the old embedded contact form) is
+   untouched and still used on the homepage and `/design-system` — this
+   decision only replaces what `/audit` itself renders.
+
+Consequences: A visitor gets a real, honest result without giving any
+contact information — the CRM is only touched once, optionally, at the
+very end. This is a genuine product redesign, not a bug fix or a
+migration of existing behavior — `docs/forge-business-rules.md` is
+correctly left unchanged (it describes the legacy 7-point manual process,
+which still happened, on the old page, at some point in the past); this
+ADR and `docs/architecture.md` "The audit tool system" are where the new
+reality lives. Verified live in a browser (desktop 1280px and mobile
+375px): full input → processing → result flow, all three recommendation
+branches (missing/mixed/all-strong), the lead-capture form's validation
+error (neither email nor WhatsApp given) and success path end-to-end
+through to `lib/crm.ts`'s console provider (lead captured, stage set to
+`audit-lead`, event tracked), the CTA click event, and all five required
+analytics events firing with correct payloads, in order, exactly once
+each. `npm run typecheck` / `lint` / `build` all pass (18/18 static
+pages). One pre-existing, unrelated issue was noticed and left alone
+(out of scope for this change): `buildMetadata()`
+(`lib/seo.ts`) already appends `" — Forge"` to every page title, and
+`app/layout.tsx`'s title template appends it again, producing
+"Page — Forge — Forge" site-wide — this predates this session and
+affects every route, not something introduced here.
+
+### ADR-010: CRM rebuilt as a full adapter — Lead model, 17-stage lifecycle, dedup/rate-limiting/graceful degradation
+
+Date: 2026-09-06
+Status: accepted
+
+Context: The brief asked for a formal CRM integration architecture: the
+site must not be tightly coupled to one provider; a `CrmAdapter` with six
+exact operations (`createLead`/`updateLead`/`addLeadEvent`/
+`updateLeadStage`/`addLeadTag`/`getLeadStatus`); an expanded Lead model
+(20 named fields); the full 17-stage lifecycle, verbatim; a 9-event
+taxonomy; explicit data-quality requirements (dedup, malformed
+email/URL, spam, accidental duplicate submissions); security
+requirements (no client-side credentials, rate limiting); observability
+(no unnecessary PII in logs); and graceful degradation (a CRM outage must
+not make the site unusable) — plus `docs/crm.md`.
+
+The prior `lib/crm.ts` (built across ADR-006/ADR-009) already had the
+right shape in miniature — a provider interface, console/webhook/hubspot
+implementations, a `LeadStage` type — but a much smaller surface
+(`captureLead`/`trackLeadEvent`/`updateLeadStage`, a 6-value `LeadStage`
+union, an 11-field `Lead`). This is a genuine expansion of that same
+architecture, not a rewrite of its philosophy.
+
+Decision:
+1. Renamed/expanded the adapter to the six exact required operations
+   (`CrmAdapter` interface, `lib/crm.ts`). Every top-level export wraps
+   its provider call in `try/catch` and resolves to `{ ok: false, error }`
+   on any failure — new behavior; the old code let a provider's throw
+   propagate unhandled, which the brief's "must fail gracefully" and
+   "must not become unusable" requirements call out directly. This also
+   made the `hubspot` stub finally safe to select without crashing a page.
+2. `Lead` gained the brief's full field list (`campaign`, `utmSource`,
+   `utmMedium`, `utmCampaign`, `landingPage`, `businessName`,
+   `businessUrl`, `industry`, `location`, `contactName`, `phone`,
+   `auditScore`, `auditStatus`, `currentStage`, `createdAt`, `updatedAt`,
+   `lastActivityAt`), renamed at the CRM boundary only (`business`→
+   `businessName`, `googleProfileUrl`→`businessUrl`, `category`→
+   `industry`, `whatsapp`→`phone`, `name`→`contactName`) — no form
+   component's field names changed, only the mapping inside
+   `app/actions.ts`. `message` (never actually set by any current form)
+   was dropped to match the brief's closed field list. One field was
+   added beyond that list: `tags: string[]`, because `addLeadTag()` — a
+   required operation — needs somewhere to persist what it adds; flagged
+   explicitly in `docs/crm.md` rather than silently extended.
+3. `LeadStage` replaced entirely with the brief's 17-stage list, verbatim
+   (previously a 6-value ad hoc union: `'new'|'audit-lead'|'contacted'|
+   'qualified'|'proposal'|'won'|'lost'`). `docs/conversion-architecture.md`
+   §5's older 13-stage sketch is now marked superseded rather than
+   rewritten in place (its narrative/rationale is still accurate; only
+   the stage *names* changed) — same append-don't-rewrite convention this
+   log has followed since ADR-008.
+4. Data quality: `lib/validation.ts` (new; `isValidEmail`/`normalizeUrl`,
+   used by both Server Actions and the audit tool's client form — the
+   two previously had separate, drifting implementations).
+   `lib/rate-limit.ts` (new; in-memory fixed-window, 5 per 10 minutes per
+   IP-ish key, honestly documented as single-process). A client-generated
+   `submissionId` (one per form mount, `crypto.randomUUID()`) is threaded
+   through both lead forms and recognized by the console provider's
+   `createLead()` to collapse a retried/double submission into the
+   existing lead instead of creating a duplicate. The console provider
+   also dedupes by normalized email within a 30-day window. Neither
+   dedup mechanism is a new adapter method — both live inside
+   `createLead()`'s own implementation, keeping the adapter's public
+   shape exactly the six specified operations.
+5. Security: `lib/rate-limit.ts` added `import 'server-only'` (matching
+   `lib/crm.ts`); the webhook provider now sends `Authorization: Bearer
+   ${CRM_WEBHOOK_SECRET}` when that env var is set (name only — no value
+   invented, none exists in this repo, matching every other credential in
+   this project).
+6. Graceful degradation: the webhook provider now has a hard 5-second
+   timeout via `AbortController` — without it, a slow/unreachable CRM
+   endpoint could hang a Server Action indefinitely (the submit button
+   stays disabled while pending), which would make the *form* unusable
+   even with the try/catch from item 1 in place, since nothing would
+   have failed yet to catch.
+7. Observability: `safeLogFields()` — every console log about a lead
+   (success or failure, both providers) is restricted to
+   `{ leadId, source, currentStage, hasEmail, hasPhone }`. The previous
+   console provider logged the entire lead object, email/phone/name
+   included, directly to the server console — a real, if low-stakes, PII
+   overexposure this replaces.
+8. `docs/crm.md` written as the authoritative architecture/lifecycle
+   reference. `docs/conversion-architecture.md` §5 and §6 got short
+   superseding notes pointing to it rather than being rewritten, per the
+   living-document convention this project already follows.
+
+Consequences: `app/actions.ts`'s two Server Actions were rewritten to the
+new API (mapping old form field names to the new Lead field names at the
+boundary, adding rate-limit checks, adding referer-derived UTM/landing-page
+attribution for the generic embedded form, which previously had none).
+`components/forms/useLeadForm.ts` and
+`components/audit/AuditLeadCaptureForm.tsx` both gained a `submissionId`
+hidden field; `components/audit/AuditInputForm.tsx` now imports
+`normalizeUrl` from `lib/validation.ts` instead of a local duplicate.
+No page or component outside these needed to change.
+`npm run typecheck`/`lint`/`build` all pass (18/18 static pages).
+Several events in the new 9-event taxonomy
+(`pricing_viewed`/`pricing_plan_viewed`/`showcase_viewed`/
+`whatsapp_clicked`/`call_clicked`/`contact_clicked`) have no current
+`addLeadEvent()` call site — stated as a known limitation in
+`docs/crm.md` rather than force-wired without a `leadId` to attach them
+to (this codebase has no persistent per-visitor lead identity yet; see
+`docs/crm.md` §6 and §11). Everything else in the brief is implemented
+and documented, not deferred.
+
+### ADR-011: Commercial ladder set directly by the business owner — ₹5,000/₹15,000/₹25,000 (Launch/Growth/Pro), resolving HD#1 and HD#2
+
+Date: 2026-09-06
+Status: accepted
+
+Context: `docs/forge-business-rules.md` had left two Human Decisions
+open since the baseline audit: HD#1 (which of the conflicting legacy
+funnels — ₹9,999→₹24,999 on `index.html`, or ₹5,000→₹15,000→₹30,000 on
+`5000-setup.html` — is canonical) and HD#2 (no ₹25,000 product exists at
+any price point in the legacy source; the nearest figures are ₹24,999
+and ₹30,000). `docs/conversion-architecture.md` had only adopted
+`Free Audit → ₹5,000 Website` as a working assumption for planning, not
+a resolution. The business owner then gave a direct, explicit commercial
+brief in chat: build `/websites`, `/websites/5000`, `/websites/15000`,
+`/websites/25000`, and `/maintenance` on a final ₹5,000/₹15,000/₹25,000
+ladder (Launch/Growth/Pro), with an explicit instruction that the three
+tiers represent genuinely different levels of business value — not the
+same product with items added to justify a higher number — plus required
+pricing-psychology properties (anchoring, differentiation, transparent
+scope, comparison, risk reduction, proof; no fake urgency/stock/slots).
+
+Decision:
+1. Treated this as the business owner directly resolving HD#1 and HD#2
+   — logged here rather than silently overwriting the open items in
+   `forge-business-rules.md` (which now carry an explicit resolution
+   note pointing back to this ADR, per the project's standing convention
+   for how a Human Decision gets marked resolved).
+2. `lib/constants.ts` `WEBSITE_TIERS` rewritten: all three tiers now
+   `status: 'confirmed'` (the ₹25,000 tier is no longer `price: null` /
+   pending). Each tier gained `bestFor`, `whoItsFor`, `ownership`,
+   `support`, and `process` fields — the existing `included`/`excluded`/
+   `deliveryTime`/`revisionPolicy` fields were kept, not replaced — so
+   every tier page can render what you get, what you don't get, who
+   it's for, the process, timeline, ownership, and support without
+   inventing structure per-page.
+3. Differentiation is built on build complexity and process, not feature
+   padding: Launch is the same proven layout for everyone, one page, no
+   revisions, pay only after seeing it live; Growth is a custom design
+   and custom copy, up to 3 pages, one structured revision round; Pro
+   adds a conversion engine (service picker / booking-request form /
+   quote wizard), up to 8 pages, two revision rounds, and a bundled first
+   month of Active maintenance. Support windows (14/30/60 days) and
+   delivery times (same-day / 2–4 days / 5–7 days) scale with the same
+   logic. No page count, revision count, or delivery time here has a
+   legacy source — they are new, business-owner-set numbers, cited as
+   such in each tier's `sourceNote` rather than attributed to the legacy
+   codebase.
+4. `components/pricing/WebsiteTierPage.tsx` rewritten to render all
+   required sections in order (what you get / what you don't get / who
+   it's for / process / timeline, ownership & support / CTA), with a CTA
+   at both top and bottom. `components/pricing/PriceCard.tsx` gained a
+   "Best for" line for differentiation on the grid. New
+   `components/pricing/PricingComparisonTable.tsx` renders a full
+   side-by-side comparison on `/websites` (the "comparison" pricing-
+   psychology requirement) — every cell reads from `lib/constants.ts`,
+   nothing hard-coded in the table itself.
+5. `/websites` also gained a `TrustSignals` block (risk reduction: pay-
+   only-when-sure on Launch, ownership guarantee, transparent scope) and
+   a real-showcases section (`getFeaturedShowcases(3)` — proof), reusing
+   existing components rather than building new ones.
+6. `/maintenance`: prices and the three-tier structure are unchanged
+   (HD#3 — the conflicting ₹1,999/mo flat-rate legacy mention — remains
+   open; this session did not touch it). Only the framing changed:
+   taglines and hero copy now read as ongoing technical care and
+   improvement, not merely hosting, per the brief. Added
+   `MAINTENANCE_EXCLUSIONS` (sourced from `operator.html` "Not included",
+   already documented in `forge-business-rules.md` §9) rendered on the
+   page for transparency — this was previously documented but not shown.
+7. No fabricated urgency, stock, or countdown was added anywhere in this
+   pass — `CapacityStrip`'s `'tbd'`-gated silence (untouched) remains the
+   only capacity-adjacent UI on the site.
+
+Consequences: The ₹25,000 tier is no longer a pending-confirmation
+placeholder — `/websites/25000` now renders full content like the other
+two tiers. HD#3 (maintenance pricing conflict), HD#4 (revision policy
+across tiers — now more resolved in spirit by this session's explicit
+per-tier revision counts, though the legacy zero/one/two conflict this
+HD originally described is a separate, still-open question about the
+*old* ladder), and the other Human Decisions not addressed here remain
+open. `npm run typecheck`/`lint`/`build` all pass (18/18 static pages);
+`/websites`, `/websites/5000`, `/websites/15000`, `/websites/25000`, and
+`/maintenance` were verified live in a browser, desktop and mobile
+(375px) viewports, including the comparison table's horizontal-scroll
+behavior on narrow screens.
+
+### ADR-012: Post-sale growth architecture — reviews, showcase eligibility, referrals
+
+Date: 2026-09-06
+Status: accepted
+
+Note on numbering: this is ADR-012, not ADR-011. While this session's
+work was in progress, `lib/constants.ts` and `components/pricing/PriceCard.tsx`
+were updated on disk by what appears to be a separate, concurrent session
+resolving `forge-business-rules.md` Human Decisions #1/#2 (the pricing
+ladder) — its own comment in `lib/constants.ts` already cites "ADR-011"
+for that work, not yet written to this file as of this entry. This
+session did not touch that work and left it exactly as found; skipping
+to ADR-012 here avoids a collision once that ADR is written. If ADR-011
+never materializes, that's a gap to close, not a number to reuse.
+
+Context: The brief asked for the architecture behind Customer → Success
+→ Review → Showcase → Referral → New Customer: a real review-collection
+model (with three independent, explicit consents — Forge website,
+showcase, marketing material), showcase-candidate eligibility built on
+top of it, and a referral system (unique identifier, URL, attribution,
+status, successful-referral detection, reward status) that supports a
+future customer dashboard without building one now. Two constraints were
+explicit and load-bearing: the ₹5,000 tier's delivery must never depend
+on referrals, and nothing about the referral mechanism should read as
+disguised payment or use manipulative language. A third — no monetary
+reward may be invented, only a configurable shape for one — ties directly
+to `forge-business-rules.md` HD#6 ("Whether to build a referral program,
+and its mechanics — nothing currently exists to base a decision on"),
+still open.
+
+Decision:
+1. Two new lib files, `lib/reviews.ts` and `lib/referrals.ts`, both
+   built on top of the existing six-operation `CrmAdapter`
+   (`lib/crm.ts`) rather than extending it — neither review-collection
+   nor referral tracking needed a new adapter operation once composed
+   from `updateLead`/`updateLeadStage`/`addLeadTag`/`addLeadEvent`/
+   `getLeadStatus`. Same reasoning as ADR-010's dedup logic living
+   inside `createLead()` rather than becoming a seventh operation.
+2. Both files gate on `getLeadStatus()` against a fixed stage set
+   (`POST_DELIVERY_STAGES` in `lib/reviews.ts`, `CAN_REFER_STAGES` in
+   `lib/referrals.ts`) before doing anything — `requestReview()`,
+   `checkShowcaseEligibility()`, and `createReferralCode()` all refuse
+   before a real delivery, at the data layer, not just as documented
+   intent. This is also what makes "delivery never depends on referrals"
+   true in both directions: delivery doesn't check either module, and
+   both modules refuse to function without delivery already having
+   happened.
+3. `ReviewConsent` is three independent booleans
+   (`website`/`showcase`/`marketing`), none defaulting to true,
+   settable independently later via `updateReviewConsent()` — matching
+   the brief's three named uses exactly and the existing house rule that
+   showcase consent is never implied by a review at all
+   (`forge-business-rules.md` §16, HD#8, `ADR-008`).
+4. `checkShowcaseEligibility()`/`markShowcaseCandidate()` only ever
+   touch the CRM lead's stage. They have no knowledge of
+   `content/showcases/*.mdx` and don't publish anything — actual
+   publishing stays the deliberate manual `.mdx`-authoring step
+   `ADR-008` already established. This keeps "who's eligible to be
+   asked" (new, this ADR) cleanly separate from "what's actually live"
+   (existing, unchanged).
+5. Referral architecture: `ReferralCode` (unique code + URL, one per
+   customer, idempotent to (re)request), `ReferralAttribution`
+   (per referred lead: status `'lead-created'|'qualified'|'converted'`,
+   reward status). `RewardStatus` is `'tbd' | 'pending' | 'not-applicable'`
+   — never a number, never a currency — and `REFERRAL_REWARD_CONFIG`
+   (`lib/constants.ts`) is `{ rewardType: null, rewardValue: null,
+   status: 'tbd' }`, the same null/'tbd' pattern already used for
+   `SITE.whatsappNumber` and the ₹25,000 tier before it was resolved.
+   `markReferralConverted()` only ever sets `rewardStatus: 'pending'`
+   once `REFERRAL_REWARD_CONFIG.status` is `'confirmed'` — until then it
+   stays `'tbd'`, so nothing in this codebase can accidentally promise a
+   reward that doesn't exist yet.
+6. `app/r/[code]/route.ts` — a Route Handler, not a page, specifically
+   because setting the attribution cookie before redirecting isn't
+   possible from a Server Component during render. Always redirects to
+   `/audit` regardless of whether the code resolves; an unrecognized
+   code degrades to "no attribution," never a dead end, matching the
+   graceful-degradation standard `ADR-010` set for CRM outages, applied
+   here to a bad/expired link instead.
+7. `lib/crm.ts` gained `Lead.referredByCode` (optional, same pattern as
+   `tags` in ADR-010) and two `LeadEventName` values,
+   `referral_lead`/`referral_conversion` — both fire against a real
+   `leadId`. `referral_click` deliberately isn't one of them: a click has
+   no lead yet, so it's tracked as a plain counter on the `ReferralCode`
+   record instead, not forced into `addLeadEvent()`.
+8. `app/actions.ts` reads the `forge_ref` cookie server-side
+   (`cookies()`, never a client-supplied field) and calls
+   `attributeReferralLead()` once, only for a genuinely new
+   (`!result.deduped`) lead — an existing customer's later visit is
+   never misattributed as a fresh referral.
+9. No manipulative-language risk was introduced because no
+   customer-facing referral copy was written at all — the brief said not
+   to build the dashboard yet, and the redirect itself is invisible.
+   Documented as a standing constraint for whoever builds that dashboard
+   next (`docs/architecture.md` "Post-sale growth architecture"), not
+   solved by writing careful copy that doesn't exist yet.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass (18/18 static
+pages, `/r/[code]` now listed as a dynamic route). Deliberately not
+built, matching the brief: a customer-facing referral dashboard, a
+review-submission page (the brief didn't name one the way it named
+`/r/[code]`; `lib/reviews.ts` is ready for one), and any automatic
+purchase → `'customer'` trigger (no payment processing exists in this
+codebase — `docs/architecture.md` "Out of scope" — so `markReferralConverted()`
+and every post-`'audit-lead'` stage transition remain manual/ops-triggered,
+unchanged from `ADR-010`). Both new stores are in-memory and
+single-process, the same stated limitation as `lib/crm.ts`'s console
+provider (`docs/crm.md` "Known limitations") — real durability needs a
+real store, not invented here for the same reason one wasn't invented
+for leads.
+
+### ADR-013: In-memory Maps replaced with a file-backed store — a real cross-boundary bug found while testing ADR-012
+
+Date: 2026-09-06
+Status: accepted
+
+Context: While verifying ADR-012's referral flow live (not just by a
+green build — see this project's standing verification convention since
+ADR-004/ADR-007), the actual attribution step failed:
+`attributeReferralLead()` returned `"unknown referral code"` for a code
+that had just been created and confirmed resolvable seconds earlier via
+`resolveReferralCode()`. Debug logging traced the cause precisely: the
+code was created inside a Route Handler (`app/r/[code]/route.ts`, or the
+scratch verification route standing in for a future admin action), and
+`attributeReferralLead()` runs inside a Server Action
+(`app/actions.ts`). Both import the same `lib/referrals.ts` module and
+both run inside the same long-running `next start` process — and still
+did not see the same data. Confirmed directly against a real production
+build (`next build` + `next start` on a separate port, not `next dev`,
+which has its own on-demand-compilation quirks that would have muddied
+the diagnosis): a plain `const codes = new Map()` at module scope in
+`lib/referrals.ts` gets a **separate instantiation per Next.js bundle** —
+Route Handlers and Server Actions are compiled into different bundles
+even when they import the identical source file, so each gets its own
+copy of that module's top-level state. Two Route Handlers calling into
+the same module happened to share state correctly in a separate test
+(apparently bundled together); a Route Handler and a Server Action did
+not.
+
+This is a framework-level characteristic, not a bug in the referral
+logic itself — but it meant `lib/crm.ts`'s console provider
+(`ADR-010`), `lib/referrals.ts`, and `lib/reviews.ts` (both `ADR-012`)
+all had the identical latent defect: any flow requiring a Route Handler
+and a Server Action (or two independently-bundled Route Handlers, in the
+general case — the one successful cross-route test in ADR-012's
+verification may simply have gotten lucky on bundling, not proof of a
+guarantee) to see the same lead/referral/review data would silently
+fail. This had gone undetected through ADR-010's verification because
+every test there happened to call all six CRM operations from within a
+single scratch Route Handler — never actually crossing the boundary a
+real deployment (Route Handler creates a code, Server Action attributes
+it) requires.
+
+Decision: Added `lib/file-store.ts` — a minimal JSON-file read/write
+helper (`.data/*.json`, `fs.readFileSync`/`writeFileSync`, whole-file,
+no locking) — and moved all three affected modules onto it:
+1. `lib/crm.ts`'s console provider: `store`/`bySubmissionId`/`byEmail`
+   Maps replaced with `.data/leads.json` (keyed by leadId) and
+   `.data/lead-submissions.json` (submissionId → leadId); email dedup
+   now scans `Object.values()` of the loaded file instead of a separate
+   index Map.
+2. `lib/referrals.ts`: `codes`/`byReferrer`/`attributions` Maps replaced
+   with `.data/referral-codes.json` and `.data/referral-attributions.json`.
+3. `lib/reviews.ts`: `reviewsByLead` Map replaced with `.data/reviews.json`.
+4. `.data/` added to `.gitignore` (contains lead PII in local dev).
+5. `lib/rate-limit.ts` was **not** changed — every current call site is
+   inside `app/actions.ts`'s Server Actions (the same bundle calling
+   itself), so it doesn't exhibit this bug today. Its doc comment now
+   flags the same risk explicitly for whoever adds a Route Handler that
+   needs rate limiting later, rather than leaving the next person to
+   rediscover this the same way.
+
+A file-backed store fixes the actual bug because filesystem I/O goes
+through the OS, which every execution context in the same
+process/container shares regardless of which JS bundle is running —
+sidestepping the module-instantiation problem entirely rather than
+working around it. This is still not a real database (no locking, no
+concurrent-write safety, no query capability beyond loading the whole
+file) — an explicit, deliberate choice consistent with "no database
+exists in this project" (`docs/architecture.md` "Why no CMS"), just a
+version of "no database" that is actually correct for this framework
+instead of one that looked correct in every test that didn't cross a
+bundle boundary.
+
+Consequences: Re-verified the full ADR-012 flow end-to-end against a
+real production server on this fix — referral code creation, `/r/[code]`
+resolution and click counting, cookie-based attribution from within the
+Server Action, `referral_lead` firing against the newly-created lead,
+`Lead.referredByCode` persisting, and `markReferralConverted()` correctly
+tagging and re-staging the referrer to `'referral-partner'` — all
+confirmed working across the Route-Handler/Server-Action boundary this
+time. `npm run typecheck`/`lint`/`build` all pass. Docs updated:
+`docs/crm.md` §1 and §11 no longer describe the console provider as a
+bare in-memory Map. This ADR is also a note to future sessions: a
+scratch verification route that only calls a module from within itself
+proves far less than it looks like it proves — the meaningful test is
+whichever two execution contexts a real flow actually needs to agree
+with each other.
+
+### ADR-014: Blog and resource system — `/blog`, `/blog/[slug]`, topic clusters, full SEO surface
+
+Date: 2026-09-06
+Status: accepted
+
+Context: The brief asked for a real content system, not URL-filling: MDX
+posts with title/slug/description/date/author/category/tags/featuredImage,
+scoped to nine named topic clusters (Google Business Profile, Local SEO,
+Business websites, Online credibility, Reviews, Website conversion, Lead
+generation, Local marketing, Digital presence); the full SEO surface
+(metadata, canonical, OpenGraph, Twitter/X, sitemap, robots.txt,
+structured data, breadcrumbs, semantic headings, internal linking,
+optimized images); and six named reusable components (BlogCard,
+ArticleHeader, ArticleBody, RelatedArticles, ArticleCTA,
+TableOfContents), with new content addable without touching application
+code. It also explicitly asked for `article → relevant tool → audit →
+Forge`, not `article → "BUY NOW"`.
+
+The prior `/blog` (from the original Next.js scaffold, ADR-001) was
+one placeholder post proving the MDX pipeline worked, nothing more —
+`content/blog/hello-world.mdx` said so in its own body text.
+
+Decision:
+1. `lib/blog.ts` — new domain layer on top of `lib/content.ts`, same
+   justification as `lib/showcases.ts` (ADR-002/ADR-008). `BLOG_CATEGORIES`
+   is the closed nine-cluster list from the brief, typed as
+   `BlogFrontmatter['category']` rather than a free-text field, so
+   `/blog`'s category filter and every internal link to a category can't
+   drift into an ad hoc taxonomy over time. `isPublishable()` gates on
+   title/description/date/author/a valid category — tags and
+   `featuredImage` stay optional and unrendered when absent, the same
+   "no field defaulted to a placeholder" rule as showcases.
+2. **Internal linking, not decoration.** `getRelatedPosts()` scores other
+   posts by shared category (weighted 2) then shared tags (weighted 1),
+   falling back to recent posts so the section is never empty once a
+   second post exists — this is what `RelatedArticles` renders. Every
+   real article written this session also links inline to at least one
+   other post, a relevant pricing tier, or a showcase — internal linking
+   built into the content, not just the template.
+3. **`article → relevant tool → audit → Forge`, not `article → "BUY NOW"`:**
+   `ArticleCTA` wraps the existing `CTA` band (same FAQ-wraps-Accordion
+   pattern already in the codebase) with the audit as the one constant
+   primary action (relevant to every visitor regardless of topic) and an
+   optional secondary link. `BlogFrontmatter.ctaHref`/`ctaLabel` let a
+   post point that secondary link at whatever's actually relevant to its
+   topic — a showcase, a specific website tier — set entirely through
+   frontmatter, so a new post's CTA never requires a component change.
+4. **Table of contents without new client JS.** `lib/blog.ts`
+   `extractHeadings()` regexes `##`/`###` out of the raw MDX for
+   `TableOfContents` (a plain server-rendered nav); `ArticleBody` maps
+   `h2`/`h3` through a component that computes the same id via the same
+   `slugify()` at render time, so the two never need to share one parse
+   pass to agree — documented as a deliberate heuristic, not a full MDX
+   parse, in both places.
+5. **Optimized images**, both places a post can carry one: `BlogCard`
+   and `ArticleHeader` render `featuredImage` through `next/image`
+   (`fill` + `sizes`, unlike the showcase system's deliberate CSS-
+   background choice — showcases anticipate an arbitrary future client
+   domain, blog images are first-party and load-bearing enough to want
+   real optimization). In-body markdown images route through `next/image`
+   too, via `ArticleBody`'s `img` component override, inside a fixed
+   `aspect-video` frame since markdown gives no explicit dimensions.
+   No `featuredImage` was invented for the three real posts shipped this
+   session — the field renders nothing when absent, same convention as
+   every other optional field in this codebase.
+6. **Full SEO surface:**
+   - `lib/seo.ts` `buildMetadata()` gained `type: 'article'` (adds
+     OpenGraph article tags: `publishedTime`, `authors`) — every other
+     caller is unaffected, `type` defaults to `'website'`.
+   - `lib/seo.ts` `buildBreadcrumbJsonLd()` + new
+     `components/marketing/Breadcrumbs.tsx` render the same `items` as
+     both the visible trail and the `BreadcrumbList` structured data, on
+     both `/blog` and `/blog/[slug]` — reusable beyond the blog wherever
+     a future page needs breadcrumbs.
+   - `/blog/[slug]` emits `BlogPosting` structured data, same
+     "every field a direct copy of real frontmatter" rule ADR-008 set
+     for showcases' `CreativeWork` block.
+   - `app/sitemap.ts` and `app/robots.ts` — the App Router's native
+     `MetadataRoute` files (served at `/sitemap.xml`/`/robots.txt`, no
+     hand-written XML template). The sitemap reads from the same
+     `getAllShowcases()`/`getAllPosts()`/`WEBSITE_TIERS` every page
+     already renders from, so a new showcase or post appears in it the
+     moment its content file exists. `/design-system` is excluded via
+     its existing page-level `noindex` (not a robots.txt disallow —
+     disallowing it would stop a crawler from ever seeing that noindex
+     tag). `/r/[code]` and `/api/*` are disallowed in robots.txt as
+     non-content utility routes.
+7. **Content additions need no architecture change**, same guarantee
+   ADR-008 established for showcases: a new post is one `.mdx` file with
+   the required frontmatter — `generateStaticParams` in
+   `app/blog/[slug]/page.tsx` comes from `getAllPosts()`, no slug is
+   hard-coded anywhere, and the category filter on `/blog` is driven by
+   `BLOG_CATEGORIES`, not a per-category page.
+8. **Real content, not placeholders.** `content/blog/hello-world.mdx`
+   was deleted (its own body said to, once real content existed — same
+   precedent as `example-showcase.mdx` in ADR-008) and replaced with
+   three real, substantive articles across three different topic
+   clusters (Google Business Profile, Online credibility, Website
+   conversion), each answering a specific question a visitor would
+   actually search for rather than filling a URL — matching the brief's
+   explicit "do not create thin SEO pages" instruction. No fabricated
+   statistic, testimonial, or claim appears in any of them, per the
+   standing `forge-business-rules.md` §18 rule.
+9. `blog_viewed` (defined in the analytics taxonomy, unwired since the
+   original scaffold) is now wired via `BlogViewTracker`, the same
+   one-Client-Component pattern `ShowcaseViewTracker` set in ADR-008.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass (22/22 pages —
+18 from before, 3 real posts via `generateStaticParams`, plus
+`/sitemap.xml` and `/robots.txt`). Verified live in a browser: category
+filtering on `/blog`, an article's breadcrumbs/header/body/TOC/related
+articles/CTA end to end, TOC anchor ids matching rendered heading ids
+exactly, canonical/OpenGraph(`article`)/Twitter meta and both
+`BlogPosting`/`BreadcrumbList` JSON-LD blocks present, and
+`/sitemap.xml`/`/robots.txt` both resolving correctly against
+`SITE.marketingUrl`. `app/design-system/page.tsx`'s `BlogCard` demo
+now uses an inline example object instead of reading
+`content/blog/hello-world.mdx` (which no longer exists) — same fix
+ADR-008 already made for `ShowcaseCard`'s demo, applied here for the
+same reason. See ADR-015 for a real, site-wide button-contrast bug this
+session found and fixed while building `ArticleCTA`.
+
+### ADR-015: Fixed a site-wide bug — `text-color` utilities silently dropped when combined with Forge's custom `text-{size}` scale
+
+Date: 2026-09-06
+Status: accepted
+
+Context: Building `ArticleCTA`'s primary button (`Button` `variant="onDark"`
+`size="lg"`) surfaced invisible button text in a live browser check —
+`getComputedStyle` showed the button's text color exactly equal to its
+own background color. Root cause, traced into `tailwind-merge`'s
+default class-group config (`node_modules/tailwind-merge`): its
+`text-color` group matches `text-{anything}` against the project's
+configured Tailwind theme colors, and when `tailwind-merge` isn't given
+that theme (the case here — `lib/utils.ts` `cn()` called plain
+`twMerge()` with no config), its default color validator falls back to
+matching *any* value. Forge's named type scale
+(`lib/design-tokens.ts` `fontSize` — `text-body`, `text-heading-lg`,
+etc., ADR-005) doesn't match `tailwind-merge`'s built-in font-size
+patterns (standard t-shirt sizes or arbitrary-length syntax only), so
+every one of those custom size classes was *also* being classified as a
+text-color utility. `Button`'s `cn(base, variants[variant], sizes[size],
+className)` call order meant the real text color
+(`variants.onDark`'s `text-ground`) always lost to whichever size class
+came after it (`sizes.lg`'s `text-body`) — confirmed by reproducing it
+standalone against the installed `tailwind-merge` before touching any
+source (`twMerge('text-ground', 'text-body')` → `'text-body'`, the
+color silently gone).
+
+This is not new-in-this-session breakage. `Button`'s `onDark`/
+`onDarkSecondary` variants have always been paired with a `size`, so
+every existing use of them — the showcase page's "Visit the live site"
+button, `TrackedCtaLink` wherever it's used with those variants — was
+already affected. It simply had no live-browser check exercise it after
+the fact until this session's audit-tool/pricing work (which use
+`onDark` on their own dark CTA bands) happened not to trip it, and this
+session's blog work did.
+
+Decision: `lib/utils.ts` `cn()` now uses `extendTailwindMerge()` instead
+of the bare `twMerge()`, registering `lib/design-tokens.ts` `fontSize`'s
+exact keys under Tailwind's `font-size` class group — the single source
+of truth for the type scale extended to the one place that needed to
+know about it, rather than a second hard-coded list. Verified against
+the actual installed `tailwind-merge` before and after
+(`twMerge('text-ground', 'text-body')` → `'text-body'` before, `'text-ground
+text-body'` after; a genuine same-group conflict,
+`twMerge('text-ground', 'text-ink')`, still correctly resolves to
+`'text-ink'` — the fix is additive, not a loosening of real conflict
+detection).
+
+Consequences: Every existing `onDark`/`onDarkSecondary` button on the
+site was silently rendering invisible (background-colored) text before
+this fix — confirmed live on `/showcases/smile-care-dental`'s "Visit the
+live site" / "Get your free audit" pair, both now visibly correct with
+no other code change. `npm run typecheck`/`lint`/`build` all pass. No
+component using `cn()` needed to change — the fix is entirely inside the
+one shared utility every component already calls through.

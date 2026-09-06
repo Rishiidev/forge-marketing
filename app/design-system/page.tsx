@@ -28,8 +28,8 @@ import { ToolCard } from '@/components/tools/ToolCard'
 import { AuditForm } from '@/components/audit/AuditForm'
 
 import { WEBSITE_TIERS } from '@/lib/constants'
-import { getContentBySlug } from '@/lib/content'
 import type { Showcase } from '@/lib/showcases'
+import type { BlogPost } from '@/lib/blog'
 
 export const metadata: Metadata = {
   title: 'Design system — Forge (internal)',
@@ -89,7 +89,21 @@ const exampleShowcase: Showcase = {
     websiteUrl: 'https://example.com',
   },
 }
-const exampleBlog = getContentBySlug('blog', 'hello-world')
+// Example content only — not read from content/blog (real posts exist now;
+// this preview never depends on any one of them still existing).
+const exampleBlog: BlogPost = {
+  slug: 'example-post',
+  content: '',
+  fm: {
+    title: 'Example post title',
+    description: 'A one-line description of what the post covers.',
+    date: '2026-01-01',
+    slug: 'example-post',
+    author: 'Forge Team',
+    category: 'Local SEO',
+    tags: ['Example tag'],
+  },
+}
 
 export default function DesignSystemPage() {
   return (
@@ -573,16 +587,14 @@ export default function DesignSystemPage() {
             </div>
           </div>
 
-          {exampleBlog && (
-            <div>
-              <Text as="span" size="caption" className="mb-4 block">
-                BlogCard
-              </Text>
-              <div className="max-w-sm">
-                <BlogCard entry={exampleBlog} />
-              </div>
+          <div>
+            <Text as="span" size="caption" className="mb-4 block">
+              BlogCard
+            </Text>
+            <div className="max-w-sm">
+              <BlogCard post={exampleBlog} />
             </div>
-          )}
+          </div>
 
           <div>
             <Text as="span" size="caption" className="mb-4 block">

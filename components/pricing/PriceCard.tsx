@@ -29,9 +29,18 @@ export function PriceCard({ tier, featured = false }: { tier: WebsiteTier; featu
         {tier.priceLabel}
       </Heading>
 
-      <Text size="body" className="mb-6">
+      <Text size="body" className="mb-4">
         {tier.tagline}
       </Text>
+
+      {!isTbd && (
+        <Text size="body-sm" className="mb-6 text-ink-3">
+          <Text as="span" size="caption" className="mr-1">
+            Best for:
+          </Text>
+          {tier.bestFor}
+        </Text>
+      )}
 
       {tier.included.length > 0 && (
         <ul className="mb-6 flex flex-col gap-3 border-t border-border pt-6 text-body-sm text-ink-3">

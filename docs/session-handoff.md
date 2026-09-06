@@ -6,316 +6,306 @@
 > companion reference: [`docs/session-state.md`](session-state.md).
 >
 > Nothing in this file is invented. Every claim is grounded in the git
-> history, the current file contents, or `docs/decisions.md`/
+> status, the current file contents, or `docs/decisions.md`/
 > `docs/forge-business-rules.md`. Where something is genuinely unresolved,
 > it is listed as unresolved, not guessed at.
 
-Snapshot date: 2026-09-05. Written at the end of a session that built the
-showcase system (`/showcases`, `/showcases/[slug]`) and, per explicit
-instruction, made **no further application changes** — this handoff and
-its companion `docs/session-state.md` are the only output of that final
-step.
+Snapshot date: 2026-09-06. Written at a checkpoint review after two
+sessions of uncommitted feature work (Forge Free Audit tool, CRM/
+referrals/reviews rebuild, the ₹5,000/₹15,000/₹25,000 commercial ladder,
+the blog and resource system) plus a same-checkpoint SEO/security/
+content audit. **No commit has been made since `f72f58d`** — see §12.
 
 ---
 
 ## 1. What the original Forge project contained
 
-A static HTML marketing site (9 pages, inline CSS/JS, two Vercel
-serverless functions for lead capture) selling "turn your Google
-Business Profile into a website" to Indian local businesses, across
-**multiple inconsistent pricing structures** depending on which page a
-visitor landed on. Fully preserved, untouched, at
-[`legacy/`](../legacy/) — see `docs/session-state.md` §1 for the file
-inventory, and `docs/forge-business-rules.md` for the exhaustive,
-cited breakdown of what it actually said and where it contradicted
-itself.
+Unchanged from every prior handoff — see `docs/session-state.md` §1 for
+the full file inventory, and `docs/forge-business-rules.md` for the
+exhaustive, cited breakdown of the legacy site's content and its
+internal pricing contradictions.
 
-## 2. What has been changed
+## 2. What has been changed (cumulative, all sessions)
 
-This repository is a from-scratch Next.js rebuild of that site, built up
-over 8 commits on the `rebuild` branch (baseline → this session). In
-order:
+On the `rebuild` branch, in order (full detail: ADR log,
+`docs/decisions.md`):
 
-1. Legacy site relocated to `legacy/`, unmodified (ADR-003).
-2. `docs/forge-business-rules.md` written — the cited business source of
-   truth (see `docs/session-state.md` §3).
-3. Next.js/TypeScript/Tailwind/MDX architecture scaffolded (ADR-001,
-   ADR-002).
-4. Design system built: tokens, primitives, `/design-system` internal
-   preview route (ADR-005).
-5. `docs/conversion-architecture.md` written — funnel design, objection
-   handling, CRM lifecycle, analytics taxonomy (ADR-006).
-6. Homepage built (12 sections, real showcase content introduced,
-   pricing tiers renamed Launch/Growth/Pro, CTA copy unified) (ADR-007).
-7. **This session:** showcase system built — `/showcases`,
-   `/showcases/[slug]`, `lib/showcases.ts`, structured data, the
-   `showcase_viewed` event wired, the two prior ad hoc showcase cards
-   consolidated into one (ADR-008).
-
-See `docs/decisions.md` for the full ADR log (append-only — do not
-rewrite past entries; see §7 below).
+1. Legacy site relocated to `legacy/`, unmodified.
+2. Business rules document written.
+3. Next.js/TypeScript/Tailwind/MDX architecture scaffolded.
+4. Design system built.
+5. Conversion architecture document written.
+6. Homepage built.
+7. Showcase system built (`/showcases`, `/showcases/[slug]`).
+8. Forge Free Audit rebuilt as a full self-serve tool (`/audit`).
+9. CRM rebuilt as a full adapter (Lead model, 17-stage lifecycle).
+10. **The commercial ladder finalized** — ₹5,000/₹15,000/₹25,000
+    (Launch/Growth/Pro), set directly by the business owner, resolving
+    two of the fourteen open Human Decisions (ADR-011).
+11. Post-sale growth architecture — reviews, showcase eligibility,
+    referrals (ADR-012), plus a file-backed store fix for it (ADR-013).
+12. **The blog and resource system built** — `/blog`, `/blog/[slug]`,
+    nine topic clusters, full SEO surface, three real articles (ADR-014).
+13. **A real, site-wide button-contrast bug found and fixed** — see §6.
 
 ## 3. What has NOT been changed
 
-- **`legacy/` — zero content edits since it was moved.** Every file in
-  it is byte-for-byte what shipped originally, just relocated.
-- **`/tools`** — route exists, renders "nothing is live here yet"
-  honestly. `lib/constants.ts` `TOOLS` is an empty array. No tool has
-  been built.
-- **`/blog`** — route and MDX pipeline work, but only one placeholder
-  post exists (`content/blog/hello-world.mdx`), explicitly labeled as
-  not real Forge content.
-- **Lead delivery is not connected to a real destination.** `lib/crm.ts`
-  defaults to a console-only provider; no `.env` file exists in this
-  repo and no `CRM_PROVIDER` is set. A submitted lead is only logged to
-  the server console in this environment. Whether a real provider is
-  configured outside this repo (e.g. in a deployment platform's own env
-  vars) is unknown from here — do not assume it is.
-- **Analytics is not connected to any real vendor.** `lib/analytics.ts`
-  is a console-only no-op by design, per the unresolved HD#12 and the
-  legacy site's public "no third-party trackers" promise.
-- **None of the 14 Human Decisions in `docs/forge-business-rules.md`
-  have been resolved by the business owner.** Two have been treated as
-  *working assumptions* for planning/building purposes only (HD#1: the
-  ₹5,000 entry-tier funnel; HD#8: the three existing showcase entries'
-  consent) — both are explicitly flagged in the source documents as
-  still needing real sign-off, not settled.
-- **The customer application** (`app.forge.bruuhh.com`) does not exist
-  in any form. Out of scope for every phase of this rebuild so far.
-- **No test suite, no CI** exists. Verification has been manual
-  (typecheck/lint/build + browser checks) each session.
+- **`legacy/` — zero content edits.** Standing project convention.
+- **`/tools`** — still an empty registry, still says so honestly.
+- **Lead delivery is still not connected to a real destination.**
+  `lib/crm.ts` defaults to a console/file-backed provider; no `.env`
+  exists. Whether a real provider is configured outside this repo
+  (a deployment platform's own env vars) is unknown from here.
+- **Analytics is still not connected to any real vendor.**
+- **12 of the 14 Human Decisions in `docs/forge-business-rules.md`
+  remain open** — HD#1 and HD#2 are now resolved (§9 below); the rest
+  (maintenance pricing conflict, revision policy, refund policy,
+  referral mechanics/reward, testimonial consent process, showcase
+  consent process for future clients, the privacy-policy/code
+  discrepancy, retention enforcement, CRM strategy, analytics go/no-go,
+  the canonical contact channel, the positioning statement) are not.
+- **The customer application** (`app.forge.bruuhh.com`) does not exist.
+- **No test suite, no CI.**
 
 ## 4. Current architecture
 
 Summarized in `docs/session-state.md` §2; authoritative detail in
-`docs/architecture.md`. One-line version: Next.js 15 App Router + React
-19 + TypeScript strict + Tailwind v3 + filesystem MDX content, Server
-Components by default, one Server Action (`app/actions.ts`) behind every
-lead form, CRM and analytics both behind swappable provider
-abstractions that currently default to safe no-ops.
+`docs/architecture.md`. One-line version, updated: Next.js 15 App
+Router + React 19 + TypeScript strict + Tailwind v3 + filesystem MDX
+content (now covering blog *and* showcases with real entries), a full
+`CrmAdapter` with a post-delivery reviews/referrals loop on top, and a
+finalized three-tier commercial ladder — all still behind swappable
+provider abstractions that default to safe no-ops/local-only behavior.
 
 ## 5. Current business rules
 
-Authoritative source: `docs/forge-business-rules.md`. Do not
-paraphrase pricing, policy, or claims from memory or from this handoff
-— read that file directly before writing or changing anything
-customer-facing. `docs/session-state.md` §3 lists its structure and
-reproduces the full 14-item Human Decisions list for quick scanning.
+Authoritative source: `docs/forge-business-rules.md`. **Changed this
+checkpoint's predecessor session:** HD#1 (canonical funnel) and HD#2
+(the ₹25,000 figure) are now marked resolved there, citing ADR-011 —
+read the resolution notes directly rather than trusting this summary.
+Everything else in that document is unchanged.
 
-## 6. Important decisions made (with rationale)
+## 6. Important decisions made (with rationale) — since the last handoff
 
-Full text in `docs/decisions.md` (ADR-000 through ADR-008). The ones
+Full text in `docs/decisions.md` (ADR-009 through ADR-015). The ones
 most likely to matter to whatever comes next:
 
-- **ADR-003:** legacy code is moved, never edited or deleted. This is a
-  standing project convention, not a one-time choice — it applies to
-  any future session too.
-- **ADR-005:** design tokens live in one file (`lib/design-tokens.ts`)
-  consumed by both Tailwind and the `/design-system` preview, so they
-  cannot drift apart. Tailwind's default `fontSize` scale was replaced,
-  not extended, to force every component through the named type scale.
-- **ADR-007:** the three real client names/metrics on the homepage and
-  in showcases were carried forward under the reasoning that they were
-  already public on the live legacy site before this rebuild touched
-  them — **this covers only those three existing entries**, not a
-  general policy for showcasing future clients (HD#8 remains open for
-  that).
-- **ADR-008:** one `ShowcaseCard` component now serves both the
-  homepage and `/showcases` (replacing two overlapping components);
-  showcase publishability is gated on four required fields
-  (`name`/`industry`/`websiteUrl`/`description`), not a hardcoded slug
-  exclusion list — this is what lets the system scale to more entries
-  without page-level code changes.
-- **Recurring convention, not one ADR:** every optional or unconfirmed
-  business fact is typed as `null`/`'tbd'`/absent in code and rendered
-  as an honest empty/pending state — never filled with a plausible-
-  looking placeholder. This applies to contact info, the ₹25,000 tier,
-  capacity numbers, and every showcase field. Preserve this pattern.
+- **ADR-011:** the business owner directly set the final commercial
+  ladder (₹5,000 Launch / ₹15,000 Growth / ₹25,000 Pro) in this
+  session — a real resolution, not a working assumption. Differentiation
+  between tiers is structural (build approach, page count, revision
+  rounds, delivery time, support window), not padded feature lists.
+- **ADR-014:** the blog is a real acquisition-channel system now, not a
+  placeholder — three real articles, nine-cluster taxonomy, full SEO
+  surface, and an explicit `article → relevant tool → audit → Forge`
+  CTA chain (never "buy now").
+- **ADR-015 — read this one carefully if you touch any dark-background
+  button.** `lib/utils.ts` `cn()` had a real, site-wide bug: it silently
+  dropped a button's real text color whenever combined with Forge's
+  custom `text-{size}` scale (affects `Button`'s `onDark`/
+  `onDarkSecondary` variants specifically, which are always used with a
+  `size`). This was **not** introduced this session — it affected every
+  existing dark CTA band before now, including the showcase page's
+  "Visit the live site" button, which was rendering invisible
+  (background-colored) text before the fix. Fixed once, centrally, in
+  `lib/utils.ts`; verified against the real installed `tailwind-merge`
+  package and live in browser on both the showcase and blog CTAs. No
+  component needed to change.
+- **Recurring convention, still true:** every optional or unconfirmed
+  business fact is typed as `null`/`'tbd'`/absent and rendered as an
+  honest empty/pending state. This now also covers `REFERRAL_REWARD_CONFIG`
+  and `BlogFrontmatter.featuredImage` (never a placeholder image).
 
-## 7. Important unresolved decisions
+## 7. SEO checkpoint audit (this session, explicit ask)
 
-The 14 Human Decisions in `docs/forge-business-rules.md` (full list in
-`docs/session-state.md` §3). The single most urgent one for anyone
-picking this up:
+The concern checked: is the blog — meant as an organic acquisition
+channel — accidentally noindexed? **Verified: no.**
 
-> **HD#13 — canonical contact channel.** No real WhatsApp number or
-> support email exists anywhere in the source. Until the business owner
-> supplies one, `SITE.whatsappNumber`/`SITE.supportEmail` stay `null`,
-> the WhatsApp float button stays invisible, and — more importantly —
-> **there is no configured way for a submitted lead to reach a person**
-> (see §3 above). This blocks the site from functioning as a working
-> funnel in production, independent of how much page content exists.
+- No `robots` field is set in `buildMetadata()`'s output for `/blog` or
+  `/blog/[slug]` (confirmed by reading `app/blog/page.tsx`,
+  `app/blog/[slug]/page.tsx`, and `lib/seo.ts`, then confirmed live —
+  `document.querySelector('meta[name="robots"]')` is absent on both
+  routes, which defaults to indexable).
+- No `middleware.ts` exists in this repo.
+- `next.config.mjs`'s `headers()` sets CSP/frame/content-type/referrer/
+  permissions headers only — no `X-Robots-Tag` anywhere.
+- No `vercel.json` exists at the repository root (only inside `legacy/`,
+  which isn't part of the deployed Next.js build).
+- `app/robots.ts` (new this session) explicitly `Allow: /`, and only
+  disallows `/r/` and `/api/` — both non-content utility routes, not the
+  blog.
+- `app/sitemap.ts` (new this session) includes `/blog` and all three
+  real post URLs, pulled live from `getAllPosts()`.
+- The **only** noindex in this codebase is `app/design-system/page.tsx`'s
+  `robots: { index: false, follow: false }` — intentional and documented
+  (`docs/architecture.md`: "internal only, noindex/unlinked"). **This was
+  left untouched, per instruction not to remove an intentionally
+  documented noindex.**
 
-Also unresolved and worth flagging proactively if the next session
-touches pricing or maintenance copy: HD#2 (₹25,000 tier), HD#3
-(maintenance pricing — two conflicting structures), HD#9 (a live,
-uncorrected discrepancy between `privacy.html`'s claims and what
-`legacy/api/submit.js` actually does — this is a compliance-adjacent
-issue, not just a content gap).
+**Conclusion: nothing needed to be removed.** The blog was never
+noindexed. If a future session finds it noindexed, that would be a new
+regression introduced after this checkpoint, not a carryover from this
+one.
 
-## 8. Files created (this rebuild, cumulative since the legacy baseline)
+## 8. Repository safety audit (this session, explicit ask)
 
-Everything under `app/`, `components/`, `lib/`, `content/`, and the
-`docs/*.md` files other than `docs/legacy-readme.md` (which is a
-verbatim copy of the original README, not new content) is new,
-rebuild-authored code. Full directory trees are in
-`docs/session-state.md` §2. Root-level config files created for the
-Next.js toolchain: `next.config.mjs`, `tailwind.config.ts`,
-`tsconfig.json`, `postcss.config.js`, `.eslintrc.json`, `package.json`,
-`package-lock.json`, `next-env.d.ts`, `.gitignore`.
+- **No unexpected deletions** beyond `content/blog/hello-world.mdx`
+  (intentional — see ADR-014, `git rm`'d, matching its own body text's
+  instruction to delete it once real content existed, and the identical
+  precedent for `example-showcase.mdx` in ADR-008).
+- **No secrets added.** No `.env*` file exists anywhere in the repo
+  (`find` confirms it). `.gitignore` was extended (not by this specific
+  audit, but present and correct) to also exclude `.data/` — the
+  file-backed store's on-disk location, which can contain lead PII in
+  local dev and must never be committed.
+- **No debug or temporary files** found in `git status`.
+- **`tsconfig.json`'s diff is cosmetic** — Next.js's own tooling
+  reformatted it (multi-line arrays) and added a `.next-verify/types`
+  include path from a verification build run earlier in this work;
+  functionally equivalent, not a manual edit, not a risk.
+- **Nothing has been committed.** `git log` still ends at `f72f58d`. All
+  work described in this handoff and its predecessor is sitting
+  uncommitted in the working tree — see §12 for the exact file list.
 
-**Created this session specifically:**
-- `lib/showcases.ts`
-- `components/showcases/ShowcaseViewTracker.tsx`
-- `docs/session-state.md`, `docs/session-handoff.md` (this pair)
+## 9. Content safety audit (this session, explicit ask)
 
-## 9. Files modified
+- **No fabricated reviews or testimonials** — grepped the three new blog
+  posts and all touched files; none exists. The only quoted reviews in
+  the codebase remain the pre-existing, real showcase entries.
+- **No fabricated metrics** — no invented percentage, statistic, or
+  "studies show" claim in any new content.
+- **No unsupported claims** — the blog's advice is general, defensible
+  best-practice guidance (matching `forge-business-rules.md` §17/§18's
+  existing "specific and checkable, never hype" standard), not a claim
+  about Forge's own results.
+- **No fake scarcity** — `CAPACITY.status` is still `'tbd'`;
+  `CapacityStrip` still renders nothing. Grepped for urgency language
+  ("limited time," "only X left," etc.) — none found in any new file.
+- **No accidental old pricing** — grepped for every legacy price figure
+  (₹9,999, ₹24,999, ₹30,000, the flat ₹1,999/mo maintenance mention)
+  across `app/`, `components/`, `lib/`, `content/`; every hit is either a
+  CSS offset (`-9999px`), a placeholder phone-number format
+  (`+91 99999 99999`), or a documentation citation of the legacy
+  conflict — never a live price. `lib/constants.ts` currently prices
+  Launch/Growth/Pro at ₹5,000/₹15,000/₹25,000 and Maintenance at
+  ₹1,499/₹3,999/₹7,999, matching ADR-011 exactly.
 
-**Relative to the legacy baseline:** only `README.md` was rewritten in
-place (the original content was preserved verbatim as
-`docs/legacy-readme.md` before the rewrite — see ADR in
-`docs/decisions.md` around the baseline-scaffold commit). Everything
-else in `legacy/` was moved, not edited.
+## 10. The tailwind-merge fix — re-verified at this checkpoint
 
-**This session specifically** (full list and rationale in the ADR-008
-entry of `docs/decisions.md`):
-`app/page.tsx`, `app/showcases/page.tsx`, `app/showcases/[slug]/page.tsx`,
-`app/design-system/page.tsx`, `components/showcases/ShowcaseCard.tsx`,
-`components/showcases/ShowcaseGrid.tsx`,
-`components/marketing/TransformationCompare.tsx`,
-`content/showcases/smile-care-dental.mdx`,
-`content/showcases/asquare-venture.mdx`,
-`content/showcases/we-health-care-diagnostic.mdx`,
-`docs/architecture.md`, `docs/conversion-architecture.md`,
-`docs/decisions.md`, `README.md` (Status section, in the step that
-produced this handoff).
+See `docs/session-state.md` §7 for the full writeup. Re-confirmed at
+this checkpoint, freshly, against the actual installed `tailwind-merge`
+package and live in browser:
 
-**Deleted this session** (rationale in ADR-008 — superseded, not
-arbitrary cleanup): `components/showcases/ShowcaseProofCard.tsx`,
-`components/showcases/CaseStudyCard.tsx`,
-`content/showcases/example-showcase.mdx`.
-
-## 10. Files that must not be modified without explicit approval
-
-- **`legacy/**`** — never edit or delete. If something there looks
-  wrong, fix the rebuilt equivalent and/or note the discrepancy in
-  `docs/forge-business-rules.md`; do not touch the source file. This
-  has been a standing instruction for the entire project, not a
-  one-session preference.
-- **`docs/forge-business-rules.md`** — the business source of truth.
-  Only add to it when a new sourced fact is found in the legacy code, or
-  when a Human Decision is genuinely resolved by the business owner
-  (with that resolution noted explicitly, e.g. the pattern used for
-  HD#1 in `docs/conversion-architecture.md`). Never edit it to make an
-  unresolved decision look settled.
-- **`docs/decisions.md`** — append-only. Do not rewrite or delete a past
-  ADR's Context/Decision/Consequences, even if a later change supersedes
-  it — log the supersession as a new ADR that references the old one
-  (see how ADR-008 handles ADR-007's `ShowcaseProofCard`).
-- **Any `null`/`'tbd'`/empty value in `lib/constants.ts`**
-  (`SITE.supportEmail`, `SITE.whatsappNumber`, the `'25000'` tier's
-  `price`, `CAPACITY`'s numbers and `status`, `TOOLS`) — do not fill
-  these with a plausible-looking value. They are `null`/`'tbd'` because
-  no real, confirmed number exists. Only change them when a Human
-  Decision is actually resolved, and cite where the new value came from.
-- **Do not commit a real `.env`/`.env.local`** or any real CRM/analytics
-  credential into this repository. `.gitignore` already excludes
-  `.env*`; keep it that way.
+- `twMerge('text-ground', 'text-body')` → both classes present (was:
+  `text-body` alone, color silently dropped).
+- A genuine color-color conflict (`text-ground`, `text-ink`) still
+  resolves to the last one — real conflict detection wasn't loosened.
+- A genuine size-size conflict (`text-body`, `text-body-sm`) still
+  resolves to the last one.
+- Unrelated conflict groups (padding, standard Tailwind background
+  colors, standard Tailwind font sizes, display) all unaffected.
+- Live in browser: every `onDark`-variant button on
+  `/showcases/smile-care-dental` (2× "Get your free audit", "Visit the
+  live site ↗") and on `/blog/optimize-google-business-profile-local-search`
+  ("Get your free audit," the `ctaHref` secondary link) now has
+  genuinely distinct, correct text/background colors.
 
 ## 11. Current branch
 
-`rebuild` (git command: `git branch --show-current` confirms this as of
-the snapshot date above). `main` holds the untouched baseline import
-only — do not merge into `main` without the user's explicit instruction.
+`rebuild`. `main` holds the untouched baseline import only.
 
-## 12. Latest commit
+## 12. Latest commit — and everything sitting uncommitted on top of it
 
 ```
-5fb4077 Build the Forge showcase system
+f72f58d docs: write session handoff and state snapshot
 ```
-Pushed to `origin/rebuild` (`https://github.com/Rishiidev/forge-marketing.git`).
-Working tree is clean as of this snapshot — no uncommitted changes
-except the two handoff files and the `README.md` Status update this
-step is about to add.
 
-Full recent history:
-```
-5fb4077 Build the Forge showcase system
-688f832 feat: build the Forge homepage
-d00a41d docs: write conversion architecture
-b85bc03 feat: build the Forge design system
-8068d4f feat: scaffold Next.js marketing site architecture
-f99c480 chore: relocate legacy static site into legacy/
-19f6387 docs: write Forge business strategy document
-0440bb0 docs: add rebuild scaffold, preserve original README
-272c836 Baseline: import existing Forge marketing site, unmodified
-```
+Nothing has been committed since. `git status --short` at this
+checkpoint:
+
+**Modified:**
+`.gitignore`, `app/actions.ts`, `app/audit/page.tsx`,
+`app/blog/page.tsx`, `app/blog/[slug]/page.tsx`,
+`app/design-system/page.tsx`, `app/maintenance/page.tsx`,
+`app/websites/page.tsx`, `components/blog/BlogCard.tsx`,
+`components/blog/BlogList.tsx`, `components/forms/useLeadForm.ts`,
+`components/pricing/PriceCard.tsx`,
+`components/pricing/WebsiteTierPage.tsx`, `docs/architecture.md`,
+`docs/conversion-architecture.md`, `docs/decisions.md`,
+`docs/forge-business-rules.md`, `lib/analytics.ts`, `lib/constants.ts`,
+`lib/crm.ts`, `lib/seo.ts`, `lib/utils.ts`, `tsconfig.json`
+
+**Deleted (staged):** `content/blog/hello-world.mdx`
+
+**Untracked (new files):** `app/r/`, `app/robots.ts`, `app/sitemap.ts`,
+`components/audit/AuditInputForm.tsx`,
+`components/audit/AuditLeadCaptureForm.tsx`,
+`components/audit/AuditProcessing.tsx`,
+`components/audit/AuditResultView.tsx`, `components/audit/AuditTool.tsx`,
+`components/blog/ArticleBody.tsx`, `components/blog/ArticleCTA.tsx`,
+`components/blog/ArticleHeader.tsx`, `components/blog/BlogViewTracker.tsx`,
+`components/blog/RelatedArticles.tsx`, `components/blog/TableOfContents.tsx`,
+`components/marketing/Breadcrumbs.tsx`,
+`components/pricing/PricingComparisonTable.tsx`, `content/blog/`
+(3 real posts), `docs/crm.md`, `lib/audit.ts`, `lib/blog.ts`,
+`lib/file-store.ts`, `lib/rate-limit.ts`, `lib/referrals.ts`,
+`lib/reviews.ts`, `lib/validation.ts`
+
+This is the accumulated, uncommitted output of the Forge Free Audit
+build, the CRM/referrals/reviews rebuild, the commercial-ladder pricing
+pages, and the blog system — four features deep with zero commits
+between them. **Recommended commit message is in this checkpoint's own
+report to the user; whoever picks this up next should commit before
+adding anything else**, to get a real rollback point.
 
 ## 13. Current build/test status
 
-Verified immediately before writing this handoff:
+Re-verified at this checkpoint:
 
 - `npm run typecheck` — clean.
-- `npm run lint` — clean ("No ESLint warnings or errors"; only a
-  deprecation notice that `next lint` will be removed in Next.js 16).
-- `npm run build` — succeeds, all 18 routes generated (static or SSG via
-  `generateStaticParams`), no warnings.
-- No automated test suite exists to run. Manual browser verification was
-  performed for the showcase system this session (desktop + mobile,
-  console/network clean, analytics events firing, live-site links
-  correct) — see the ADR-008 commit message for the exact checklist.
+- `npm run lint` — clean ("No ESLint warnings or errors"; only the
+  standing `next lint` deprecation notice).
+- `npm run build` — succeeds, 22/22 routes generated (`/blog`,
+  `/sitemap.xml`, `/robots.txt` are new since the last handoff), no
+  warnings.
+- No automated test suite exists. Manual browser verification performed
+  this checkpoint: noindex/canonical/OpenGraph/Twitter/structured-data
+  checks on `/blog` and `/blog/[slug]`, internal-link resolution
+  (fetched every linked URL, all 200), and computed-style contrast
+  checks on both the showcase and blog dark CTAs.
 
 ## 14. Exact next recommended action
 
-**Do not start new page/feature work before addressing this.** The
-highest-leverage next step is not code — it is closing the gap between
-"the funnel looks complete" and "the funnel actually delivers a lead to
-a person." Concretely:
+**Commit this work before starting anything else.** Four features'
+worth of changes sitting uncommitted (Forge Free Audit, CRM/referrals/
+reviews, pricing ladder, blog system) is real risk with no offsetting
+benefit — a bad edit from here has nothing to roll back to. See the
+checkpoint report's recommended commit message.
 
-1. Get the business owner to resolve **HD#13** (a real WhatsApp number
-   and/or support email) and **HD#11** (what the CRM destination
-   actually is — Supabase directly, an external CRM, or a webhook
-   target). Until at least one of these is answered, set
-   `CRM_PROVIDER=webhook` and `CRM_WEBHOOK_URL=...` (or leave it on
-   `console` deliberately, if this is still a preview/demo phase) so
-   whoever deploys this next knows the actual state rather than
-   assuming leads are being delivered somewhere.
-2. If business input isn't available yet and engineering work should
-   continue anyway, the safest next increment is a content pass on
-   `/blog` (real posts) or `/tools` (a first real tool) — both are
-   additive, don't require resolving a Human Decision, and were
-   explicitly flagged as not-yet-real in `docs/session-state.md` §2.
-3. Whichever is chosen, follow the established pattern: read
-   `docs/forge-business-rules.md` and `docs/architecture.md` first,
-   cite sources for any new fact, mark anything unconfirmed as TBD
-   rather than guessing, and log any non-trivial choice as a new ADR in
-   `docs/decisions.md`.
+After that, unchanged from before: the highest-leverage remaining gap is
+still **HD#13 — no real contact channel exists**, which means no
+submitted lead can reach a person in any deployed environment regardless
+of how complete the funnel looks. Get the business owner to resolve
+HD#13 (contact channel) and HD#11 (CRM destination) before the next
+feature pass, or continue with additive work that doesn't require a
+Human Decision (e.g. a first real `/tools` entry).
 
 ## 15. Known risks
 
-- **Silent lead loss in any real deployment.** If this is deployed
-  without `CRM_PROVIDER` set, every lead is only logged to a server
-  console that likely no one is watching — it will look like the funnel
-  works (form submits successfully, user sees a success state) while
-  actually delivering nothing to Forge. This is the single biggest risk
-  in the current state of the repository.
-- **Two unresolved pricing conflicts** (HD#3 maintenance, and the
-  underlying ₹5,000-vs-₹9,999 funnel question behind HD#1) mean any
-  copy or sales conversation based on the currently-coded numbers could
-  contradict a number the business owner intends to use elsewhere.
-- **A live, uncorrected compliance-adjacent discrepancy** (HD#9):
-  `legacy/privacy.html`'s stated data-sharing and no-scoring claims do
-  not match what `legacy/api/submit.js` actually does. This hasn't been
-  fixed in the rebuild because the rebuild doesn't yet have a privacy
-  page or a wired lead-scoring mechanism — but whoever writes the
-  rebuild's privacy policy needs to resolve this consciously, not copy
-  `privacy.html`'s text forward unchanged.
-- **`docs/architecture.md`, `docs/conversion-architecture.md`, and
-  `docs/forge-business-rules.md` are living documents that this
-  session kept in sync with the code.** A future session that changes
-  code without updating the relevant doc will cause exactly the kind of
-  drift this project has been structured to avoid. Treat doc updates as
-  part of the change, not an afterthought.
-- **No CI.** Nothing currently prevents a future commit from breaking
-  `typecheck`/`lint`/`build` before it reaches `main`. Verification is
-  only as good as whoever runs it manually.
+- **Four uncommitted features deep, zero commits.** The single biggest
+  operational risk right now — not a code defect, a process one.
+- **Silent lead loss in any real deployment** — unchanged from every
+  prior handoff; still true.
+- **Two unresolved pricing conflicts remain**: HD#3 (maintenance
+  ₹1,999/mo vs. the three-tier structure) and — separately — the
+  now-*resolved* HD#1/HD#2 mean any old external reference to ₹9,999/
+  ₹24,999/₹30,000 is stale as of ADR-011.
+- **A live, uncorrected compliance-adjacent discrepancy** (HD#9,
+  privacy-policy vs. code) — unchanged, still open.
+- **If a future session adds a real `.env` or real analytics/CRM
+  vendor, re-run this checkpoint's noindex and content-safety audits** —
+  nothing here currently depends on that decision, but a rushed real
+  integration is exactly the kind of change that could accidentally
+  introduce a `robots` header or a fabricated metric.
+- **No CI.** Still nothing prevents a future commit from breaking
+  typecheck/lint/build before it reaches `main`.

@@ -17,9 +17,15 @@ export interface PageSeoInput {
   /** Path starting with '/', e.g. '/websites/5000'. */
   path: string
   ogImage?: string
+  /** 'article' for blog posts (adds OG article tags below) — every other page stays 'website'. */
+  type?: 'website' | 'article'
+  /** Article-only. ISO date string from frontmatter. */
+  publishedTime?: string
+  /** Article-only. Byline, from frontmatter. */
+  author?: string
 }
 
-export function buildMetadata({ title, description, path, ogImage }: PageSeoInput): Metadata {
+export function buildMetadata({ title, description, path, ogImage, type = 'website', publishedTime, author }: PageSeoInput): Metadata {
   const url = `${SITE.marketingUrl}${path}`
   const images = ogImage ? [{ url: ogImage }] : undefined
 
@@ -27,19 +33,51 @@ export function buildMetadata({ title, description, path, ogImage }: PageSeoInpu
     title: `${title} — ${SITE.name}`,
     description,
     alternates: { canonical: url },
-    openGraph: {
-      title,
-      description,
-      url,
-      siteName: SITE.name,
-      type: 'website',
-      images,
-    },
+    openGraph:
+      type === 'article'
+        ? {
+            title,
+            description,
+            url,
+            siteName: SITE.name,
+            type: 'article',
+            images,
+            ...(publishedTime ? { publishedTime } : {}),
+            ...(author ? { authors: [author] } : {}),
+          }
+        : {
+            title,
+            description,
+            url,
+            siteName: SITE.name,
+            type: 'website',
+            images,
+          },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
       images: ogImage ? [ogImage] : undefined,
     },
+  }
+}
+
+export interface BreadcrumbItem {
+  name: string
+  /** Path starting with '/'. The last item is the current page and is still given a URL — schema.org requires one per item. */
+  path: string
+}
+
+/** JSON-LD BreadcrumbList — pair with components/marketing/Breadcrumbs.tsx, which renders the visible trail from the same items. */
+export function buildBreadcrumbJsonLd(items: BreadcrumbItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${SITE.marketingUrl}${item.path}`,
+    })),
   }
 }
