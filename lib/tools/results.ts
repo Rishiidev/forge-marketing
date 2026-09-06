@@ -25,6 +25,9 @@ interface FindingInput {
   detail: string
   severity?: ToolFindingSeverity
   recommendationHref?: string
+  whyItMatters?: string
+  recommendedAction?: string
+  technicalDetails?: Record<string, string | number | boolean | null>
 }
 
 function build(resultCategory: ToolFinding['resultCategory'], defaultSeverity: ToolFindingSeverity) {
@@ -34,6 +37,9 @@ function build(resultCategory: ToolFinding['resultCategory'], defaultSeverity: T
     detail: input.detail,
     severity: input.severity ?? defaultSeverity,
     recommendationHref: input.recommendationHref,
+    whyItMatters: input.whyItMatters,
+    recommendedAction: input.recommendedAction,
+    technicalDetails: input.technicalDetails,
     resultCategory,
   })
 }

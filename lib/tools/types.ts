@@ -125,6 +125,24 @@ export interface ToolFinding {
   detail: string
   /** Optional link into the relevant Forge page (audit, a website tier, maintenance) — never a bare "buy now". */
   recommendationHref?: string
+  /**
+   * Optional richer structure — components/tools/ToolFinding.tsx renders
+   * these as their own labeled lines when present, falling back to
+   * `detail` alone otherwise. Together with `detail` (used as "what we
+   * found") this supports a WHAT/WHY/WHAT-TO-DO shape — first used by
+   * lib/website-analyzer/ — without forcing every simpler tool (e.g.
+   * lib/audit.ts) to fill in fields it has no real content for.
+   */
+  whyItMatters?: string
+  recommendedAction?: string
+  /**
+   * Raw, technical evidence for a curious visitor to dig into — rendered
+   * behind a native `<details>` disclosure ("technical details"),
+   * collapsed by default, never dumped into the main, plain-language
+   * finding text. Values are display-ready (already stringified where
+   * needed), not the original typed evidence object.
+   */
+  technicalDetails?: Record<string, string | number | boolean | null>
 }
 
 export interface ToolError {

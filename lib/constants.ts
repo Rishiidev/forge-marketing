@@ -364,21 +364,32 @@ export const INDUSTRY_TEMPLATES: IndustryTemplate[] = [
 ]
 
 // ---------------------------------------------------------------------
-// Tools (/tools, /tools/[slug]) — no interactive tool currently exists
-// in the source codebase beyond the bespoke pricing calculator
-// (legacy/bespoke-quote.html), which this registry does not yet model.
-// This is a placeholder registry, not a migrated feature.
+// Tools (/tools, /tools/[slug]) — the Forge Website Diagnostic suite
+// (lib/website-analyzer/), 12 tools built on one reusable homepage
+// analysis engine (lib/website-analyzer/analyzer.ts). No tool
+// re-implements any fetching/parsing/scoring logic — every one filters
+// the same analysis to its own category. See docs/tool-architecture.md
+// and docs/tool-security.md.
 //
 // ToolDefinition and its supporting types live in lib/tools/types.ts —
 // the single source of truth for the zero-cost tools architecture (see
 // docs/tools-cost-policy.md and docs/tool-cost-matrix.md). Every entry
 // added here is checked by lib/tools/__tests__/cost-policy.test.ts.
+//
+// WEBSITE_ANALYZER_TOOLS is imported here, not the other way around —
+// lib/website-analyzer/tools.ts deliberately does NOT import from this
+// file (even though it needs AUDIT_HREF/AUDIT_CTA_LABEL, defined below
+// in this same file) specifically to avoid a circular module
+// dependency; see that file's own comment for why. If AUDIT_HREF/
+// AUDIT_CTA_LABEL below ever change, lib/website-analyzer/tools.ts's
+// inlined copies need updating too.
 // ---------------------------------------------------------------------
 
 import type { ToolDefinition } from '@/lib/tools/types'
 export type { ToolDefinition } from '@/lib/tools/types'
+import { WEBSITE_ANALYZER_TOOLS } from '@/lib/website-analyzer/tools'
 
-export const TOOLS: ToolDefinition[] = []
+export const TOOLS: ToolDefinition[] = [...WEBSITE_ANALYZER_TOOLS]
 
 // ---------------------------------------------------------------------
 // Primary navigation — reflects the new route structure, not the legacy

@@ -227,7 +227,9 @@ export interface SafeFetchOptions {
   /** Default 2MB — the response body is streamed and cut off, not buffered unbounded. */
   maxResponseBytes?: number
   /** Default ['text/html'] — any other Content-Type is rejected before the body is read. */
-  allowedContentTypePrefixes?: string[]
+  allowedContentTypePrefixes?: readonly string[]
+  /** Default 'GET'. 'HEAD' is useful for a lightweight reachability check (e.g. lib/website-analyzer/links.ts) that never needs a body. */
+  method?: 'GET' | 'HEAD'
 }
 
 export interface SafeFetchResult {
@@ -237,6 +239,12 @@ export interface SafeFetchResult {
   /** Truncated at maxResponseBytes if the real response was larger — never silently the full body if it exceeded the cap. */
   body: string
   truncated: boolean
+  /** Every URL actually visited before the final one, in order — empty when there was no redirect. Each hop was independently re-validated (see the manual redirect handling below), so this is also a record of what passed that check. */
+  redirectChain: string[]
+  /** Wall-clock time for the whole operation, all redirect hops included. */
+  responseTimeMs: number
+  /** Plain object of the final response's headers — lowercase keys, per the Headers API. */
+  headers: Record<string, string>
 }
 
 const DEFAULT_OPTIONS: Required<SafeFetchOptions> = {
@@ -244,6 +252,7 @@ const DEFAULT_OPTIONS: Required<SafeFetchOptions> = {
   maxRedirects: 3,
   maxResponseBytes: 2_000_000,
   allowedContentTypePrefixes: ['text/html'],
+  method: 'GET',
 }
 
 /**
@@ -266,14 +275,16 @@ export const MAX_ANALYSIS_DEPTH = 1 as const
  * tool-specific fallback finding.
  */
 export async function safeFetch(rawUrl: string, opts: SafeFetchOptions = {}): Promise<SafeFetchResult> {
-  const { timeoutMs, maxRedirects, maxResponseBytes, allowedContentTypePrefixes } = { ...DEFAULT_OPTIONS, ...opts }
+  const { timeoutMs, maxRedirects, maxResponseBytes, allowedContentTypePrefixes, method } = { ...DEFAULT_OPTIONS, ...opts }
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  const startedAt = Date.now()
 
   try {
     let currentUrl = rawUrl
     let redirectCount = 0
+    const redirectChain: string[] = []
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -285,6 +296,7 @@ export async function safeFetch(rawUrl: string, opts: SafeFetchOptions = {}): Pr
       let response: Response
       try {
         response = await fetch(validation.url, {
+          method,
           redirect: 'manual',
           signal: controller.signal,
           headers: { 'User-Agent': 'ForgeFreeTools/1.0 (+https://forge.bruuhh.com)' },
@@ -304,17 +316,42 @@ export async function safeFetch(rawUrl: string, opts: SafeFetchOptions = {}): Pr
         if (redirectCount > maxRedirects) {
           throw makeToolError(TOOL_ERROR_CODES.UPSTREAM_UNAVAILABLE, 'Too many redirects.')
         }
+        redirectChain.push(validation.url.toString())
         currentUrl = new URL(response.headers.get('location')!, validation.url).toString()
         continue
       }
 
       const contentType = response.headers.get('content-type') ?? ''
+      // A HEAD request has no body to validate/read at all — used by
+      // lib/website-analyzer/links.ts purely for a status-code check.
+      if (method === 'HEAD') {
+        return {
+          finalUrl: validation.url.toString(),
+          status: response.status,
+          contentType,
+          body: '',
+          truncated: false,
+          redirectChain,
+          responseTimeMs: Date.now() - startedAt,
+          headers: Object.fromEntries(response.headers.entries()),
+        }
+      }
+
       if (!allowedContentTypePrefixes.some((prefix) => contentType.startsWith(prefix))) {
         throw makeToolError(TOOL_ERROR_CODES.UNSUPPORTED_CONTENT_TYPE, 'That page is not a type this tool can read.')
       }
 
       const { text, truncated } = await readBodyWithCap(response, maxResponseBytes)
-      return { finalUrl: validation.url.toString(), status: response.status, contentType, body: text, truncated }
+      return {
+        finalUrl: validation.url.toString(),
+        status: response.status,
+        contentType,
+        body: text,
+        truncated,
+        redirectChain,
+        responseTimeMs: Date.now() - startedAt,
+        headers: Object.fromEntries(response.headers.entries()),
+      }
     }
   } finally {
     clearTimeout(timeout)
