@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { buildMetadata, buildBreadcrumbJsonLd } from '@/lib/seo'
+import { buildMetadata, buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo'
 import { PageHero } from '@/components/marketing/PageHero'
 import { Section } from '@/components/ui/Section'
 import { Breadcrumbs } from '@/components/marketing/Breadcrumbs'
@@ -33,7 +33,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBreadcrumbJsonLd(breadcrumbItems)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(buildBreadcrumbJsonLd(breadcrumbItems)) }}
       />
       <Section spacing="tight" className="pb-0">
         <Breadcrumbs items={breadcrumbItems} />

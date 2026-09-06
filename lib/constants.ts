@@ -95,7 +95,7 @@ export const WEBSITE_TIERS: WebsiteTier[] = [
       'WhatsApp and Call buttons on every page',
       'Custom domain registered in your name',
       'Business email setup',
-      'A Cloudflare account created and shared with you',
+      'Free hosting, set up and handled for you (via Cloudflare) — nothing for you to configure',
       'Google Business Profile linking and optimization',
       'Live preview before any payment',
       '14-day bug support after launch',

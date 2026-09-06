@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { buildMetadata, buildBreadcrumbJsonLd } from '@/lib/seo'
+import { buildMetadata, buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo'
 import { getAllPosts, getPostBySlug, getRelatedPosts, extractHeadings } from '@/lib/blog'
 import { SITE } from '@/lib/constants'
 import { Section } from '@/components/ui/Section'
@@ -70,12 +70,12 @@ export default async function BlogPostPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(structuredData) }}
       />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBreadcrumbJsonLd(breadcrumbItems)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(buildBreadcrumbJsonLd(breadcrumbItems)) }}
       />
       <BlogViewTracker slug={slug} />
 

@@ -508,7 +508,7 @@ export default function DesignSystemPage() {
             <ProcessSteps
               steps={[
                 { index: 1, title: 'You send the link', description: 'Your Google Business Profile link.', meta: '~2 min' },
-                { index: 2, title: 'We build', description: 'Pulled from your profile, industry-tuned template.', meta: '~30 min' },
+                { index: 2, title: 'We build', description: 'Pulled from your profile, industry-tuned layout.', meta: '~30 min' },
                 { index: 3, title: 'You review', description: 'A live preview before anything is charged.', meta: '~10 min' },
                 { index: 4, title: 'We hand over', description: 'Domain, files, everything, in your name.', meta: 'by tomorrow' },
               ]}

@@ -61,7 +61,7 @@ const MISSED_OPPORTUNITY = [
 // Launch tier (docs/forge-business-rules.md §11).
 const PROCESS_STEPS = [
   { index: 1, title: 'You send the link', description: 'Your Google Business Profile link — the one thing we need to start.', meta: '~2 min' },
-  { index: 2, title: 'We build', description: 'Pulled straight from your profile into an industry-tuned template.', meta: '~30 min' },
+  { index: 2, title: 'We build', description: 'Pulled straight from your profile into an industry-tuned layout.', meta: '~30 min' },
   { index: 3, title: 'You review, live', description: 'A real walkthrough call. You decide on the spot — nothing is charged yet.', meta: '~10 min' },
   { index: 4, title: 'We hand over', description: 'Domain, email, everything — set up in your name, not ours.', meta: 'by tomorrow' },
 ]
@@ -93,7 +93,7 @@ const FAQ_ITEMS = [
   {
     question: 'Can you actually build for my type of business?',
     answer:
-      'Forge has ready templates for salons, clinics, cafés and restaurants, studios, trade and repair services, and coaches or consultants — see real examples in Showcases below.',
+      'Forge has ready layouts for salons, clinics, cafés and restaurants, studios, trade and repair services, and coaches or consultants — see real examples in Showcases below.',
   },
   {
     question: 'What happens after I request the audit?',
@@ -210,11 +210,14 @@ export default function HomePage() {
       <Section id="process" spacing="tight">
         <div className="mb-10 max-w-content">
           <Text as="span" size="caption" className="mb-3 block text-ground">
-            How it works
+            How Launch works
           </Text>
           <Heading as="h2" size="heading-lg">
-            Four steps. Nothing to manage.
+            Four steps to a live Launch website.
           </Heading>
+          <Text size="body-sm" className="mt-3">
+            Growth and Pro follow the same order — send profile, we build, you review, we hand over — over a longer, custom timeline. See each tier for its own delivery time.
+          </Text>
         </div>
         <ProcessSteps steps={PROCESS_STEPS} />
       </Section>

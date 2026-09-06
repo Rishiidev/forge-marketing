@@ -29,9 +29,13 @@ const config: Config = {
     // at Tailwind's defaults — those scales are genuinely generic and fine.
     colors,
     fontFamily: {
-      sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-      serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
-      mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      // var(--font-sans) etc. come from next/font/google in app/layout.tsx
+      // (Inter/Fraunces/JetBrains Mono, self-hosted at build time) — the
+      // literal family names alone never worked since nothing actually
+      // loaded them; see the note in layout.tsx. Fallbacks unchanged.
+      sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      serif: ['var(--font-serif)', 'ui-serif', 'Georgia', 'serif'],
+      mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
     },
     fontSize,
     borderRadius,

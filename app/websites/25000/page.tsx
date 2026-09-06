@@ -6,7 +6,7 @@ const tier = getWebsiteTier('25000')!
 
 export const metadata = buildMetadata({
   title: tier.name,
-  description: 'Pending confirmation — no ₹25,000 tier exists in the source codebase yet.',
+  description: tier.tagline,
   path: '/websites/25000',
 })
 

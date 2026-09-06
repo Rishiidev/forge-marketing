@@ -1033,3 +1033,238 @@ live site" / "Get your free audit" pair, both now visibly correct with
 no other code change. `npm run typecheck`/`lint`/`build` all pass. No
 component using `cn()` needed to change — the fix is entirely inside the
 one shared utility every component already calls through.
+
+### ADR-016: First-impression psychology audit — five small, clearly-justified copy/metadata fixes; two real gaps flagged, not fixed
+
+Date: 2026-09-06
+Status: accepted
+
+Context: The brief asked for a skeptical-first-time-visitor psychology
+audit against 13 specific questions (What does Forge do? Is this for my
+business? ... What is my next step?) and ten evaluation axes (clarity,
+trust, risk, effort, social proof, specificity, price perception, choice
+architecture, CTA friction, cognitive load), explicitly instructing
+"make only improvements that are clearly justified" — not a general
+redesign pass.
+
+Findings, in descending severity:
+
+1. **Two contradictory "free audit" experiences on the same site
+   (not fixed — flagged for a product decision).** The homepage embeds
+   `components/audit/AuditForm.tsx` directly under a "START HERE" banner
+   that says *"A manual, 7-point review... reviewed by a person, not a
+   script"* and an FAQ answer promising *"a private write-up"* — the
+   original legacy-derived, async, human-review flow (`docs/forge-
+   business-rules.md` §5), never removed, still labeled as-is. Every
+   other "Get your free audit" control on the same page (header, the
+   Problem section, all three pricing cards, the final CTA) instead
+   links to `/audit`, the instant, self-serve, 9-question, computed-in-
+   the-browser tool `ADR-009` built to *replace* that description. A
+   visitor who fills in the embedded form is told to expect one thing;
+   a visitor who clicks almost any button on the same page gets a
+   completely different thing. **Not fixed in this pass** — reconciling
+   it means deciding which experience is canonical (keep both as
+   clearly-differentiated paths, or point the homepage embed at `/audit`
+   instead), which is a product decision, not a copy fix.
+2. **"What if I don't like it?" has no answer for Growth or Pro (not
+   fixed — flagged).** The homepage FAQ answers this only for Launch
+   ("you see the finished site live... before you pay anything"). No
+   payment-timing, deposit, or refund policy exists anywhere in this
+   codebase for the ₹15,000/₹25,000 tiers — `ADR-011` set their price,
+   scope, revisions, delivery time, and support window, but not a
+   payment schedule, and `forge-business-rules.md` HD#5 (refund policy
+   for non-50/50 payment structures) is explicitly still open. Writing
+   a reassuring answer here would mean inventing a policy that doesn't
+   exist — not done, per the standing anti-fabrication rule this project
+   has followed since its first audit.
+3. **No visible way to reach a person directly (not fixed — pre-existing,
+   HD#13).** `SITE.whatsappNumber`/`supportEmail` are still `null`, so
+   `WhatsAppFloat` renders nothing; the only contact path anywhere on the
+   site is a form. Already the single most-flagged open item across
+   every prior handoff — restated here because it's also, concretely, a
+   first-impression trust gap, not just an operational one.
+4. **Fixed: doubled page title on every single page.** `lib/seo.ts`
+   `buildMetadata()` appended `" — Forge"` to its `title`, and
+   `app/layout.tsx`'s `title.template` (`'%s — Forge'`) appended it
+   *again* — every browser tab, search snippet, and social share read
+   "Page — Forge — Forge". Noted as a known, deliberately-deferred issue
+   back in `ADR-009`; fixed now because a first-impression audit starts
+   at the browser tab, before any page content loads. One-line fix:
+   `buildMetadata()` now returns the plain `title`, letting the layout's
+   template add the site name exactly once.
+5. **Fixed: "template" language contradicted the Launch tier's own
+   explicit positioning.** The commercial-ladder brief (`ADR-011`) said
+   plainly "do not call it a template" for Launch, and `lib/constants.ts`
+   already avoids the word ("every Launch site follows the same clean,
+   proven layout") — but the homepage's process step ("industry-tuned
+   template"), its own FAQ ("ready templates for salons..."), the
+   `/design-system` demo, and all three uses in
+   `content/showcases/asquare-venture.mdx` (a real, live showcase's
+   description, problem statement, and body) still used it. Reworded
+   all six user-facing instances to "layout"/"build"/"process" —
+   wording already established elsewhere on the same pages, not new
+   vocabulary.
+6. **Fixed: "How it works" implied one universal timeline, contradicting
+   the pricing section directly below it.** The steps
+   (`~2 min`/`~30 min`/`~10 min`/`by tomorrow`) are Launch-specific — the
+   file's own code comment already said so (`// the real .../tomorrow
+   flow for the Launch tier`) — but the section header read as if it
+   described every tier, while Growth ("2–4 days") and Pro ("5–7 days")
+   sit in the very next section with visibly different timelines.
+   Retitled to "How Launch works" / "Four steps to a live Launch
+   website," with one added sentence stating Growth/Pro follow the same
+   order over a longer, tier-specific timeline — a true statement drawn
+   directly from each tier's own already-published process steps, not a
+   new claim.
+7. **Fixed: unexplained brand-name jargon inside a "no technical setup
+   needed" promise.** The Launch tier's included-items list said "A
+   Cloudflare account created and shared with you" — the stated ICP
+   (`forge-business-rules.md` §2) explicitly does *not* know tools like
+   Vercel/GitHub/Figma, so a bare vendor name here reads as an
+   unexplained technical task, sitting a few sections below the hero's
+   own "No technical setup needed" badge. Reworded to "Free hosting, set
+   up and handled for you (via Cloudflare) — nothing for you to
+   configure" — same fact, framed as something done *for* the visitor,
+   matching the rest of that list's voice.
+
+Decision: Ship items 4–7 (five files: `lib/seo.ts`, `app/page.tsx`,
+`app/design-system/page.tsx`, `content/showcases/asquare-venture.mdx`,
+`lib/constants.ts`) as the "clearly justified" improvements the brief
+asked for — each is a small, low-risk wording/metadata correction with
+no new claim, no invented policy, and no product decision embedded in
+it. Leave items 1–3 as documented findings for the business owner/next
+session, per the same discipline this project has applied to every
+other open Human Decision.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass (22/22 pages).
+Verified live in browser: every page's `<title>` now reads "Page —
+Forge" (not doubled); the homepage's process section now reads "How
+Launch works" with the Growth/Pro caveat visible; `/websites/5000`'s
+included list reads the reworded hosting line; `/showcases/asquare-
+venture` contains no remaining use of "template." Findings 1–3 are not
+coded fixes and should not be closed out until the business owner
+resolves the underlying product/business decision each depends on.
+
+### ADR-017: Pre-launch QA pass — six real bugs found and fixed, full functional/accessibility/SEO/performance/security/CRM sweep, Vercel chosen as deploy target
+
+Date: 2026-09-06
+Status: accepted
+
+Context: The brief asked for a full pre-launch QA pass (functional,
+responsive, accessibility, SEO, performance, security, business, CRM),
+fixing technical issues that don't require a business decision, then
+determining and executing a first deployment. Before doing any of that,
+the user was asked to confirm scope; answers: run the full pass *and*
+deploy to a preview this session; Vercel (this session already has
+Vercel MCP tooling connected — no adapter risk for a stock Next.js App
+Router app); platform-default preview URL, not the real domain; leave
+lead-delivery (HD#11/HD#13) unresolved for this pass, as already
+documented.
+
+Decision — six real, verified bugs found and fixed (none required a
+business decision):
+
+1. **Fonts declared in the design system since ADR-005 were never
+   actually loaded.** `tailwind.config.ts` has named Inter/Fraunces/
+   JetBrains Mono as the brand type scale from day one, but no
+   `next/font` call, `<link>`, or `@font-face` existed anywhere — every
+   page silently rendered in the browser's default system font the
+   entire time, on every prior session's screenshot. `next.config.mjs`'s
+   CSP already allowlisted `fonts.googleapis.com`/`fonts.gstatic.com`,
+   suggesting this was the original intent, just never wired up. Fixed
+   with `next/font/google` in `app/layout.tsx` (self-hosted at build
+   time — no external request, no CSP change needed, automatic
+   `font-display: swap` and a metric-matched fallback font for zero
+   layout shift), and `tailwind.config.ts`'s `fontFamily` now points at
+   the resulting CSS variables. Verified live: `document.fonts` reports
+   Inter/Fraunces/JetBrains Mono genuinely loaded; Fraunces italic now
+   visibly renders as the intended serif accent (previously silently
+   falling back to sans-serif).
+2. **The Forge Free Audit tool silently failed to submit.** Submitting
+   `AuditInputForm` with the business-name/URL fields empty (or any
+   question unanswered) did nothing visible at all — no error, no state
+   change. Root cause: the two text fields and every radio input carried
+   an HTML `required` attribute *in addition to* the component's own
+   `handleSubmit` validation (which already produces a proper, styled,
+   `role="alert"` error). A browser's native constraint validation
+   intercepts the `submit` event before React's handler ever runs when a
+   required field is invalid — so the custom, better-designed error path
+   was dead code, and the native fallback (a browser tooltip) wasn't
+   reliably visible either. Fixed by removing every `required` attribute
+   from this form, since `handleSubmit` already validates everything
+   correctly. Verified live, both before (silent no-op, confirmed via
+   `document.querySelector('[role=alert]')` returning nothing) and after
+   (the exact expected message appears).
+3. **`/websites/25000`'s SEO description still said the tier didn't
+   exist.** `app/websites/25000/page.tsx` hard-coded
+   `description: 'Pending confirmation — no ₹25,000 tier exists in the
+   source codebase yet.'` — true before ADR-011, false and contradictory
+   since. The sibling `/websites/5000` and `/15000` pages both already
+   used `tier.tagline` dynamically; `/25000` was never updated to match
+   when its tier was resolved. Fixed to the same pattern. This is
+   exactly the kind of confusing/contradictory-claim bug the brief's
+   "Business QA" section asked to catch — found by grepping for stale
+   price/status language across the whole tree, not by inspecting this
+   file directly.
+4. **Closed mobile-menu links stayed in the keyboard tab order.** The
+   nav panel's open/close animation (a `grid-template-rows: 0fr → 1fr`
+   transition, `ADR-005`'s pattern) only clips the panel to zero height
+   visually — its 7 links remained individually focusable via Tab while
+   "closed," confirmed live (`offsetParent !== null`, `tabIndex === 0`
+   on a 1px-tall panel). Fixed with the `inert` attribute (React 19
+   supports it natively), toggled opposite `mobileOpen` — removes the
+   whole panel from both tab order and the accessibility tree while
+   collapsed, without touching the existing CSS-only animation. Verified
+   live: focus now skips the panel entirely while closed; opening
+   correctly clears `inert` and restores normal tab flow through it.
+5. **The 404 page had no distinct title** — every not-found URL's
+   browser tab and search snippet read the generic site default
+   ("Forge"), not "Page not found." Fixed with a static `metadata` export
+   (no canonical — a catch-all 404 has no single canonical URL by
+   definition) plus an explicit `noindex` (belt-and-suspenders alongside
+   the already-correct 404 HTTP status).
+6. **JSON-LD structured data used bare `JSON.stringify()` inside
+   `dangerouslySetInnerHTML`**, which doesn't escape `<`, so a literal
+   `</script>` inside any field would terminate the script tag early.
+   Every current source is site-authored MDX frontmatter, not visitor
+   input — defense-in-depth, not a fix for an active exploit. New
+   `lib/seo.ts` `jsonLdScript()` helper (`JSON.stringify` +
+   `<` → `<`) now backs all four structured-data script tags
+   (showcase, blog post, both breadcrumb blocks).
+
+Also verified extensively, nothing further to fix: CRM lead capture,
+email-based dedup (a genuine duplicate produced no second record),
+Referer-derived UTM capture (`utm_source`/`utm_medium`/`utm_campaign`
+all confirmed landing on the stored lead), graceful CRM-failure handling
+(temporarily switched `CRM_PROVIDER=hubspot` — its throwing stub — and
+confirmed the form shows a calm "temporarily unavailable" status with no
+page crash), PII-safe server logs (`safeLogFields()` output contains only
+`{leadId, source, currentStage, hasEmail, hasPhone}`, confirmed against
+real log output), no secrets/API keys/`.env` anywhere in the tree, no
+`NEXT_PUBLIC_`-prefixed env var exposes anything server-only, every
+external link already carries `rel="noopener noreferrer"`, contrast
+ratios on body text/headings/buttons/captions all exceed WCAG AA (4.95:1
+to 15.6:1, measured against real computed styles), `prefers-reduced-
+motion` is already handled globally, responsive layout holds correctly
+at 375/768/1920px (the last verified via computed container margins,
+since the viewport tool's screenshot itself is capped narrower than
+1920px), and no stale pricing/fake review/fake metric/fake-scarcity
+language exists anywhere outside `legacy/` and historical doc citations.
+
+Deployment target: **Vercel**, chosen because (a) the app is a stock
+Next.js App Router deployment — mostly static/SSG routes, two dynamic
+routes (`/blog`'s searchParams-driven filter, `/r/[code]`'s Route
+Handler), two Server Actions (`app/actions.ts`), zero traditional REST
+API routes — exactly Vercel's reference target, no adapter needed; and
+(b) this session already has Vercel MCP tooling connected, vs. zero
+Cloudflare tooling and an unverified `@cloudflare/next-on-pages`
+compatibility story for Server Actions + this Route Handler. Full
+verification and the actual deployment: `docs/deployment.md`.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass (22/22 pages)
+after every fix in this entry, verified as one final clean pass, not
+per-fix. Two of the six fixes (fonts, the audit-form `required` bug) are
+genuinely user-facing regressions that predate this session and were
+silently shipping — worth noting for whoever reviews this diff, since
+neither shows up in a build log or a static screenshot the way a broken
+build would.

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { buildMetadata } from '@/lib/seo'
+import { buildMetadata, jsonLdScript } from '@/lib/seo'
 import { getAllShowcases, getShowcaseBySlug } from '@/lib/showcases'
 import { Section } from '@/components/ui/Section'
 import { Heading } from '@/components/ui/Heading'
@@ -76,7 +76,7 @@ export default async function ShowcasePage({ params }: PageProps) {
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(structuredData) }}
       />
       <ShowcaseViewTracker slug={slug} />
 

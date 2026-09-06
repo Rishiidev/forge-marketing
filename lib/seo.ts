@@ -11,6 +11,21 @@ import { SITE } from './constants'
  * a page's <head> metadata inline.
  */
 
+/**
+ * Safe-serializes a structured-data object for a `<script type="application/
+ * ld+json">` tag. `JSON.stringify()` alone doesn't escape `<`, so a literal
+ * `</script>` inside any field (a showcase/blog frontmatter value, however
+ * unlikely) would terminate the script tag early and let the text after it
+ * run as HTML/script. Escaping `<` as `<` is the standard fix and is
+ * invisible to any JSON-LD consumer. Found during a pre-launch security
+ * pass, 2026-09-06 — every current source is site-authored MDX frontmatter,
+ * not visitor input, so this is defense-in-depth, not a fix for an active
+ * exploit.
+ */
+export function jsonLdScript(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
 export interface PageSeoInput {
   title: string
   description: string
@@ -30,7 +45,13 @@ export function buildMetadata({ title, description, path, ogImage, type = 'websi
   const images = ogImage ? [{ url: ogImage }] : undefined
 
   return {
-    title: `${title} — ${SITE.name}`,
+    // Plain title, not `${title} — ${SITE.name}` — app/layout.tsx's
+    // title.template ('%s — Forge') already appends the site name to
+    // every page title. Appending it here too produced a doubled
+    // "Page — Forge — Forge" on every single page (found during a
+    // first-impression audit, 2026-09-06 — the browser tab is the very
+    // first thing a visitor sees, before any page content loads).
+    title,
     description,
     alternates: { canonical: url },
     openGraph:

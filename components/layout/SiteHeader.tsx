@@ -66,6 +66,12 @@ export function SiteHeader() {
 
       <div
         id="mobile-nav"
+        // The grid-rows collapse only clips this to 0 height visually — its
+        // links stayed in the keyboard tab order even while closed (found
+        // during a pre-launch QA pass, 2026-09-06). `inert` removes the
+        // whole panel from tab order and assistive-tech exposure while
+        // collapsed, without touching the CSS-only open/close animation.
+        inert={!mobileOpen}
         className="grid overflow-hidden border-b border-border bg-paper transition-[grid-template-rows] duration-300 ease-forge md:hidden"
         style={{ gridTemplateRows: mobileOpen ? '1fr' : '0fr' }}
       >

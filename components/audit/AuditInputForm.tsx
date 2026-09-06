@@ -18,6 +18,16 @@ export function AuditInputForm({ onSubmit }: { onSubmit: (input: AuditInput) => 
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
 
+  // No `required` HTML attribute on any field in this form, anywhere —
+  // deliberately. With it, a browser's own constraint validation blocks
+  // the `submit` event (and this handler) entirely on the first empty/
+  // unanswered required field, with no visible error in some automated
+  // and assistive contexts and a UX inconsistent with the rest of the
+  // site's `role="alert"` inline errors. Found during a pre-launch QA
+  // pass, 2026-09-06 (submitting with the two text fields empty did
+  // nothing visible at all). This handler already validates everything
+  // below and shows a real, styled, `aria-live` error — that's the only
+  // validation path now.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -57,7 +67,6 @@ export function AuditInputForm({ onSubmit }: { onSubmit: (input: AuditInput) => 
           placeholder="e.g. Studio Mysa"
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
-          required
         />
         <TextField
           label="Google Business Profile link"
@@ -66,7 +75,6 @@ export function AuditInputForm({ onSubmit }: { onSubmit: (input: AuditInput) => 
           placeholder="https://g.page/your-business"
           value={googleProfileUrl}
           onChange={(e) => setGoogleProfileUrl(e.target.value)}
-          required
         />
         <SelectField
           label="Industry (optional)"
@@ -111,7 +119,6 @@ export function AuditInputForm({ onSubmit }: { onSubmit: (input: AuditInput) => 
                     checked={answers[category.id] === option.value}
                     onChange={() => setAnswers((prev) => ({ ...prev, [category.id]: option.value }))}
                     className="sr-only"
-                    required
                   />
                   {option.label}
                 </label>
