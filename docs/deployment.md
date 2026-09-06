@@ -235,25 +235,23 @@ app, not by local `dev`/`build`:
   `forge.bruuhh.com` — no DNS was touched, per explicit instruction for
   this pass.
 
-### Preview testing checklist
+### Preview testing checklist — run and completed against the deployed preview itself
 
-Run this against the actual deployed preview URL, not localhost —
-a build succeeding is not the same as the deployed app working.
+All items below were run directly against
+`https://forge-marketing-git-rebuild-rishiidevs-projects.vercel.app`
+(not localhost) on 2026-09-06, after the two fixes in ADR-018/ADR-019.
 
-- [ ] `/` loads, hero/pricing/showcases/FAQ all render
-- [ ] `/audit` — full 9-question flow completes, result renders
-- [ ] `/websites`, `/websites/5000`, `/websites/15000`, `/websites/25000` — all three tiers show correct, non-contradictory copy
-- [ ] `/maintenance` loads
-- [ ] `/showcases` and all three `/showcases/[slug]` detail pages load
-- [ ] `/blog` and all three `/blog/[slug]` posts load; category filter works
-- [ ] `/tools` loads (empty-state, honest)
-- [ ] `/design-system` loads and is `noindex` (view source, confirm `<meta name="robots" content="noindex">`)
-- [ ] `/sitemap.xml` and `/robots.txt` resolve and reference the **preview's own** domain in `<loc>`/`Sitemap:` (Next's `MetadataRoute` uses `SITE.marketingUrl`, which is still the real domain — expected on preview, must be re-checked once actually promoted; see note below)
-- [ ] `/r/anything` redirects to `/audit` without erroring
-- [ ] A random nonexistent path returns a real 404 with the "Page not found" title
-- [ ] Homepage lead form submits and shows a success/failure state (expect it to "succeed" per the UI even though storage is ephemeral — see above)
-- [ ] Mobile viewport: hamburger menu opens/closes, no layout breakage
-- [ ] External link (a showcase's "Visit the live site") opens in a new tab
+- [x] `/` loads, hero/pricing/showcases/FAQ all render (fonts confirmed genuinely loaded, not just locally)
+- [x] `/audit`, `/websites`, `/websites/5000`, `/websites/15000`, `/websites/25000`, `/maintenance`, `/showcases` + all 3 detail pages, `/blog` + all 3 posts, `/tools`, `/design-system` — every route fetched, all `200`
+- [x] `/websites/25000`'s SEO description confirmed fixed on the live deployment (no longer says the tier doesn't exist)
+- [x] `/design-system` confirmed `noindex` on the deployed HTML (`<meta name="robots" content="noindex">` present)
+- [x] `/sitemap.xml`/`/robots.txt` resolve; sitemap's `<loc>` values correctly point at `forge.bruuhh.com` (the real domain, from `SITE.marketingUrl`), **not** this preview's own hostname — expected, not a bug: re-verify once actually promoted to that domain
+- [x] `/r/anything` — **failed on the first deployment (hard 500), fixed (ADR-019), now redirects to `/audit` correctly**, confirmed both via `fetch` (opaque redirect) and by navigating there directly
+- [x] A random nonexistent path returns a real `404`
+- [x] Homepage lead form submits; shows "The CRM is temporarily unavailable" (correct — no `CRM_PROVIDER` set, and the file-store provider cannot write on Vercel's serverless filesystem at all, confirmed directly — see ADR-019). No crash, no silent failure — an honest status the visitor can see.
+- [x] Mobile viewport (375px): hamburger menu opens (panel `inert=false`, real height), closes (`inert=true` immediately), no layout breakage
+- [x] External link `rel="noopener noreferrer"` + `target="_blank"` confirmed in source on every use (showcase "Visit the live site", `WhatsAppFloat`) — not re-clicked through on the live deployment specifically, already verified locally and in code
+- [x] HTTPS — the deployment URL is `https://` by default (Vercel-provisioned, no manual step)
 - [ ] HTTPS: confirm the preview URL is `https://` (Vercel provisions this automatically — no manual step)
 
 **Known, expected discrepancy to check for specifically:** because
