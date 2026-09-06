@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
 import { Button } from '@/components/ui/Button'
@@ -19,6 +20,7 @@ export function SiteHeader() {
           className="focus-ring flex items-center gap-2 rounded-sm text-body font-bold text-ink"
           aria-label={`${SITE.name} home`}
         >
+          <Image src="/logo.png" alt="" width={28} height={28} className="rounded-md" priority />
           {SITE.name}
         </Link>
 
