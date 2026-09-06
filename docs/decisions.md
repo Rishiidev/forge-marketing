@@ -1374,3 +1374,89 @@ but does not change the fact that HD#11 needs a real answer before any
 deployment on this platform can actually capture or track a lead, a
 referral click, or a referral conversion. `docs/deployment.md` §5
 updated with this finding directly.
+
+### ADR-020: Pricing section rebuilt for visual hierarchy — `ForgePricing`, a real-differentiation `PriceCard`, and a decision aid; no business data changed
+
+Date: 2026-09-06
+Status: accepted
+
+Context: A reference SaaS pricing component (three-card layout, monthly/
+annual toggle, "Save 20%", NumberFlow price animation, confetti,
+generic "Simple, Transparent Pricing" copy) was supplied as a visual/UX
+reference for rebuilding the homepage pricing section, with explicit
+instruction to adapt its layout ideas to Forge rather than carry over
+its SaaS business logic. Before writing anything, `lib/constants.ts`
+`WEBSITE_TIERS` was confirmed as the single source of truth for all
+three tiers (Launch ₹5,000 / Growth ₹15,000 / Pro ₹25,000, ADR-011) —
+no price, feature, timeline, or guarantee in this change is new; all
+copy is either reused verbatim from `WEBSITE_TIERS` or already-shipped
+homepage copy. The existing `PriceCard`/`PricingTierGrid` already
+rendered this data correctly (real CTA to `/audit`, no fabricated
+claims) but gave all three tiers identical visual weight, so "which
+tier" carried no visual signal beyond a small badge — the brief's
+concern that "pick any of these" doesn't help a first-time visitor
+decide.
+
+Note: `docs/session-state.md` and `docs/session-handoff.md`, read at
+the start of this work per the standing session-start protocol, describe
+a repository with zero commits since `f72f58d` and substantial
+uncommitted work. That is stale — this repository's actual `git log`
+(and this file's own ADR-016 through ADR-019) shows real, committed
+history well past that point, including a Vercel production deployment.
+Per the protocol's own instruction ("do not blindly trust the
+handoff... cross-check documentation against code"), this work
+proceeded from the actual repository state, not the handoff's narrative.
+Those two files should be regenerated at the next checkpoint.
+
+Decision:
+1. **`PriceCard.tsx`** (shared by the homepage and `/websites`, so both
+   stay in sync automatically): the `featured` tier (Growth — already an
+   existing product decision, not new) now gets a real visual step up —
+   `border-2 border-ground`, a `lg:-translate-y-3` lift with a stronger
+   shadow, and a larger price (`heading-xl` vs `heading-lg`) — instead of
+   only a badge. Every tier's CTA stays equal weight (`Button` default
+   variant) — softening Launch's or Pro's own button was rejected as
+   risking under-selling Forge's actual top-of-funnel entry tier for a
+   purely visual effect. Added a "one-time" label next to the price
+   (real: every tier is a single payment; Maintenance is the separate
+   recurring product) and a "What's included" label above each feature
+   list (a scannability label, not new content).
+2. **`components/pricing/ForgePricing.tsx`** (new): wraps the existing
+   `PricingTierGrid` with the homepage's pre-existing pricing heading
+   copy (moved, not rewritten) and adds a decision aid — "Not sure which
+   one you need?" with a secondary-styled `TrackedCtaLink` to the
+   existing `/audit` route (`AUDIT_HREF`/`AUDIT_CTA_LABEL` constants,
+   not a new string) — plus a one-line risk-reduction footnote ("Every
+   tier above lists exactly what's included and excluded — nothing added
+   later"). This footnote was deliberately kept to one line rather than
+   a full `TrustSignals` block: the homepage already has a dedicated
+   `TrustSignals` section a few sections later ("How we earn your
+   trust") covering the same ownership/preview/process reassurances —
+   repeating it directly under pricing would duplicate, not reinforce.
+3. **`app/page.tsx`**: replaced the inline `<Section id="pricing">` +
+   heading + `<PricingTierGrid />` block with `<ForgePricing />`,
+   centralizing that markup in one reusable component per the
+   architecture principle of not letting pricing presentation diverge
+   between pages. `/websites/page.tsx` was left untouched — it already
+   has its own more detailed structure (comparison table, `TrustSignals`,
+   showcases) and the task instruction was not to touch unrelated pages.
+4. **Explicitly not carried over from the reference component:**
+   monthly/annual toggle, "Save 20%" or any discount framing, USD,
+   confetti, NumberFlow, "Most Popular" (the existing "Recommended" badge
+   was kept as-is — it reflects ADR-011's real tier structure, not a
+   fabricated popularity claim), and any 3D/transform-heavy card effects.
+   No new dependency was installed (no Framer Motion, Lucide, or
+   NumberFlow existed in `package.json` already, and none was added) —
+   the only motion added is a CSS `transition-shadow`/hover lift, already
+   covered by the site-wide `prefers-reduced-motion` rule in
+   `app/globals.css`.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass (22/22 static
+pages). Verified live in browser at both mobile (375px, cards stack,
+Growth's lift/border don't break the stacked sequence) and desktop
+(1280px, three-column grid, Growth visually reads as the recommended
+middle option) viewports, on both `/` and `/websites`. No price, feature,
+or claim in `lib/constants.ts` was changed by this work. `docs/session-
+state.md` and `docs/session-handoff.md` still need a full regeneration
+pass (pre-existing gap, not introduced here) — flagged, not fixed, as
+out of scope for a pricing-section change.

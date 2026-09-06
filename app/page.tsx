@@ -11,7 +11,7 @@ import { ProcessSteps } from '@/components/marketing/ProcessStep'
 import { Metric } from '@/components/marketing/Metric'
 import { FAQ } from '@/components/marketing/FAQ'
 import { CTA } from '@/components/marketing/CTA'
-import { PricingTierGrid } from '@/components/pricing/PricingTierGrid'
+import { ForgePricing } from '@/components/pricing/ForgePricing'
 import { AuditForm } from '@/components/audit/AuditForm'
 import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
@@ -249,21 +249,7 @@ export default function HomePage() {
       </Section>
 
       {/* 8. Pricing ladder */}
-      <Section id="pricing" spacing="tight">
-        <div className="mb-10 max-w-content">
-          <Text as="span" size="caption" className="mb-3 block text-ground">
-            Pricing
-          </Text>
-          <Heading as="h2" size="heading-lg">
-            Three tiers. One transparent price each.
-          </Heading>
-          <Text size="body-lg" className="mt-4">
-            Launch is intentionally simple, not stripped down — a complete website, live fast, with nothing to
-            negotiate. Growth and Pro add custom design as your needs grow.
-          </Text>
-        </div>
-        <PricingTierGrid />
-      </Section>
+      <ForgePricing />
 
       {/* 9. Maintenance */}
       <Section spacing="tight" className="bg-ground text-mark">

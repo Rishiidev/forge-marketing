@@ -120,7 +120,9 @@ components/
   marketing/   Generic reusable blocks — PageHero, FeatureList, CTA, ProcessStep,
                Metric, Testimonial, Review, FAQ, Breadcrumbs
   conversion/  WhatsAppFloat, CapacityStrip
-  pricing/     PriceCard ("PricingCard"), PricingTierGrid, WebsiteTierPage (shared tier template)
+  pricing/     ForgePricing (homepage pricing section: heading + PricingTierGrid +
+               decision aid, ADR-020), PriceCard ("PricingCard"), PricingTierGrid,
+               PricingComparisonTable, WebsiteTierPage (shared tier template)
   audit/       AuditForm (still used on the homepage/design-system), plus the
                Forge Free Audit tool: AuditTool, AuditInputForm, AuditProcessing,
                AuditResultView, AuditLeadCaptureForm — see "The audit tool system"
