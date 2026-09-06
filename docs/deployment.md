@@ -146,9 +146,10 @@ extra configuration — this is one of the platform-fit reasons Vercel
 was chosen over an adapter-based alternative.
 
 **Route handling.** Verified directly against the deployed preview
-(§5): the Route Handler (`/r/[code]`), the two Server Actions, and every
-static/SSG route all resolved correctly with no 404s, no 500s, and no
-adapter-shaped surprises.
+(§5) — and this is exactly where a real, Vercel-specific bug surfaced
+that no local testing caught: see §5's "What actually broke" below.
+Every static/SSG route and both Server Actions resolved correctly with
+no 404s/500s; the Route Handler did not, until fixed.
 
 **API functionality.** N/A — no REST API routes exist in this app (§1).
 
@@ -182,25 +183,51 @@ touched and will not build correctly from `main` until `rebuild` is
 merged into it** — that merge is a decision for the project owner, not
 something this deployment pass makes on its own.
 
-**Preview URL:** `<filled in by the session that ran the deploy — see
-the deployment's own dashboard entry for the live link>`
+**Preview URL:** `https://forge-marketing-git-rebuild-rishiidevs-projects.vercel.app`
+(the branch alias — stable across redeploys of `rebuild`; also carries
+Vercel Authentication by default on a new Hobby-team project, so viewing
+it directly requires either being logged into that Vercel account or a
+temporary share link).
 
-**What this preview intentionally does not prove:**
+**What actually broke on Vercel that nothing local caught.** Two real,
+environment-specific failures, both found by testing the *deployed*
+app, not by local `dev`/`build`:
 
-- **Lead delivery.** No `CRM_PROVIDER` is set on this Vercel project, so
-  every lead submitted on the preview is only written to a local,
-  ephemeral file (`lib/file-store.ts`'s `.data/` directory) inside that
-  specific serverless invocation's filesystem — **which does not persist
-  between requests on Vercel's serverless runtime.** This is a stronger
-  statement than "leads go nowhere" in local dev: on Vercel specifically,
-  the console/file-backed CRM provider's file-based dedup and storage
-  should be treated as **non-functional across requests** — each
-  invocation gets its own ephemeral filesystem. This is a known,
-  pre-existing limitation of the `console` provider (documented in
-  `docs/crm.md` "Known limitations") and is **not something this
-  deployment pass fixes** — a real deployment that needs to actually
-  capture leads must set `CRM_PROVIDER=webhook` and `CRM_WEBHOOK_URL` to
-  a real, persistent destination first (HD#11, still open).
+1. **The build itself was blocked** on first attempt —
+   `next-mdx-remote@5.0.0` has a known CVE, and Vercel's build pipeline
+   refuses to build a known-vulnerable dependency version outright (a
+   check no local tool in this project runs). Fixed by upgrading to
+   `6.0.0`; full detail `docs/decisions.md` ADR-018.
+2. **`/r/[code]` returned a hard 500** on the running deployment, for
+   every code. Root cause: `lib/file-store.ts` (the storage behind both
+   `lib/referrals.ts` and the CRM's `console` provider) tries to `mkdir`
+   a `.data/` directory at runtime — which fails on Vercel's serverless
+   filesystem (`ENOENT ... mkdir '/var/task/.data'`, confirmed via
+   `get_runtime_errors`), since a Lambda-style deployment bundle is
+   read-only. `app/actions.ts`'s lead-capture Server Actions already
+   catch this exact failure gracefully (verified: submitting the
+   homepage form on the live deployment correctly showed "The CRM is
+   temporarily unavailable," no crash) — `app/r/[code]/route.ts` simply
+   never had the equivalent `try`/`catch`. Fixed to degrade the same way
+   every other storage-touching code path already does: on any failure,
+   redirect to `/audit` without attribution, exactly like an
+   unrecognized referral code already did. Full detail:
+   `docs/decisions.md` ADR-019.
+
+**What this preview still does not prove, by design (not a bug):**
+
+- **Lead delivery.** No `CRM_PROVIDER` is set on this Vercel project.
+  Every lead submitted is caught and reported as "temporarily
+  unavailable" (see above) rather than actually stored anywhere durable
+  — `lib/file-store.ts` cannot write on Vercel's serverless filesystem
+  at all, confirmed directly, not assumed. This is the same known,
+  pre-existing limitation of the `console` provider documented in
+  `docs/crm.md` "Known limitations," now confirmed to manifest as a
+  clean failure rather than silent data loss — but it is still **not
+  something this deployment pass fixes**. A real deployment that needs
+  to actually capture leads must set `CRM_PROVIDER=webhook` and
+  `CRM_WEBHOOK_URL` to a real, persistent destination first (HD#11,
+  still open).
 - **Real contact channel.** `SITE.whatsappNumber`/`supportEmail` are
   still `null` (HD#13, still open) — the WhatsApp float button renders
   nothing, same as in every environment.

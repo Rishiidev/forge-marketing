@@ -1317,3 +1317,60 @@ Consequences: `npm run typecheck`/`lint`/`build` all pass post-upgrade.
 Vercel's build was retriggered after this fix — see `docs/deployment.md`
 for the resulting deployment's outcome. `package.json`'s
 `next-mdx-remote` range is now `^6.0.0`.
+
+### ADR-019: `/r/[code]` returned a hard 500 on Vercel — file-store writes fail on a read-only serverless filesystem, and this one route had no fallback
+
+Date: 2026-09-06
+Status: accepted
+
+Context: With the build finally succeeding (ADR-018), the first real
+test of the deployed app itself — not just a green build — found
+`GET /r/anything` returning `500` on every request. `get_runtime_errors`
+(Vercel MCP) pointed at the exact cause immediately:
+`Error: ENOENT: no such file or directory, mkdir '/var/task/.data'`,
+thrown from inside `.next/server/app/r/[code]/route.js`. `lib/file-store.ts`
+— the storage layer behind both `lib/referrals.ts` and the CRM's
+`console` provider — creates a `.data/` directory on first write.
+Vercel's serverless functions run from a read-only deployment bundle;
+nothing under `/var/task` can be created or written at runtime. This is
+a genuine platform difference from every environment this app had been
+tested in before (local `dev`, local `build`) — both have an ordinary
+writable filesystem.
+
+The same underlying failure mode already existed for lead capture
+(`app/actions.ts`'s Server Actions also call into `lib/crm.ts`, which
+uses the same file-store-backed `console` provider) — but that path was
+already protected: `ADR-010` wrapped every `CrmAdapter` operation in
+`try`/`catch`, resolving to `{ok: false, error}` instead of throwing.
+Tested directly against the live deployment to confirm: submitting the
+homepage lead form there correctly shows "The CRM is temporarily
+unavailable. This does not affect the rest of the site." — no crash,
+exactly as designed. `app/r/[code]/route.ts` was the one place that
+same storage layer was called *without* that protection — a plain,
+unguarded `resolveReferralCode(code)`/`recordReferralClick(code)` call,
+so the `mkdir` failure propagated all the way up to a framework-level
+500.
+
+Decision: Wrapped both calls in `try`/`catch`. A failure resolving the
+code now produces the exact same outcome the route already defined for
+an *unrecognized* code — redirect to `/audit`, no attribution — rather
+than a distinct failure path. A failure recording the click is swallowed
+outright (the redirect proceeds either way; only the click counter is
+lost). This matches the route's own already-stated design principle,
+quoted directly in its file header: "A mistyped or stale referral link
+should never dead-end a visitor." A storage outage is just another
+reason a code can't be resolved, from the visitor's perspective — it
+was already supposed to degrade the same way, and now does.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass. This also
+means the file-backed `console` CRM provider and `lib/referrals.ts`
+should be treated as **non-functional on Vercel's serverless runtime
+specifically** (not just "doesn't persist between requests," as
+`docs/deployment.md` previously and too gently put it before this was
+confirmed directly — every write attempt fails outright there). Every
+call site now degrades gracefully instead of crashing, which is the
+correct behavior for a still-unresolved HD#11 (real CRM destination),
+but does not change the fact that HD#11 needs a real answer before any
+deployment on this platform can actually capture or track a lead, a
+referral click, or a referral conversion. `docs/deployment.md` §5
+updated with this finding directly.
