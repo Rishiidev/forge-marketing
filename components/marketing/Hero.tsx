@@ -2,6 +2,7 @@ import { Heading } from '@/components/ui/Heading'
 import { Text } from '@/components/ui/Text'
 import { Section } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
+import { ShaderBackground } from '@/components/ui/test'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { AUDIT_CTA_LABEL } from '@/lib/constants'
 
@@ -18,7 +19,17 @@ import { AUDIT_CTA_LABEL } from '@/lib/constants'
  */
 export function Hero() {
   return (
-    <Section spacing="tight" className="pt-10 md:pt-16" containerClassName="grid items-center gap-12 md:grid-cols-2">
+    // -mt-[68px]/pt-[68px] slides the shader up under SiteHeader's sticky
+    // bar (also 68px tall, bg-paper/90 + backdrop-blur) instead of butting
+    // up against it — the header's translucency then blends the color in
+    // rather than cutting it off with a hard edge.
+    <div className="relative -mt-[68px] overflow-hidden pt-[68px]">
+      <ShaderBackground className="pointer-events-none absolute inset-0 -z-10" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-[5] h-1/3 bg-gradient-to-b from-transparent to-paper"
+      />
+      <Section spacing="tight" className="pt-10 md:pt-16" containerClassName="grid items-center gap-12 md:grid-cols-2">
       <div>
         <Heading as="h1" size="heading-xl">
           Your business is already <span className="font-serif italic">trusted</span> offline. Make it look that
@@ -70,6 +81,7 @@ export function Hero() {
           </div>
         </div>
       </div>
-    </Section>
+      </Section>
+    </div>
   )
 }

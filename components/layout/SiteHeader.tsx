@@ -12,7 +12,7 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-paper/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-paper/55 backdrop-blur-md">
       <Container className="flex h-[68px] items-center justify-between gap-6">
         <Link
           href="/"
