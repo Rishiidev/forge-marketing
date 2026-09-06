@@ -20,7 +20,7 @@ export function SiteHeader() {
           className="focus-ring flex items-center gap-2 rounded-sm text-body font-bold text-ink"
           aria-label={`${SITE.name} home`}
         >
-          <Image src="/logo.png" alt="" width={32} height={32} className="rounded-lg" priority />
+          <Image src="/logo.png" alt="" width={32} height={32} className="rounded-sm" priority />
           {SITE.name}
         </Link>
 
