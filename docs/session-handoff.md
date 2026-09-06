@@ -372,3 +372,88 @@ in `docs/tool-cost-matrix.md` are the two most-grounded starting points
 remain the highest-leverage gaps, unchanged from every prior handoff).
 Do not start (a) without first re-reading `docs/tools-cost-policy.md` in
 full — this file only summarizes it.
+
+---
+
+## 17. SEO/organic-growth session (2026-09-07) — corrects everything above
+
+Everything above this point describes the zero-cost-tools-architecture
+checkpoint (ADR-021). Since then, a session this file never got updated
+for **already built and committed** the first real tools — commit
+`f51014e` ("build forge free tools engine"). This session found that
+work, plus a further uncommitted pass (the actual 12-tool website
+diagnostic engine, `lib/website-analyzer/`), sitting on top of it. Two
+commits this session made to land that safely:
+
+- `6a98d00` — `lib/website-analyzer/` (fetch, HTML parsing via `cheerio`,
+  robots.txt/sitemap.xml/metadata/headings/images/links/schema/security-
+  headers/mobile/local-signals/social checks), SSRF-safe
+  (`lib/tools/security.ts`), rate-limited, cached — wired into 12 real
+  `/tools/*` pages (`lib/website-analyzer/tools.ts`). Also fixed
+  `lib/tools/__tests__/registry.test.ts`, which had 4 failing tests
+  because it still asserted the registry's behavior against a
+  deliberately-empty `TOOLS` array from the ADR-021 checkpoint — updated
+  to match the now-real, populated registry, not weakened.
+- (this session's own SEO fixes, see below)
+
+**A full SEO audit was run first** (`searchfit-seo:seo-auditor`, read-only,
+against the real rendered `.next/server/app/*.html` output, not
+guesswork) — see `docs/seo-system.md` (new this session) for the
+complete findings and what was fixed vs. deliberately left alone.
+
+**Fixed this session** (all re-verified: `typecheck`/`lint`/`test`
+144/144/`build` 35/35 routes, clean):
+- `/tools`'s hero copy said "nothing is live here yet" directly above a
+  grid of 12 real tools (`app/tools/page.tsx`) — rewritten to describe
+  what's actually there.
+- Zero pages anywhere on the site emitted an `og:image`/`twitter:image`
+  — `lib/seo.ts` now falls back to the real site logo (`/logo.png`) when
+  a page doesn't supply its own.
+- No favicon existed at all — added `app/icon.png` (Next.js's file-
+  convention route) from the existing `public/logo.png`.
+- No site-wide `Organization` JSON-LD, and the three pricing-tier pages
+  (naming the site's only concrete prices) had no `Product`/`Offer`
+  schema — added both (`app/layout.tsx`, `components/pricing/
+  WebsiteTierPage.tsx`), sourced directly from `SITE`/`lib/constants.ts`
+  real data, never fabricated, and only emitted for a tier with a real
+  (non-`tbd`) price.
+- `/audit`'s meta description was 222 characters (display-truncates past
+  ~155-160) — trimmed to 160.
+- **Internal linking was one-way** — all 12 tool pages already link out
+  to `/audit`/`/websites`/each other, but nothing linked back in. Added
+  three real, topically-relevant links: `/websites` → `/tools` (a new
+  closing section), one showcase detail page → `/tools/website-health-
+  check`, one blog post's mobile-experience section →
+  `/tools/mobile-website-check`. Not a mechanical link-everywhere pass —
+  three deliberate, contextual additions.
+
+**Flagged, not fixed** (a product decision, not a bug — see
+`docs/seo-system.md` §5): `website-seo-audit` and `website-health-check`
+have near-total category overlap (health-check's checks are a strict
+superset of seo-audit's), which is a real thin/duplicate-content risk
+worth a future call on framing or scope, not something to silently
+rewrite without that decision.
+
+**Not touched, confirmed already correct:** titles, canonical URLs,
+`app/robots.ts`, `app/sitemap.ts` (all 28 real URLs present, nothing
+phantom), meta descriptions elsewhere, heading structure, image alt
+text, existing JSON-LD (BreadcrumbList/BlogPosting/CreativeWork/
+WebApplication), Core Web Vitals code-smell checks. Full detail:
+`docs/seo-system.md`.
+
+**Current branch:** `main`. Three real commits landed this session on
+top of `4c215d1`: `73db18a` (already existed, zero-cost architecture),
+`f51014e` (already existed, tools engine framework), `6a98d00` (this
+session, the actual 12-tool analyzer), plus one more for the SEO fixes
+above (see `git log` for its exact hash — committed after this file was
+written). Nothing left uncommitted once that lands.
+
+**Exact next recommended action:** the still-open Human Decisions
+(HD#13 contact channel, HD#11 CRM destination) remain the highest-
+leverage gaps, unchanged across every handoff including this one. On
+the organic-growth side specifically: do keyword research before adding
+any blog topic cluster or location page beyond the 9 clusters/3 posts
+that already exist — this session deliberately added zero new content
+pages, only fixed real gaps and linked existing pages together, per the
+explicit "do keyword research before creating large numbers of pages"
+instruction.

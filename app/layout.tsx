@@ -6,6 +6,7 @@ import { SiteFooter } from '@/components/layout/SiteFooter'
 import { WhatsAppFloat } from '@/components/conversion/WhatsAppFloat'
 import { SITE } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { jsonLdScript } from '@/lib/seo'
 
 // tailwind.config.ts has named Inter/Fraunces/JetBrains Mono as the brand
 // type scale since the design system was built (ADR-005), but nothing
@@ -28,10 +29,35 @@ export const metadata: Metadata = {
   description: SITE.tagline,
 }
 
+/**
+ * Site-wide Organization JSON-LD — the one entity every page on the site
+ * shares, added once here rather than duplicated per-page (blog/showcase/
+ * tool pages already emit their own more specific schema — BlogPosting,
+ * CreativeWork, WebApplication — which reference this same organization
+ * name/url, not a competing definition). Found missing entirely during
+ * the 2026-09-07 SEO audit. `sameAs`/`contactPoint` are deliberately
+ * omitted — SITE.supportEmail/whatsappNumber are still unresolved Human
+ * Decisions (docs/forge-business-rules.md), and no real social profile
+ * URLs exist yet; inventing either would violate this codebase's "never
+ * fabricate a fact" convention.
+ */
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.name,
+  url: SITE.marketingUrl,
+  logo: `${SITE.marketingUrl}/logo.png`,
+  description: SITE.tagline,
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn(inter.variable, fraunces.variable, jetbrainsMono.variable)}>
       <body className="min-h-screen font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd) }}
+        />
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />

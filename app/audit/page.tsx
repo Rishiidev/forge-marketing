@@ -4,7 +4,7 @@ import { AuditTool } from '@/components/audit/AuditTool'
 export const metadata = buildMetadata({
   title: 'Free Website & Google Profile Audit',
   description:
-    "Answer 9 quick questions about your Google Business Profile and website. Get an instant, honest breakdown of what's good, what's missing, why it matters, and what to fix first — no software score, no upsell inside the audit.",
+    "Answer 9 quick questions about your Google Business Profile and website. Get an instant, honest breakdown of what's good, what's missing, and what to fix first.",
   path: '/audit',
 })
 

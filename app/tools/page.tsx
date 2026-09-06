@@ -4,8 +4,8 @@ import { Section } from '@/components/ui/Section'
 import { ToolGrid } from '@/components/tools/ToolGrid'
 
 export const metadata = buildMetadata({
-  title: 'Tools',
-  description: 'Free interactive tools for local businesses.',
+  title: 'Free Website Tools',
+  description: 'Check your homepage\'s SEO, mobile-friendliness, security headers, and more — 12 free, instant tools. No signup, no email required.',
   path: '/tools',
 })
 
@@ -15,7 +15,7 @@ export default function ToolsPage() {
       <PageHero
         eyebrow="Tools"
         title="Free tools, no signup."
-        description="Nothing is live here yet — this route is scaffolded and ready for the first tool. See lib/constants.ts (TOOLS)."
+        description="12 real checks against your own homepage — SEO, mobile-friendliness, structured data, security headers, and more. Pick one below, or run the full Website Health Check."
       />
       <Section className="pt-0">
         <ToolGrid />

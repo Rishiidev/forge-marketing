@@ -40,9 +40,20 @@ export interface PageSeoInput {
   author?: string
 }
 
+/**
+ * Fallback social-preview image — the site's real logo (public/logo.png,
+ * 880×880), used whenever a page doesn't supply its own `ogImage`. Found
+ * during the 2026-09-07 SEO audit: zero pages on the site emitted an
+ * og:image/twitter:image at all, so every shared link rendered with no
+ * preview image. A square logo isn't the ideal 1200×630 OG aspect ratio
+ * (platforms will crop it), but a real, correctly-branded image beats no
+ * image — and nothing here is fabricated, it's the actual site mark.
+ */
+const DEFAULT_OG_IMAGE = '/logo.png'
+
 export function buildMetadata({ title, description, path, ogImage, type = 'website', publishedTime, author }: PageSeoInput): Metadata {
   const url = `${SITE.marketingUrl}${path}`
-  const images = ogImage ? [{ url: ogImage }] : undefined
+  const images = [{ url: ogImage ?? DEFAULT_OG_IMAGE }]
 
   return {
     // Plain title, not `${title} — ${SITE.name}` — app/layout.tsx's
@@ -78,7 +89,7 @@ export function buildMetadata({ title, description, path, ogImage, type = 'websi
       card: 'summary_large_image',
       title,
       description,
-      images: ogImage ? [ogImage] : undefined,
+      images: [ogImage ?? DEFAULT_OG_IMAGE],
     },
   }
 }

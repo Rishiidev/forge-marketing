@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import NextLink from 'next/link'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { buildMetadata, jsonLdScript } from '@/lib/seo'
 import { getAllShowcases, getShowcaseBySlug } from '@/lib/showcases'
@@ -237,6 +238,18 @@ export default async function ShowcasePage({ params }: PageProps) {
       )}
 
       <Divider />
+
+      {/* 7.5. Free tools mention — links this showcase back toward /tools,
+          the one direction the 2026-09-07 SEO audit found nothing pointed. */}
+      <Section spacing="tight" className="text-center">
+        <Text size="body-sm">
+          Curious how your own site compares?{' '}
+          <NextLink href="/tools/website-health-check" className="font-semibold text-ground underline-offset-4 hover:underline">
+            Run the free Website Health Check
+          </NextLink>
+          .
+        </Text>
+      </Section>
 
       {/* 8 & 9. Live website CTA + free audit CTA */}
       <Section className="bg-ground text-mark">

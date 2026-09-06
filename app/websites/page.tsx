@@ -67,6 +67,16 @@ export default function WebsitesPage() {
           </Text>
         </Section>
       )}
+
+      <Section spacing="tight" className="pt-0 text-center">
+        <Text as="h2" size="caption" className="mb-3">
+          Not sure what your current site is missing?
+        </Text>
+        <Text size="body-sm" className="mb-5">
+          Run a free, instant check against your homepage before you decide on a tier — SEO, mobile-friendliness, and more.
+        </Text>
+        <Link href="/tools">See the free tools &rarr;</Link>
+      </Section>
     </>
   )
 }

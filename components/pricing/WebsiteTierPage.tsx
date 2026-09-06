@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
-import { getWebsiteTier, type WebsiteTierSlug, AUDIT_HREF, AUDIT_CTA_LABEL } from '@/lib/constants'
+import { getWebsiteTier, type WebsiteTierSlug, AUDIT_HREF, AUDIT_CTA_LABEL, SITE } from '@/lib/constants'
+import { jsonLdScript } from '@/lib/seo'
 import { PageHero } from '@/components/marketing/PageHero'
 import { Section } from '@/components/ui/Section'
 import { Badge } from '@/components/ui/Badge'
@@ -25,8 +26,34 @@ export function WebsiteTierPage({ slug }: { slug: WebsiteTierSlug }) {
 
   const isTbd = tier.status === 'tbd'
 
+  // Product/Offer schema — only for a real, confirmed price (never for a
+  // 'tbd' tier; docs' "never fabricate a fact" convention applies to
+  // structured data exactly as much as visible copy). Found missing
+  // entirely during the 2026-09-07 SEO audit — these are the site's only
+  // pages naming a concrete price, and had zero commercial schema.
+  const productJsonLd =
+    tier.price !== null
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: `${tier.name} Website`,
+          description: tier.tagline,
+          brand: { '@type': 'Brand', name: SITE.name },
+          offers: {
+            '@type': 'Offer',
+            price: tier.price,
+            priceCurrency: 'INR',
+            availability: 'https://schema.org/InStock',
+            url: `${SITE.marketingUrl}/websites/${tier.slug}`,
+          },
+        }
+      : null
+
   return (
     <>
+      {productJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd) }} />
+      )}
       <PageHero eyebrow="Website" title={`${tier.name} — ${tier.priceLabel}`} description={tier.tagline}>
         {isTbd && (
           <div className="mt-4">

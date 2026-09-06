@@ -13,6 +13,17 @@
 
 Snapshot date: 2026-09-06.
 
+> **Staleness note (added 2026-09-07, SEO/organic-growth session):** this
+> file was not regenerated for the tools-engine commits (`f51014e`,
+> `6a98d00`) or this session's SEO fixes — it still describes the
+> tailwind-merge-fix checkpoint below as current. For what's actually
+> true now, read `docs/session-handoff.md` §16–§17 first; this file's
+> body is left as a historical reference rather than rewritten wholesale,
+> matching this repo's own "if anything below conflicts with the actual
+> repository contents, the repository wins" rule at the top of this
+> file. A future session doing significant further work here should
+> regenerate this file properly rather than adding a fourth stale layer.
+
 ---
 
 ## 1. What the original Forge project contained
