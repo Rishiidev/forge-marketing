@@ -368,14 +368,15 @@ export const INDUSTRY_TEMPLATES: IndustryTemplate[] = [
 // in the source codebase beyond the bespoke pricing calculator
 // (legacy/bespoke-quote.html), which this registry does not yet model.
 // This is a placeholder registry, not a migrated feature.
+//
+// ToolDefinition and its supporting types live in lib/tools/types.ts —
+// the single source of truth for the zero-cost tools architecture (see
+// docs/tools-cost-policy.md and docs/tool-cost-matrix.md). Every entry
+// added here is checked by lib/tools/__tests__/cost-policy.test.ts.
 // ---------------------------------------------------------------------
 
-export interface ToolDefinition {
-  slug: string
-  name: string
-  description: string
-  status: 'planned'
-}
+import type { ToolDefinition } from '@/lib/tools/types'
+export type { ToolDefinition } from '@/lib/tools/types'
 
 export const TOOLS: ToolDefinition[] = []
 

@@ -9,13 +9,21 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// Only a genuinely available tool gets a real, pre-rendered page — a
+// 'planned'/'unavailable'/'future-paid' tool must never resolve to a
+// live route that implies it can be used today. See
+// docs/tools-cost-policy.md §I.
+function findAvailableTool(slug: string) {
+  return TOOLS.find((t) => t.slug === slug && t.status === 'available')
+}
+
 export function generateStaticParams() {
-  return TOOLS.map((tool) => ({ slug: tool.slug }))
+  return TOOLS.filter((tool) => tool.status === 'available').map((tool) => ({ slug: tool.slug }))
 }
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
-  const tool = TOOLS.find((t) => t.slug === slug)
+  const tool = findAvailableTool(slug)
   return buildMetadata({
     title: tool?.name ?? 'Tool not found',
     description: tool?.description ?? '',
@@ -25,7 +33,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ToolPage({ params }: PageProps) {
   const { slug } = await params
-  const tool = TOOLS.find((t) => t.slug === slug)
+  const tool = findAvailableTool(slug)
   if (!tool) notFound()
 
   return (

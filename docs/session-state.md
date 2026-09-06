@@ -134,9 +134,25 @@ lib/
   reviews.ts        Review collection + showcase-candidate eligibility — ADR-012
 ```
 
-**Testing.** Still no automated test suite, no CI. Verification remains
-manual: `npm run typecheck`/`lint`/`build` plus live-browser checks each
-session.
+**Testing.** `npm run test` (Vitest, added this session — see
+[`docs/tools-cost-policy.md`](tools-cost-policy.md), ADR-021) now exists,
+scoped to the zero-cost tools policy enforcement
+(`lib/tools/__tests__/cost-policy.test.ts`, 13 tests). No CI still wired
+up (no `.github/workflows/`). Everything else remains manual:
+`npm run typecheck`/`lint`/`build` plus live-browser checks each session.
+
+**Tools platform.** `lib/tools/types.ts` (`ToolDefinition`/`ToolInput`/
+`ToolResult`/`ToolFinding`/`ToolError`/`ToolStatus`/`ToolCostProfile`/
+`ToolDataSource`/`ToolCapability`/`ToolSecurityPolicy`) and
+`lib/tools/cost-policy.ts` (`findForbiddenDependencies()`,
+`validateToolDefinition()`) — see
+[`docs/tools-cost-policy.md`](tools-cost-policy.md) and
+[`docs/tool-cost-matrix.md`](tool-cost-matrix.md). `lib/constants.ts`
+`TOOLS` is still `[]` — no individual tool was built this session, by
+explicit instruction. `components/tools/ToolCard.tsx`,
+`app/tools/[slug]/page.tsx`, and `app/sitemap.ts` were updated only to
+honor the new type contract (a non-`'available'` tool renders disabled,
+gets no live route, and no sitemap entry) — no visual redesign.
 
 ---
 
@@ -172,19 +188,39 @@ Full text: [`docs/decisions.md`](decisions.md). One line each, in order:
 | 013 | In-memory Maps replaced with a file-backed store |
 | 014 | Blog and resource system — `/blog`, `/blog/[slug]`, topic clusters, full SEO surface |
 | 015 | Fixed a site-wide bug — `text-color` utilities silently dropped when combined with Forge's custom `text-{size}` scale |
+| 016 | First-impression psychology audit — five copy/metadata fixes, two gaps flagged not fixed |
+| 017 | Pre-launch QA pass — six real bugs found/fixed; Vercel chosen as deploy target |
+| 018 | `next-mdx-remote` upgraded 5.0.0 → 6.0.0 — CVE caught by Vercel's build, not local tooling |
+| 019 | `/r/[code]` 500 on Vercel — file-store writes fail on read-only serverless filesystem, fixed |
+| 020 | Pricing section rebuilt for visual hierarchy — no business data changed |
+| 021 | Zero-cost tools architecture — policy, typed contract, automated enforcement for `/tools` |
 
 Append-only log — never rewrite a past ADR's Decision/Consequences; add a
-new ADR that references it instead.
+new ADR that references it instead. **This table was out of date from
+ADR-016 through ADR-020 as of the previous snapshot** (ADR-020 itself
+flagged this); corrected in this pass.
 
 ---
 
 ## 5. Verified build/test status (as of this checkpoint)
+
+**Correction to the previous snapshot:** the prior version of this file
+(and of `docs/session-handoff.md`) described a repository with zero
+commits since `f72f58d` and substantial uncommitted work. That was
+stale — real, committed history continued through ADR-016–ADR-020
+(deployment to Vercel, a real bug fix, a CVE upgrade, a pricing-section
+rebuild) with no session ever updating this file in between. ADR-020
+flagged this gap explicitly; this checkpoint corrects it. **Always
+cross-check `git log`/`git status` against this file's claims rather
+than trusting the narrative alone** — this is the second time that
+instruction has mattered in this project's history.
 
 Run directly, in this repository, immediately before writing this file:
 
 ```
 npm run typecheck   → clean, no errors
 npm run lint         → "✔ No ESLint warnings or errors" (next lint; deprecation notice only)
+npm run test         → 13/13 tests pass (Vitest, new this session — ADR-021)
 npm run build        → succeeds, 22/22 static pages generated, no warnings
 ```
 
@@ -192,8 +228,8 @@ Route sizes from the last build (informational, not a regression
 baseline):
 
 ```
-/                          2.56 kB   First Load JS 120 kB
-/audit                     8.63 kB   First Load JS 126 kB
+/                          8.14 kB   First Load JS 125 kB
+/audit                     8.64 kB   First Load JS 126 kB
 /blog                      173 B     First Load JS 111 kB   (dynamic — reads searchParams)
 /blog/[slug]               1.13 kB   First Load JS 119 kB   (SSG, 3 real posts)
 /showcases/[slug]          1.13 kB   First Load JS 114 kB   (SSG, 3 real entries)
@@ -203,12 +239,22 @@ baseline):
 + shared JS                103 kB
 ```
 
-**`git status --short` is NOT clean** — this snapshot describes a
-repository with substantial uncommitted work from this session and the
-session before it (blog system, pricing ladder, CRM/referrals/reviews
-rebuild, the Forge Free Audit tool). See
-[`docs/session-handoff.md`](session-handoff.md) §12 for the exact file
-list. Nothing in this repository has been committed since `f72f58d`.
+**Current branch: `main`.** Both `main` and `rebuild` exist
+(`origin/main`, `origin/rebuild`), but `main` itself now holds all real
+application history (22 commits, `272c836` through `4c215d1` before this
+session's work) — the earlier "`main` is the untouched legacy baseline,
+`rebuild` is where work happens" convention (ADR-000/ADR-003) no longer
+describes the actual branch layout. Whoever next needs to reconcile
+`main`/`rebuild` (`docs/deployment.md` §6's promotion checklist still
+references this) should verify the current state directly rather than
+trust either this file or `docs/deployment.md`'s branch narrative
+without re-checking.
+
+`git status --short` was clean at the start of this checkpoint's work
+(everything through `4c215d1` committed). This session's own changes
+(the zero-cost tools architecture — ADR-021) are uncommitted as this
+file is written; see the recommended commit message in
+`docs/session-handoff.md` §14.
 
 ---
 

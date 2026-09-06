@@ -10,11 +10,21 @@
 > `docs/forge-business-rules.md`. Where something is genuinely unresolved,
 > it is listed as unresolved, not guessed at.
 
-Snapshot date: 2026-09-06. Written at a checkpoint review after two
-sessions of uncommitted feature work (Forge Free Audit tool, CRM/
-referrals/reviews rebuild, the ₹5,000/₹15,000/₹25,000 commercial ladder,
-the blog and resource system) plus a same-checkpoint SEO/security/
-content audit. **No commit has been made since `f72f58d`** — see §12.
+Snapshot date: 2026-09-06 (regenerated later the same day — see the
+correction note immediately below).
+
+**Correction, this regeneration:** everything below this point was
+written as of commit `f72f58d`, describing substantial *uncommitted*
+work. That work was in fact committed and built on further —
+`git log` shows real history through ADR-020 (`4c215d1`, a pricing
+section rebuild) with no session updating this file in between; ADR-020
+itself flagged the gap. This regeneration (ADR-021, the zero-cost tools
+architecture) corrects the git-state claims below rather than trusting
+the old narrative — see the new §16 for what's actually true now. The
+original body is otherwise left intact as a historical record of that
+earlier checkpoint's real findings (the SEO/security/content audits in
+§7–§10 are still accurate as *audits performed*, just not as a
+description of current git state).
 
 ---
 
@@ -307,5 +317,58 @@ Human Decision (e.g. a first real `/tools` entry).
   nothing here currently depends on that decision, but a rushed real
   integration is exactly the kind of change that could accidentally
   introduce a `robots` header or a fabricated metric.
-- **No CI.** Still nothing prevents a future commit from breaking
-  typecheck/lint/build before it reaches `main`.
+- **CI still doesn't exist**, but `npm run test` does now (§16) — a
+  future session should wire it into a CI workflow rather than leaving
+  it manual-only the way `typecheck`/`lint`/`build` still are.
+
+---
+
+## 16. Actually-current state (regenerated 2026-09-06, later in the day)
+
+Everything above this section describes the `f72f58d` checkpoint and is
+historically accurate for that point in time, but **not** for "right
+now" — see the correction note at the top of this file. What's true as
+of this regeneration:
+
+- **Current branch: `main`.** `git log --oneline` shows 22 real commits,
+  `272c836` (baseline import) through `4c215d1` (ADR-020, pricing
+  section rebuild), all on `main`. `rebuild` still exists as a branch
+  (`origin/rebuild` too) but no longer describes where active work
+  happens — `docs/deployment.md`'s branch-promotion narrative should be
+  re-verified by whoever next touches deployment, not trusted as-is.
+- **The site has shipped past everything this file previously
+  described as "not yet done":** a Vercel preview deployment exists
+  (`docs/deployment.md`, ADR-017), a real production-blocking CVE was
+  found and fixed (ADR-018), a real Vercel-specific 500 was found and
+  fixed (ADR-019), and the homepage pricing section was rebuilt for
+  visual hierarchy (ADR-020). Business-decision gaps (HD#13 contact
+  channel, HD#11 CRM destination, HD#3 maintenance pricing conflict,
+  etc.) remain genuinely open — nothing in the commits since `f72f58d`
+  resolved any of them.
+- **This session's own work (ADR-021):** the zero-cost tools
+  architecture — `docs/tools-cost-policy.md`, `docs/tool-cost-matrix.md`,
+  `lib/tools/types.ts`, `lib/tools/cost-policy.ts`,
+  `lib/tools/__tests__/cost-policy.test.ts`, and the first automated
+  test suite this repository has had (`npm run test`, Vitest). No
+  individual tool was built — `lib/constants.ts` `TOOLS` is still `[]`,
+  per explicit instruction for this phase. `components/tools/ToolCard.tsx`,
+  `app/tools/[slug]/page.tsx`, and `app/sitemap.ts` were updated only to
+  honor the new type contract, not redesigned.
+- **`npm run typecheck`/`lint`/`test`/`build` all pass** as of this
+  regeneration (test: 13/13 new tests; build: 22/22 static pages,
+  unchanged route count).
+- **This session's changes are uncommitted as this file is written.**
+  Recommended commit message: `docs: establish zero-cost tools
+  architecture` (matches the instruction that requested this phase).
+  Everything through `4c215d1` is already committed — this is a clean,
+  small, single-purpose commit on top of a clean tree, not another
+  multi-feature backlog like the one this file originally described.
+
+**Exact next recommended action, updated:** commit this session's work,
+then either (a) build the first real `/tools` entry against the new
+architecture — the audit-tool pattern and the quote-calculator candidate
+in `docs/tool-cost-matrix.md` are the two most-grounded starting points
+— or (b) continue chasing the still-open Human Decisions (HD#13/HD#11
+remain the highest-leverage gaps, unchanged from every prior handoff).
+Do not start (a) without first re-reading `docs/tools-cost-policy.md` in
+full — this file only summarizes it.

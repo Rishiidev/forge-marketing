@@ -1460,3 +1460,101 @@ or claim in `lib/constants.ts` was changed by this work. `docs/session-
 state.md` and `docs/session-handoff.md` still need a full regeneration
 pass (pre-existing gap, not introduced here) — flagged, not fixed, as
 out of scope for a pricing-section change.
+
+### ADR-021: Zero-cost tools architecture — policy, typed contract, and automated enforcement for `/tools`
+
+Date: 2026-09-06
+Status: accepted
+
+Context: The business owner set an explicit constraint before any
+further `/tools` work happens: Forge does not currently want to spend
+money on third-party APIs, SaaS tools, AI APIs, SEO data providers,
+databases, paid infrastructure, or recurring subscriptions, and no
+individual tool should be built until this constraint is written down as
+policy, encoded as a type contract, and backed by a test that makes an
+accidental paid dependency obvious rather than something a code review
+has to catch by hand. `docs/CLAUDE.md` and `docs/conversion-system.md`,
+named in the brief, do not exist in this repository (`docs/deployment.md`
+covers deploy-target decisions instead, and conversion architecture
+lives in `docs/conversion-architecture.md`) — read the files that do
+exist rather than guessing at renamed ones. `lib/constants.ts` `TOOLS`
+was, and remains, `[]`; `package.json` had no dependency on any paid
+provider before this change (`npm`/`@anthropic-ai`/`openai`/SEO-vendor
+packages: none found).
+
+Decision:
+1. **`docs/tools-cost-policy.md`** — the standing policy (zero-cost
+   principles, approved/forbidden dependency categories, API key policy,
+   rate limiting, caching, abuse prevention, SSRF/security requirements,
+   provider replacement strategy, and the explicit five-condition test
+   for when a paid service could be introduced later, requiring
+   business-owner sign-off same as ADR-011 set for pricing).
+2. **`lib/tools/types.ts`** (new) — the typed contract:
+   `ToolDefinition`/`ToolInput`/`ToolResult`/`ToolFinding`/`ToolError`/
+   `ToolStatus`/`ToolCostProfile`/`ToolDataSource`/`ToolCapability`/
+   `ToolSecurityPolicy`, plus `ToolCostClassification`
+   (`FREE_INTERNAL`/`FREE_EXTERNAL_API`/`CUSTOMER_AUTHORIZED`/
+   `PAID_NOT_ALLOWED`/`UNAVAILABLE`) and `ToolAvailability`
+   (`free`/`customer-authorized`/`external-free-api`/`unavailable`/
+   `future-paid`). `lib/constants.ts`'s previous ad hoc, four-field
+   `ToolDefinition` (`slug`/`name`/`description`/`status: 'planned'`) is
+   replaced by a re-export of this type — `TOOLS` stays `[]`, so no
+   runtime data migration was needed.
+3. **`lib/tools/cost-policy.ts`** (new) — the developer-facing mechanism
+   that makes an accidental paid dependency obvious:
+   `findForbiddenDependencies()` scans `package.json` against named
+   patterns (OpenAI, `@anthropic-ai/*`, Ahrefs, Semrush, DataForSEO,
+   SerpApi, BrightLocal, Moz, plus a few adjacent SEO/AI/data vendors)
+   independent of whether any tool references them yet;
+   `validateToolDefinition()` checks a single tool's metadata
+   completeness, rejects any `dataSource` classified
+   `PAID_NOT_ALLOWED`, requires an `apiKeyEnvVar` wherever
+   `requiresApiKey` is true, requires a non-empty security policy, and
+   specifically rejects a `future-paid`-availability tool ever being
+   marked `status: 'available'` — the concrete enforcement of "the UI
+   must never imply a future-paid tool is currently available."
+4. **`lib/tools/__tests__/cost-policy.test.ts`** (new, 13 tests) — the
+   first automated test suite this repository has ever had. Runs both
+   checks above against the real `package.json` and the real (currently
+   empty) `TOOLS` array, plus unit tests of `validateToolDefinition()`
+   itself against a hand-built valid/invalid tool fixture, so the
+   validator's own logic is proven correct independent of whether any
+   real tool exists yet to exercise it.
+5. **Vitest added as a devDependency** (`package.json`, `vitest.config.ts`)
+   to run the above — chosen because it is free/open-source (MIT), needs
+   no API key or paid tier, and is never shipped to the browser (dev
+   tooling only, not a runtime dependency, so it does not itself weaken
+   the zero-cost posture it enforces). `npm run test` added alongside the
+   existing `typecheck`/`lint`/`build` scripts.
+6. **`docs/tool-cost-matrix.md`** (new) — populated only with facts
+   verified from this repository: one real row (the Forge Free Audit,
+   `/audit`, `FREE_INTERNAL`, already shipped, ADR-009 — the working
+   template for a zero-cost tool) and one explicitly-labeled candidate
+   row (a website/GBP quote calculator, grounded in the real,
+   unmigrated `legacy/bespoke-quote.html`), plus an explicit list of
+   what's deliberately *not* in the matrix (any tool that would require
+   a forbidden SEO/AI provider or scraping Google's own properties).
+7. **Consuming code updated to keep the new type contract honest, not
+   just declared:** `components/tools/ToolCard.tsx` now renders any
+   non-`'available'` tool as a disabled card with a status-specific
+   label (including a distinct "requires a paid provider decision"
+   label for `future-paid`) instead of a clickable link.
+   `app/tools/[slug]/page.tsx`'s `generateStaticParams`/page resolution
+   and `app/sitemap.ts`'s tool routes now filter to `status === 'available'`
+   only — a planned/unavailable/future-paid tool has no live route and no
+   sitemap entry, closing the gap between "declared unavailable in data"
+   and "still reachable as if it worked." `app/design-system/page.tsx`'s
+   `ToolCard` demo was updated to a fully-specified example object to
+   match the new required shape (same "Example" convention already used
+   there for `Testimonial`/`Review`).
+
+Consequences: No individual tool was built in this phase, per explicit
+instruction — `TOOLS` is still `[]` and `/tools` still renders its
+honest empty state. `npm run typecheck`/`lint`/`test`/`build` all pass
+(22/22 static pages unchanged; 13/13 new tests pass). This is the first
+commit in this repository to add a devDependency purely for testing
+infrastructure — flagged here explicitly since every other dependency
+decision in this project has been logged with its own rationale
+(ADR-001, ADR-018). The stale `docs/session-state.md`/
+`docs/session-handoff.md` gap ADR-020 flagged is addressed by this ADR's
+own session-end update, not deferred further.

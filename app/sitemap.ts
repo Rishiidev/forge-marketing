@@ -45,7 +45,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
-  const toolRoutes: MetadataRoute.Sitemap = TOOLS.map((tool) => ({
+  // Only an 'available' tool gets a sitemap entry — a planned/unavailable/
+  // future-paid tool has no real page for a crawler to index (see
+  // app/tools/[slug]/page.tsx, docs/tools-cost-policy.md §I).
+  const toolRoutes: MetadataRoute.Sitemap = TOOLS.filter((tool) => tool.status === 'available').map((tool) => ({
     url: url(`/tools/${tool.slug}`),
     changeFrequency: 'monthly',
     priority: 0.6,

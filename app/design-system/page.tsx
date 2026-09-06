@@ -601,7 +601,27 @@ export default function DesignSystemPage() {
               ToolCard
             </Text>
             <div className="max-w-sm">
-              <ToolCard tool={{ slug: 'example', name: 'Example tool', description: 'Example description of a planned tool.', status: 'planned' }} />
+              <ToolCard
+                tool={{
+                  slug: 'example',
+                  name: 'Example tool',
+                  description: 'Example description of a planned tool.',
+                  status: 'planned',
+                  availability: 'free',
+                  costProfile: { classification: 'FREE_INTERNAL', monthlyCostEstimateUsd: 0, notes: 'Example only — see docs/tools-cost-policy.md.' },
+                  dataSources: [
+                    { id: 'internal-heuristics', name: 'Internal logic', costClassification: 'FREE_INTERNAL', description: 'Deterministic, no network call.', requiresApiKey: false },
+                  ],
+                  capabilities: [{ id: 'example', label: 'Example', description: 'Example capability.', dataSource: { id: 'internal-heuristics', name: 'Internal logic', costClassification: 'FREE_INTERNAL', description: 'Deterministic, no network call.', requiresApiKey: false } }],
+                  securityPolicy: {
+                    acceptsUserSuppliedUrl: false,
+                    ssrfMitigation: 'n/a — no user-supplied URL is fetched',
+                    rateLimitPerIp: '20 requests / 10 min / IP-ish key',
+                    inputValidation: 'All fields validated before use.',
+                    dataRetention: 'none',
+                  },
+                }}
+              />
             </div>
           </div>
 
