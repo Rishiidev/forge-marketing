@@ -1268,3 +1268,52 @@ genuinely user-facing regressions that predate this session and were
 silently shipping — worth noting for whoever reviews this diff, since
 neither shows up in a build log or a static screenshot the way a broken
 build would.
+
+### ADR-018: `next-mdx-remote` upgraded 5.0.0 → 6.0.0 — CVE-2026-0969, caught by Vercel's build itself, not by local tooling
+
+Date: 2026-09-06
+Status: accepted
+
+Context: The first real Vercel deployment attempt (ADR-017, §5 of
+`docs/deployment.md`) failed the build outright —
+`errorCode: VULNERABLE_NEXTMDXREMOTE_VERSION`, refusing to build a known-
+vulnerable dependency (`next-mdx-remote@5.0.0`, CVE-2026-0969). Neither
+`npm run typecheck`/`lint`/`build` nor the earlier QA pass's dependency
+review (ADR-017) caught this — that review checked for secrets/API-key
+exposure, not CVE/advisory scanning, which none of this project's local
+tooling does automatically. Vercel's own build pipeline is what actually
+caught it, which is itself a useful data point: a clean local build is
+not the same guarantee as a clean deploy.
+
+Decision: Upgraded to `next-mdx-remote@6.0.0` — the only version that
+resolves the CVE (no 5.x patch exists; `npm view` confirms the package
+jumps straight from 5.0.0 to 6.0.0). Checked the dependency diff before
+upgrading (`npm view next-mdx-remote@6.0.0 dependencies` vs. `@5.0.0`):
+only two transitive deps changed (`unist-util-remove` bumped,
+`unist-util-visit` added), no signal of an API rewrite behind the major
+version bump. Both real usage sites
+(`app/showcases/[slug]/page.tsx`, `components/blog/ArticleBody.tsx`,
+both `<MDXRemote source={...} components={...} />` from
+`next-mdx-remote/rsc`) needed no code changes — verified by full
+`typecheck`/`lint`/`build`, then live in a browser: MDX body content,
+custom heading-anchor `components` override, and `TableOfContents`
+anchor-id matching all still work identically post-upgrade.
+
+Also found by the same `npm audit` pass, deliberately **not fixed**:
+`postcss <=8.5.22` (high severity — CSS stringify XSS, source-map path
+traversal) is a transitive dependency **bundled inside `next` itself**
+(`node_modules/next/node_modules/postcss`), not a direct dependency of
+this project. `npm audit fix --force` would resolve it only by installing
+`next@16.3.4` — a major-version jump with real breaking-change risk,
+well beyond a QA-pass-scoped fix. Actual exploitability here is low: this
+app's PostCSS usage is entirely build-time, processing only this
+repository's own trusted `.css`/Tailwind source, never visitor-submitted
+or otherwise untrusted CSS at runtime — the vulnerable code path
+(processing attacker-controlled CSS) is never reached. Flagged as a
+WARNING for a deliberate, scheduled Next.js major-version upgrade, not a
+launch blocker.
+
+Consequences: `npm run typecheck`/`lint`/`build` all pass post-upgrade.
+Vercel's build was retriggered after this fix — see `docs/deployment.md`
+for the resulting deployment's outcome. `package.json`'s
+`next-mdx-remote` range is now `^6.0.0`.
