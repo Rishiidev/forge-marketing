@@ -15,7 +15,7 @@ import { CTA } from '@/components/marketing/CTA'
 import { ForgePricing } from '@/components/pricing/ForgePricing'
 import { AuditForm } from '@/components/audit/AuditForm'
 import { AuditPointList } from '@/components/audit/AuditPointList'
-import { Microproof } from '@/components/forms/Microproof'
+import { MaintenancePlanGrid } from '@/components/marketing/MaintenancePlanGrid'
 import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { CapacityStrip } from '@/components/conversion/CapacityStrip'
@@ -187,7 +187,7 @@ export default function HomePage() {
                 Get your free 7-point audit.
               </Heading>
               <Text size="body-lg" className="mt-4">
-                A manual review of what your Google Business Profile tells customers today — reviewed by a person, not a script. You get a private write-up with what's working, what's costing you customers, and what to do first. No upsell inside the audit itself.
+                A manual review of what your Google Business Profile tells customers today — reviewed by a person, not a script. You get a private write-up with what&rsquo;s working, what&rsquo;s costing you customers, and what to do first. No upsell inside the audit itself.
               </Text>
             </div>
             <AuditPointList items={AUDIT_POINTS} />
@@ -275,16 +275,7 @@ export default function HomePage() {
             See maintenance plans
           </Button>
         </div>
-        <div className="mt-10 grid gap-4 border-t border-mark/15 pt-8 sm:grid-cols-3">
-          {MAINTENANCE_PLANS.map((plan) => (
-            <div key={plan.id} className="flex items-baseline justify-between gap-4 sm:block">
-              <Text as="span" size="caption" tone="onDark">
-                {plan.name}
-              </Text>
-              <p className="text-heading-sm text-mark sm:mt-1">{plan.priceLabel}</p>
-            </div>
-          ))}
-        </div>
+        <MaintenancePlanGrid plans={MAINTENANCE_PLANS} />
       </Section>
 
       {/* 10. Reviews / proof */}
