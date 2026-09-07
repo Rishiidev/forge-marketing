@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { FeatureList } from '@/components/marketing/FeatureList'
 import { Hero } from '@/components/marketing/Hero'
 import { TransformationCompare } from '@/components/marketing/TransformationCompare'
+import { ProblemList } from '@/components/marketing/ProblemList'
 import { TrustSignals } from '@/components/marketing/TrustSignals'
 import { ProcessSteps } from '@/components/marketing/ProcessStep'
 import { Metric } from '@/components/marketing/Metric'
@@ -145,6 +146,11 @@ export default function HomePage() {
           </Text>
         </div>
         <FeatureList items={GBP_MAPPING} />
+        <div className="mt-8">
+          <TrackedCtaLink href="#audit" location="insight-section" variant="secondary">
+            See what your profile already has →
+          </TrackedCtaLink>
+        </div>
       </Section>
 
       {/* 4. Free audit — embedded, not just linked */}
@@ -186,22 +192,10 @@ export default function HomePage() {
             You do excellent work. Your online presence may not prove it.
           </Heading>
         </div>
-        <div className="grid gap-0 border-t border-border">
-          {MISSED_OPPORTUNITY.map((item, i) => (
-            <div key={item.title} className="grid grid-cols-[auto_1fr] gap-5 border-b border-border py-6">
-              <span className="font-mono text-caption text-muted">{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <strong className="block text-body-lg font-semibold text-ink">{item.title}</strong>
-                <Text size="body-sm" className="mt-1">
-                  {item.description}
-                </Text>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ProblemList items={MISSED_OPPORTUNITY} />
         <div className="mt-8">
           <TrackedCtaLink href="#audit" location="problem-section" variant="secondary">
-            {AUDIT_CTA_LABEL}
+            See where you stand in 7 points →
           </TrackedCtaLink>
         </div>
       </Section>
