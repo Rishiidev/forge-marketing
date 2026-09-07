@@ -9,7 +9,6 @@ import { TransformationCompare } from '@/components/marketing/TransformationComp
 import { ProblemList } from '@/components/marketing/ProblemList'
 import { TrustSignals } from '@/components/marketing/TrustSignals'
 import { ProcessSteps } from '@/components/marketing/ProcessStep'
-import { Metric } from '@/components/marketing/Metric'
 import { FAQ } from '@/components/marketing/FAQ'
 import { CTA } from '@/components/marketing/CTA'
 import { ForgePricing } from '@/components/pricing/ForgePricing'
@@ -19,7 +18,8 @@ import { MaintenancePlanGrid } from '@/components/marketing/MaintenancePlanGrid'
 import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { CapacityStrip } from '@/components/conversion/CapacityStrip'
-import { getFeaturedShowcases, getShowcaseBySlug } from '@/lib/showcases'
+import { ProofStrip } from '@/components/marketing/ProofStrip'
+import { getFeaturedShowcases } from '@/lib/showcases'
 import { AUDIT_CTA_LABEL, AUDIT_HREF, MAINTENANCE_PLANS, CAPACITY } from '@/lib/constants'
 
 export const metadata = buildMetadata({
@@ -95,38 +95,37 @@ const FAQ_ITEMS = [
   {
     question: 'Will I own my website and domain?',
     answer:
-      'Yes, always. The domain is registered in your name, not Forge’s. Files transfer to you after final payment — you can leave at any time and take everything with you.',
+      'Yes, always. The domain is registered in your name, not Forge\u2019s. Your Cloudflare login is created and handed to you. Once paid, the site, domain, and email are entirely yours \u2014 you can leave at any time and take everything with you.',
   },
   {
     question: "What if I don't like it?",
     answer:
-      'For the Launch tier, you see the finished site live on a walkthrough call before you pay anything. If it is not right, you simply don’t proceed — there is no charge.',
+      'For the Launch tier, you see the finished site live on a walkthrough call before you pay anything. If it isn\u2019t right, you simply don\u2019t proceed \u2014 there is no charge. Growth and Pro include one or two structured revision rounds after the first preview.',
   },
   {
     question: 'Will I get locked into monthly fees?',
     answer:
-      'No. The Launch, Growth, and Pro websites are one-time purchases. Ongoing maintenance is a fully separate, optional plan you can cancel any month.',
+      'No. The Launch, Growth, and Pro websites are one-time purchases. Ongoing maintenance is a fully separate, optional plan you can cancel any month \u2014 your site, domain, and files stay with you regardless.',
   },
   {
     question: 'Can you actually build for my type of business?',
     answer:
-      'Forge has ready layouts for salons, clinics, cafés and restaurants, studios, trade and repair services, and coaches or consultants — see real examples in Showcases below.',
+      'Forge has ready layouts for salons, clinics, caf\u00e9s and restaurants, studios, trade and repair services, fitness coaches, and consultants \u2014 see real examples in the Showcases section. If your category is unusual, we\u2019ll tell you upfront whether it\u2019s a fit before you commit.',
   },
   {
     question: 'What happens after I request the audit?',
     answer:
-      'We review your Google Business Profile against 7 specific points and send you a private write-up. There is no upsell inside the audit itself — what you do next is your call.',
+      'A real person reviews your Google Business Profile against the 7 specific points and emails you a private write-up within 48 hours. There is no upsell inside the audit itself \u2014 what you do next is your call.',
   },
   {
     question: 'Does this guarantee more customers?',
     answer:
-      'No honest website can guarantee rankings, leads, or revenue, and Forge won’t claim otherwise. What it does is give customers who already find you a clear, trustworthy way to understand and contact you.',
+      'No honest website can guarantee rankings, leads, or revenue, and Forge won\u2019t claim otherwise. What it does is give customers who already find you a clear, trustworthy way to understand and contact you \u2014 so the people who arrive are more likely to choose you.',
   },
 ]
 
 export default function HomePage() {
   const featuredShowcases = getFeaturedShowcases(6)
-  const smileCare = getShowcaseBySlug('smile-care-dental')
 
   return (
     <>
@@ -289,28 +288,26 @@ export default function HomePage() {
           </Text>
         </div>
 
-        {smileCare?.fm.metrics?.[0] && (
-          <div className="mb-8 max-w-xs">
-            <Metric value={smileCare.fm.metrics[0].value} label={`${smileCare.fm.metrics[0].label} · ${smileCare.fm.name}`} />
-          </div>
-        )}
+        <ProofStrip />
 
-        <TrustSignals
-          items={[
-            {
-              title: 'See it before you decide',
-              description: 'A live preview and a walkthrough call — before you pay anything for a Launch website.',
-            },
-            {
-              title: 'Your domain, always',
-              description: 'Registered in your name from day one. Files transfer to you after final payment.',
-            },
-            {
-              title: 'A process you can see',
-              description: 'Every step above has a real time estimate — never "we’ll be in touch."',
-            },
-          ]}
-        />
+        <div className="mt-12">
+          <TrustSignals
+            items={[
+              {
+                title: 'See it before you decide',
+                description: 'A live preview and a walkthrough call — before you pay anything for a Launch website.',
+              },
+              {
+                title: 'Your domain, always',
+                description: 'Registered in your name from day one. Files transfer to you after final payment.',
+              },
+              {
+                title: 'A process you can see',
+                description: 'Every step above has a real time estimate — never "we’ll be in touch."',
+              },
+            ]}
+          />
+        </div>
       </Section>
 
       {/* 11. FAQ */}
