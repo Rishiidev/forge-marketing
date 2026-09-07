@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Fraunces, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { SiteHeader } from '@/components/layout/SiteHeader'
@@ -27,6 +27,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE.marketingUrl),
   title: { default: SITE.name, template: `%s — ${SITE.name}` },
   description: SITE.tagline,
+}
+
+/**
+ * No dark theme exists — without an explicit color-scheme, some mobile
+ * browsers (Chrome/Android's forced-dark heuristic in particular)
+ * auto-darken the page and desaturate every custom paper/mark/ground
+ * color into a muddy blue-gray wash. `colorScheme` lives on `viewport`,
+ * not `metadata`, in the App Router — Next.js silently drops it if
+ * it's placed on the wrong export.
+ */
+export const viewport: Viewport = {
+  colorScheme: 'light',
 }
 
 /**
