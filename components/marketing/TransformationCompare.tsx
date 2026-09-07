@@ -18,7 +18,7 @@ export function TransformationCompare() {
   return (
     <div className="grid overflow-hidden rounded-2xl border border-border md:grid-cols-2">
       <div className="bg-white p-7">
-        <Badge>Before — Google Business Profile</Badge>
+        <Badge tone="warning">Before — Google Business Profile</Badge>
         <Text as="p" size="body-sm" className="mt-4">
           Information is real, but scattered — a visitor has to piece it together themselves.
         </Text>
