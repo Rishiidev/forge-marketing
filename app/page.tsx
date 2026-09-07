@@ -14,6 +14,8 @@ import { FAQ } from '@/components/marketing/FAQ'
 import { CTA } from '@/components/marketing/CTA'
 import { ForgePricing } from '@/components/pricing/ForgePricing'
 import { AuditForm } from '@/components/audit/AuditForm'
+import { AuditPointList } from '@/components/audit/AuditPointList'
+import { Microproof } from '@/components/forms/Microproof'
 import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { CapacityStrip } from '@/components/conversion/CapacityStrip'
@@ -65,6 +67,20 @@ const PROCESS_STEPS = [
   { index: 2, title: 'We build', description: 'Pulled straight from your profile into an industry-tuned layout.', meta: '~30 min' },
   { index: 3, title: 'You review, live', description: 'A real walkthrough call. You decide on the spot — nothing is charged yet.', meta: '~10 min' },
   { index: 4, title: 'We hand over', description: 'Domain, email, everything — set up in your name, not ours.', meta: 'by tomorrow' },
+]
+
+// Position 4 — the 7 specific points reviewed in the audit. Each is a real,
+// defensible assessment of GBP quality, not invented scoring. The artifact
+// is shown beside the audit form so visitors see what they're filling out
+// for before they fill it.
+const AUDIT_POINTS = [
+  { title: 'The 10-second first impression', description: 'What a customer sees in the first glance — and whether they stay.' },
+  { title: 'How easy you are to contact', description: 'Whether the next step is obvious or buried three taps deep.' },
+  { title: 'Whether your proof reads as a story', description: 'Reviews presented as evidence, not just a star count.' },
+  { title: 'What shows up when someone searches you', description: 'First-page reality vs. what you think is there.' },
+  { title: 'Photo quality and coverage', description: 'Whether what you have reads as professional or accidental.' },
+  { title: 'Hours, services, and menu clarity', description: 'Whether someone can act on what they find without calling to ask.' },
+  { title: 'What to fix first — and what to ignore', description: 'A ranked list of changes, not a generic checklist.' },
 ]
 
 // Position 11 — FAQ. Every answer restates an existing, real policy
@@ -159,36 +175,25 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* 4. Free audit — embedded, not just linked */}
-      <Section id="audit" spacing="tight" className="grid gap-10 lg:grid-cols-2 lg:items-start">
-        <div>
-          <Text as="span" size="caption" className="mb-3 block text-ground">
-            Start here — free, no obligation
-          </Text>
-          <Heading as="h2" size="heading-lg">
-            Get your free audit.
-          </Heading>
-          <Text size="body-lg" className="mt-4">
-            A manual, 7-point review of what your Google Business Profile is telling customers today — reviewed
-            by a person, not a script. No upsell inside the audit itself.
-          </Text>
-          <ul className="mt-6 grid gap-2">
-            {[
-              'The 10-second first impression',
-              'How easy you are to contact',
-              'Whether your proof reads as a story or looks scattered',
-              'What shows up when someone searches your business',
-            ].map((line) => (
-              <li key={line} className="flex gap-2 text-body-sm text-ink-3">
-                <span aria-hidden className="text-success">
-                  ✓
-                </span>
-                {line}
-              </li>
-            ))}
-          </ul>
+      {/* 4. Free audit — embedded, not just linked, with the 7-point artifact shown beside the form */}
+      <Section id="audit" spacing="tight">
+        <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-start">
+          <div className="grid gap-8">
+            <div>
+              <Text as="span" size="caption" className="mb-3 block text-ground">
+                Start here — free, no obligation
+              </Text>
+              <Heading as="h2" size="heading-lg">
+                Get your free 7-point audit.
+              </Heading>
+              <Text size="body-lg" className="mt-4">
+                A manual review of what your Google Business Profile tells customers today — reviewed by a person, not a script. You get a private write-up with what's working, what's costing you customers, and what to do first. No upsell inside the audit itself.
+              </Text>
+            </div>
+            <AuditPointList items={AUDIT_POINTS} />
+          </div>
+          <AuditForm />
         </div>
-        <AuditForm />
       </Section>
 
       {/* 5. Problem / missed opportunity */}

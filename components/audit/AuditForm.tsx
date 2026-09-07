@@ -6,9 +6,10 @@ import { SelectField } from '@/components/forms/SelectField'
 import { Honeypot } from '@/components/forms/Honeypot'
 import { SubmitButton } from '@/components/forms/SubmitButton'
 import { FormStatus } from '@/components/forms/FormStatus'
+import { Microproof } from '@/components/forms/Microproof'
 import { useLeadForm } from '@/components/forms/useLeadForm'
 import { trackEvent } from '@/lib/analytics'
-import { CATEGORY_OPTIONS } from '@/lib/constants'
+import { CATEGORY_OPTIONS, AUDIT_SUBMIT_LABEL } from '@/lib/constants'
 
 /**
  * The free 7-point audit request form. Field set matches
@@ -49,8 +50,9 @@ export function AuditForm() {
         required
       />
       <TextField label="Your WhatsApp number (optional)" name="whatsapp" type="tel" placeholder="+91 99999 99999" />
-      <SubmitButton pending={isPending}>Send my free audit</SubmitButton>
+      <SubmitButton pending={isPending}>{AUDIT_SUBMIT_LABEL}</SubmitButton>
       <FormStatus status={status} error={error} />
+      <Microproof className="mt-2" />
     </form>
   )
 }
