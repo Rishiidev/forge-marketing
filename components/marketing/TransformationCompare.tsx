@@ -18,7 +18,9 @@ export function TransformationCompare() {
   return (
     <div className="grid overflow-hidden rounded-2xl border border-border md:grid-cols-2">
       <div className="bg-white p-7">
-        <Badge>Before — Google Business Profile</Badge>
+        <Badge className="normal-case tracking-normal">
+          Before — Google Business Profile
+        </Badge>
         <Text as="p" size="body-sm" className="mt-4">
           Information is real, but scattered — a visitor has to piece it together themselves.
         </Text>
@@ -31,7 +33,9 @@ export function TransformationCompare() {
         </dl>
       </div>
       <div className="bg-ground p-7 text-mark">
-        <Badge tone="success">After — your Forge website</Badge>
+        <Badge tone="success" className="normal-case tracking-normal">
+          After — your Forge website
+        </Badge>
         <Text as="p" size="body-sm" tone="onDarkMuted" className="mt-4">
           The same real information, now with one clear next step.
         </Text>

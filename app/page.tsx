@@ -127,8 +127,14 @@ export default function HomePage() {
             Same real information. A different first impression.
           </Heading>
           <Text size="body-lg" className="mt-4">
-            This is an illustrative example, not a real client — real client websites are further down, in
-            Showcases.
+            An illustrative example, not a real client — real client websites are in{' '}
+            <a
+              href="#showcases"
+              className="text-ink underline underline-offset-4 hover:text-ground"
+            >
+              Showcases
+            </a>{' '}
+            below.
           </Text>
         </div>
         <TransformationCompare />
