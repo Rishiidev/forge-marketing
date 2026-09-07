@@ -1,17 +1,28 @@
-import { Accordion, type AccordionItemData } from '@/components/ui/Accordion'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/Accordion'
 
 export interface FAQItem {
   question: string
   answer: string
 }
 
-/** Thin wrapper mapping {question, answer} pairs onto the generic Accordion primitive. */
+/**
+ * FAQ list — composes the shadcn/Radix Accordion primitive.
+ * First item opens by default (`defaultValue="faq-0"`).
+ */
 export function FAQ({ items }: { items: FAQItem[] }) {
-  const accordionItems: AccordionItemData[] = items.map((item, i) => ({
-    id: `faq-${i}`,
-    trigger: item.question,
-    content: item.answer,
-  }))
-
-  return <Accordion items={accordionItems} />
+  return (
+    <Accordion type="single" collapsible defaultValue={items[0] ? `faq-0` : undefined} className="w-full">
+      {items.map((item, i) => (
+        <AccordionItem key={`faq-${i}`} value={`faq-${i}`}>
+          <AccordionTrigger>{item.question}</AccordionTrigger>
+          <AccordionContent>{item.answer}</AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  )
 }

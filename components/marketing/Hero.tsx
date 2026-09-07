@@ -2,7 +2,7 @@ import { Heading } from '@/components/ui/Heading'
 import { Text } from '@/components/ui/Text'
 import { Section } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
-import { ShaderBackground } from '@/components/ui/test'
+import { ShaderBackground } from '@/components/ui/shader-background'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { AUDIT_CTA_LABEL } from '@/lib/constants'
 
@@ -31,6 +31,7 @@ export function Hero() {
       />
       <Section spacing="tight" className="pt-10 md:pt-16" containerClassName="grid items-center gap-12 md:grid-cols-2">
       <div>
+        <span className="mb-3 block text-caption text-ground">For local service businesses in India</span>
         <Heading as="h1" size="heading-xl">
           Your business is already <span className="font-serif italic">trusted</span> offline. Make it look that
           way online.

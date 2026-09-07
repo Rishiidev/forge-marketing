@@ -1,83 +1,72 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import * as React from 'react'
+import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { cn } from '@/lib/utils'
 
-export interface AccordionItemData {
-  id: string
-  trigger: ReactNode
-  content: ReactNode
-}
-
-interface AccordionProps {
-  items: AccordionItemData[]
-  /** Allow more than one item open at once. Default: single-open (matches legacy FAQ behavior). */
-  allowMultiple?: boolean
-  defaultOpenId?: string
-  className?: string
-}
-
 /**
- * Generic expand/collapse primitive. `components/marketing/FAQ.tsx` is the
- * only current consumer, but this makes no assumption about content being
- * a question/answer pair — reuse it anywhere a disclosure pattern fits.
+ * Forge Accordion — Radix-wrapped, themed to the existing tokens.
+ * Drop-in replacement for the legacy CSS-only Accordion (the FAQ
+ * component already wraps this, so callers don't need to change).
  *
- * Motion: a grid-rows 0fr→1fr transition, not a JS height measurement —
- * smooth, no layout thrash, and reduced-motion-safe via the global
- * `prefers-reduced-motion` rule in globals.css.
+ * API matches shadcn's accordion: `Accordion`, `AccordionItem`,
+ * `AccordionTrigger`, `AccordionContent`. Adds a small `defaultOpen`
+ * helper for the FAQ first-item-opens behavior.
  */
-export function Accordion({ items, allowMultiple = false, defaultOpenId, className }: AccordionProps) {
-  const [openIds, setOpenIds] = useState<Set<string>>(new Set(defaultOpenId ? [defaultOpenId] : []))
 
-  function toggle(id: string) {
-    setOpenIds((prev) => {
-      const next = allowMultiple ? new Set(prev) : new Set<string>()
-      if (prev.has(id)) {
-        if (allowMultiple) next.delete(id)
-        // single-open: clicking the open item closes it (next stays empty)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
+const Accordion = AccordionPrimitive.Root
 
-  return (
-    <div className={cn('border-t border-border', className)}>
-      {items.map((item) => {
-        const isOpen = openIds.has(item.id)
-        return (
-          <div key={item.id} className="border-b border-border">
-            <button
-              type="button"
-              onClick={() => toggle(item.id)}
-              aria-expanded={isOpen}
-              aria-controls={`accordion-panel-${item.id}`}
-              className="focus-ring flex w-full items-center justify-between gap-6 rounded-sm py-5 text-left"
-            >
-              <span className="text-body-lg font-semibold text-ink">{item.trigger}</span>
-              <span
-                aria-hidden
-                className={cn(
-                  'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-border text-lg transition-transform duration-200 ease-forge',
-                  isOpen && 'rotate-45 border-ground bg-ground text-mark'
-                )}
-              >
-                +
-              </span>
-            </button>
-            <div
-              id={`accordion-panel-${item.id}`}
-              className="grid transition-[grid-template-rows] duration-300 ease-forge"
-              style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
-            >
-              <div className="overflow-hidden">
-                <div className="pb-5 text-body text-muted">{item.content}</div>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+const AccordionItem = React.forwardRef<
+  React.ElementRef<typeof AccordionPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
+>(({ className, ...props }, ref) => (
+  <AccordionPrimitive.Item
+    ref={ref}
+    className={cn('border-t border-border last:border-b', className)}
+    {...props}
+  />
+))
+AccordionItem.displayName = 'AccordionItem'
+
+const AccordionTrigger = React.forwardRef<
+  React.ElementRef<typeof AccordionPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Header className="flex">
+    <AccordionPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        'group flex flex-1 items-center justify-between gap-4 py-5 text-body-lg font-medium text-ink transition-colors duration-200 ease-forge hover:text-ground [&[data-state=open]>svg]:rotate-45 [&[data-state=open]>svg]:bg-ground [&[data-state=open]>svg]:text-mark',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+      <span
+        aria-hidden
+        className="grid h-7 w-7 place-items-center rounded-full bg-paper-2 text-ink text-[18px] font-medium transition-all duration-300 ease-forge group-data-[state=open]:rotate-45 group-data-[state=open]:bg-ground group-data-[state=open]:text-mark"
+      >
+        +
+      </span>
+    </AccordionPrimitive.Trigger>
+  </AccordionPrimitive.Header>
+))
+AccordionTrigger.displayName = 'AccordionTrigger'
+
+const AccordionContent = React.forwardRef<
+  React.ElementRef<typeof AccordionPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Content
+    ref={ref}
+    className={cn(
+      'overflow-hidden text-body text-ink-3 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down',
+    )}
+    {...props}
+  >
+    <div className={cn('pb-6 pr-8 max-w-[65ch]', className)}>{children}</div>
+  </AccordionPrimitive.Content>
+))
+AccordionContent.displayName = 'AccordionContent'
+
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }

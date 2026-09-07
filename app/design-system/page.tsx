@@ -11,7 +11,12 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
-import { Accordion } from '@/components/ui/Accordion'
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/Accordion'
 import { Divider } from '@/components/ui/Divider'
 
 import { CTA } from '@/components/marketing/CTA'
@@ -431,12 +436,16 @@ export default function DesignSystemPage() {
               Accordion
             </Text>
             <div className="max-w-2xl rounded-2xl border border-border bg-white p-2">
-              <Accordion
-                items={[
-                  { id: 'a', trigger: 'First item', content: 'Its panel expands with a grid-rows transition.' },
-                  { id: 'b', trigger: 'Second item', content: 'Opening this closes the first (single-open).' },
-                ]}
-              />
+              <Accordion type="single" collapsible>
+                <AccordionItem value="a">
+                  <AccordionTrigger>First item</AccordionTrigger>
+                  <AccordionContent>Its panel expands with a grid-rows transition.</AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="b">
+                  <AccordionTrigger>Second item</AccordionTrigger>
+                  <AccordionContent>Opening this closes the first (single-open).</AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
 
