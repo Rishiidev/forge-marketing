@@ -366,30 +366,34 @@ export const INDUSTRY_TEMPLATES: IndustryTemplate[] = [
 // ---------------------------------------------------------------------
 // Tools (/tools, /tools/[slug]) — the Forge Website Diagnostic suite
 // (lib/website-analyzer/), 12 tools built on one reusable homepage
-// analysis engine (lib/website-analyzer/analyzer.ts). No tool
-// re-implements any fetching/parsing/scoring logic — every one filters
-// the same analysis to its own category. See docs/tool-architecture.md
-// and docs/tool-security.md.
+// analysis engine (lib/website-analyzer/analyzer.ts), plus the Forge
+// PageSpeed Test (lib/pagespeed/) — real Google Core Web Vitals data
+// (when a PSI_API_KEY is configured) layered on top of the same
+// internal engine's SEO/technical checks. No tool re-implements any
+// fetching/parsing/scoring logic — every one filters the same analysis
+// to its own category. See docs/tool-architecture.md, docs/tool-security.md,
+// and docs/tools.md ("PageSpeedProvider").
 //
 // ToolDefinition and its supporting types live in lib/tools/types.ts —
 // the single source of truth for the zero-cost tools architecture (see
 // docs/tools-cost-policy.md and docs/tool-cost-matrix.md). Every entry
 // added here is checked by lib/tools/__tests__/cost-policy.test.ts.
 //
-// WEBSITE_ANALYZER_TOOLS is imported here, not the other way around —
-// lib/website-analyzer/tools.ts deliberately does NOT import from this
-// file (even though it needs AUDIT_HREF/AUDIT_CTA_LABEL, defined below
-// in this same file) specifically to avoid a circular module
-// dependency; see that file's own comment for why. If AUDIT_HREF/
-// AUDIT_CTA_LABEL below ever change, lib/website-analyzer/tools.ts's
-// inlined copies need updating too.
+// WEBSITE_ANALYZER_TOOLS/PAGESPEED_TOOL are imported here, not the other
+// way around — neither lib/website-analyzer/tools.ts nor
+// lib/pagespeed/tool.ts imports from this file (even though the former
+// needs AUDIT_HREF/AUDIT_CTA_LABEL, defined below in this same file)
+// specifically to avoid a circular module dependency; see that file's
+// own comment for why. If AUDIT_HREF/AUDIT_CTA_LABEL below ever change,
+// lib/website-analyzer/tools.ts's inlined copies need updating too.
 // ---------------------------------------------------------------------
 
 import type { ToolDefinition } from '@/lib/tools/types'
 export type { ToolDefinition } from '@/lib/tools/types'
 import { WEBSITE_ANALYZER_TOOLS } from '@/lib/website-analyzer/tools'
+import { PAGESPEED_TOOL } from '@/lib/pagespeed/tool'
 
-export const TOOLS: ToolDefinition[] = [...WEBSITE_ANALYZER_TOOLS]
+export const TOOLS: ToolDefinition[] = [...WEBSITE_ANALYZER_TOOLS, PAGESPEED_TOOL]
 
 // ---------------------------------------------------------------------
 // Primary navigation — reflects the new route structure, not the legacy

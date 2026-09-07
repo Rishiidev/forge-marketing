@@ -1708,3 +1708,187 @@ explicit instruction:** any individual tool, a database (none exists in
 this project — `docs/architecture.md` "Why no CMS" — and this pass
 doesn't add one), authentication, a customer dashboard, an AI API, rank
 tracking, or scraping of any kind.
+
+**Note for whoever reads this log next:** between this ADR and the one
+below, the Forge Website Diagnostic Engine (`lib/website-analyzer/`, 12
+`/tools/*` pages) and a follow-up SEO audit/fix pass were built and
+committed (`6a98d00`, `a059127`) without their own ADR entries — their
+rationale lives in `docs/tool-architecture.md`, `docs/tool-security.md`,
+and `docs/seo-system.md` instead. This log is otherwise append-only
+(never rewrite a past entry) — flagged here rather than silently
+backfilled, so the numbering gap is understood, not mistaken for a
+missing/lost decision.
+
+### ADR-023: Forge PageSpeed Test — a real, key-gated Google PageSpeedProvider layered on the existing internal engine
+
+Date: 2026-09-07
+Status: accepted
+
+Context: The brief asked for a `/tools/page-speed-test` tool backed by
+real Google PageSpeed Insights data (performance/accessibility/
+best-practices/Core Web Vitals — LCP, CLS, INP, FCP, TTFB), with an
+explicit instruction to verify the *current* official PSI API docs
+first rather than trust memory or a third party, to never add billing
+or a paid provider, to build a replaceable `PageSpeedProvider` adapter,
+to clearly distinguish LAB/FIELD/UNAVAILABLE data and never invent a
+fallback value, and to keep the tool fully useful via the internal
+Website Diagnostic Engine even when Google's data is unavailable.
+
+Verified directly against current official docs before writing any
+code (full citations: `docs/tools.md` "PageSpeedProvider"): an API key
+is optional per Google's own docs but recommended for automated
+queries; Google does not charge for this specific API (no billing
+requirement); no daily/per-100-second quota number is published on
+either current docs page checked; the four valid `category` values are
+`performance`/`accessibility`/`best-practices`/`seo`; Interaction to
+Next Paint (INP) officially replaced First Input Delay (FID) as a Core
+Web Vital on March 12, 2024 (web.dev/blog/inp-cwv-march-12) — Forge
+never reports FID; LCP/INP/TTFB threshold numbers were each confirmed
+directly against their own current web.dev article rather than assumed.
+
+Decision:
+1. `lib/pagespeed/provider.ts` — the `PageSpeedProvider` interface
+   (`isConfigured()`, `analyze(url, strategy)`), the same swappable-
+   adapter pattern `lib/crm.ts`'s `CrmAdapter` and `lib/analytics.ts`'s
+   `AnalyticsProvider` already established for this codebase. Every
+   other file in `lib/pagespeed/` talks to this interface; only one line
+   in `lib/pagespeed/actions.ts` names the concrete Google
+   implementation.
+2. `lib/pagespeed/google-provider.ts` — the real implementation, and
+   **entirely key-gated by design, not merely by default**: it makes
+   zero network calls unless `PSI_API_KEY` is set, never falls back to
+   Google's unauthenticated endpoint (which Google's own docs discourage
+   for "frequent, automated queries" — exactly what a public tool is),
+   and this repository sets no such key anywhere (no `.env` exists, same
+   standing fact as every other optional integration here). "Do not add
+   billing" is honored structurally: this codebase never creates a
+   Google Cloud project, enables an API, or touches billing on anyone's
+   behalf — a human who wants live data sets `PSI_API_KEY` themselves,
+   entirely outside this repo.
+3. `lib/pagespeed/normalizer.ts` — turns Google's raw JSON into a typed
+   `PageSpeedAnalysis`, defensively (every field optional-chained and
+   type-guarded; a missing/wrong-typed field becomes an absent metric,
+   never a fabricated 0). Two real correctness details verified and
+   encoded here, not assumed: (a) a lab-only Lighthouse run has no real
+   user interaction to derive INP from, so `PageSpeedLabResult.coreWebVitals.inp`
+   is structurally never populated from a lab audit — only field data
+   can ever supply INP; (b) CrUX's own `loadingExperience` API has
+   reported CLS as `score * 100` under `CUMULATIVE_LAYOUT_SHIFT_SCORE`
+   for years — divided back by 100 here, documented as Google's quirk,
+   not Forge's invention.
+4. `lib/pagespeed/thresholds.ts` — every Core Web Vital/category-score
+   threshold as a named constant with its own citation in the file's own
+   doc comment (LCP/CLS/INP/FCP/TTFB good/poor cutoffs; Lighthouse's
+   official 0-49/50-89/90-100 score-color convention), plus
+   `RATING_LABEL` mapping to the exact task-required copy
+   ("Good"/"Needs attention"/"Priority").
+5. `lib/pagespeed/findings.ts` — builds the shared `Finding` type
+   (`lib/website-analyzer/types.ts`, reused rather than forking a
+   parallel type) with a new optional `dataOrigin: 'internal' | 'lab' |
+   'field' | 'unavailable'` field added to that shared interface
+   specifically for this — the concrete mechanism behind "clearly
+   distinguish LAB DATA / FIELD DATA / UNAVAILABLE." Field data is
+   preferred over lab when both exist for a metric; a metric with
+   neither is an explicit `unavailable` finding, never omitted. When the
+   whole PSI call is unavailable (any reason), `buildUnavailableFindings()`
+   still produces one honest finding per score/metric slot (8 total) —
+   "return a truthful partial state," never zero findings standing in
+   for "we don't know."
+6. `lib/website-analyzer/types.ts` `FindingCategory` gained `performance`/
+   `accessibility`/`best-practices` (Lighthouse's own three scored
+   categories this tool actually requests) — deliberately **not** `seo`:
+   PSI's SEO category audits substantially the same things the internal
+   engine already checks, so this tool reuses those existing
+   `metadata`/`headings`/`schema`/`mobile`/`http`/`images` findings
+   instead of requesting a second, overlapping opinion from Google,
+   exactly per the brief's own instruction to use the internal engine
+   for "title, meta, viewport, schema, headings, HTTPS, image signals,
+   mobile signals."
+7. `lib/pagespeed/cache.ts` — file-backed (`lib/file-store.ts`), keyed
+   by `(strategy, normalized URL)` only, 12-hour TTL (longer than the
+   general website-analyzer cache's 6h, since a real Lighthouse run is
+   expensive/quota-metered to repeat and CrUX field data is itself a
+   28-day rolling average). A transient failure (timeout/network-error/
+   5xx) is never cached — only a complete success or a stable outcome is
+   worth serving stale. No visitor identity, session, or IP is ever part
+   of the cache key or value — the concrete answer to "do not cache
+   private/customer-specific data incorrectly": a PageSpeed result for a
+   public URL is exactly as public as the page itself.
+8. `lib/pagespeed/actions.ts` — the Server Action bridge (the same
+   pattern ADR-022 established for `lib/website-analyzer/actions.ts`),
+   rate-limited independently and more tightly than the other 12 tools
+   (5/10min vs. 10/10min) — deliberately, since no PSI quota number is
+   published to plan against. Runs the PageSpeed check and the internal
+   engine's technical categories in parallel (`Promise.all`), and
+   combines both into one response — the tool never blocks on Google to
+   show the SEO/technical half.
+9. `lib/pagespeed/tool.ts` — the registry entry (`ToolAvailability:
+   'external-free-api'`, `ToolCostClassification: 'FREE_EXTERNAL_API'`
+   for the PageSpeed data source, `'FREE_INTERNAL'` for the internal
+   engine's), with the exact contextual CTA the brief's own example
+   specified for a performance tool ("Turn these findings into a better
+   website" → Forge websites, `/websites`), a secondary link to the free
+   audit, and an FAQ that states plainly the tool never guarantees
+   rankings, SEO improvement, or sales — matching the brief's explicit
+   "never say" list.
+10. **A bespoke route, not the generic engine shell** —
+    `app/tools/page-speed-test/page.tsx` is a static route that Next.js
+    resolves in preference to the generic `app/tools/[slug]/page.tsx`
+    for this exact path (excluded from that route's own
+    `generateStaticParams` too, avoiding a real build-time path
+    conflict, not just redundant pre-rendering). `components/pagespeed/PageSpeedTool.tsx`
+    reuses every existing engine component it can (`ToolHeader`,
+    `ToolInput`, `ToolProgress`, `ToolError`, `ToolStatus`,
+    `ToolFindingList`, `ToolCTA`, `ToolMethodology`, `ToolFAQ`,
+    `RelatedTools`) and adds only what the 9-step UX genuinely needs on
+    top: `ScoreSummary`, `CoreWebVitalsPanel` (the prominent LAB/FIELD/
+    UNAVAILABLE badge lives here), `OpportunitiesList` (reuses
+    `ToolFindingList` after mapping through the existing `toToolFinding()`),
+    and `FixFirstCallout` (a fixed, disclosed priority order — a
+    PageSpeed opportunity with the largest estimated saving, else any
+    `critical` finding, else any `warning` finding, else an honest
+    "nothing urgent" — the same "no hidden weighting" discipline
+    `lib/audit.ts`'s `PRIORITY_ORDER` already established). `state`
+    becomes `'partial'`, not `'error'`, when PageSpeed data is
+    unavailable but the internal engine still ran — `'error'` is
+    reserved for a genuine failure (rate limited, invalid URL, or the
+    homepage itself unreachable).
+11. `components/tools/ToolCTA.tsx` gained an optional `onCtaClick`
+    callback — fires alongside, not instead of, the existing generic
+    `tool_cta_clicked` tracking, so a tool with its own bespoke analytics
+    taxonomy (this one's `pagespeed_cta_clicked`) can fire both without
+    forking the component.
+12. `lib/analytics.ts` gained `pagespeed_viewed`/`pagespeed_started`/
+    `pagespeed_completed`/`pagespeed_failed`/`pagespeed_cta_clicked` —
+    named distinctly from the generic `tool_*` taxonomy because this
+    tool's bespoke route doesn't go through `lib/tools/analytics.ts`'s
+    generic wrappers. `pagespeed_completed` fires whether or not live
+    Google data was actually available (`dataAvailable` distinguishes
+    the two) — "completed" means the run finished, not that PageSpeed
+    data was present.
+13. `docs/tools.md` (new) — the full provider-by-provider reference the
+    brief asked for (provider/quota/cost/limitations/fallback), with
+    every quota/threshold claim's exact source cited. `docs/tool-cost-matrix.md`
+    updated — it had gone stale describing `TOOLS` as still `[]`
+    (accurate only up through ADR-022, before either the website-analyzer
+    or PageSpeed tools existed); corrected to the real, current 13-tool
+    state, with the 12 website-analyzer tools collapsed into one shared
+    row (they share one generated cost/security profile) plus a
+    dedicated PageSpeed Test row.
+
+Consequences: `npm run typecheck`/`lint`/`test`/`build` all pass
+(36/36 static pages — up from 22, `/tools/page-speed-test` as its own
+static entry; 194/194 tests, 50 new, mocked-provider-only per the
+brief's own instruction — zero real calls to Google in any automated
+test). Verified live in a browser (`npm run dev`, real fetch of
+`https://example.com`, no `PSI_API_KEY` set — this repository's actual
+state): the tool correctly reports `'partial'`, shows an honest
+"Live PageSpeed data ... wasn't available" banner, tags all 5 Core Web
+Vitals `UNAVAILABLE` with no fabricated value, and still renders a
+complete, accurate SEO/technical report from the internal engine alone
+— exactly the fallback behavior this ADR's decision 2 promises, proven,
+not just asserted. **Deliberately not added:** any billing account,
+paid provider, or fallback to Google's unauthenticated endpoint; a
+mobile/desktop strategy toggle (this pass tests mobile only, matching
+this project's mobile-first ICP — a real, disclosed scope choice, not
+an oversight; see `lib/pagespeed/actions.ts`'s `STRATEGY` constant).

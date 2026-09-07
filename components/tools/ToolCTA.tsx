@@ -15,11 +15,36 @@ import { trackToolCtaClicked } from '@/lib/tools/analytics'
  * relevant (the audit, a specific website tier, maintenance), not one
  * interchangeable pitch reused everywhere. See docs/tool-architecture.md
  * "Contextual CTA."
+ *
+ * `onCtaClick`: an optional extra callback fired alongside the built-in
+ * `tool_cta_clicked` tracking — for a tool with its own bespoke
+ * analytics taxonomy (e.g. lib/pagespeed/'s `pagespeed_cta_clicked`,
+ * components/pagespeed/PageSpeedTool.tsx) that needs to fire in
+ * addition to, not instead of, the generic event every tool already
+ * gets for free.
  */
-export function ToolCTA({ toolSlug, primary, secondary }: { toolSlug: string; primary: ToolCtaDefinition; secondary?: ToolCtaDefinition }) {
+export function ToolCTA({
+  toolSlug,
+  primary,
+  secondary,
+  onCtaClick,
+}: {
+  toolSlug: string
+  primary: ToolCtaDefinition
+  secondary?: ToolCtaDefinition
+  onCtaClick?: (cta: ToolCtaDefinition) => void
+}) {
   return (
     <CTA title={primary.headline} description={primary.description}>
-      <Button href={primary.href} variant="onDark" size="lg" onClick={() => trackToolCtaClicked(toolSlug, primary.location, primary.href)}>
+      <Button
+        href={primary.href}
+        variant="onDark"
+        size="lg"
+        onClick={() => {
+          trackToolCtaClicked(toolSlug, primary.location, primary.href)
+          onCtaClick?.(primary)
+        }}
+      >
         {primary.label}
       </Button>
       {secondary && (
@@ -27,7 +52,10 @@ export function ToolCTA({ toolSlug, primary, secondary }: { toolSlug: string; pr
           href={secondary.href}
           variant="onDarkSecondary"
           size="lg"
-          onClick={() => trackToolCtaClicked(toolSlug, secondary.location, secondary.href)}
+          onClick={() => {
+            trackToolCtaClicked(toolSlug, secondary.location, secondary.href)
+            onCtaClick?.(secondary)
+          }}
         >
           {secondary.label}
         </Button>

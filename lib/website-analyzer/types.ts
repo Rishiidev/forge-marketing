@@ -35,6 +35,19 @@ export type FindingCategory =
   | 'local-signals'
   | 'content'
   | 'social'
+  /**
+   * Added for lib/pagespeed/ (the Forge PageSpeed Test) — Lighthouse's
+   * own three scored categories this engine actually requests from the
+   * PageSpeed Insights API. 'seo' is deliberately not among them: PSI's
+   * own SEO category audits substantially the same things this engine
+   * already checks (title, meta, headings, viewport, schema) — the
+   * PageSpeed tool reuses those existing 'metadata'/'headings'/'schema'/
+   * 'mobile' findings instead of requesting a second, overlapping
+   * opinion from Google. See lib/pagespeed/google-provider.ts.
+   */
+  | 'performance'
+  | 'accessibility'
+  | 'best-practices'
 
 /**
  * How sure the engine actually is. Distinct, deliberately smaller
@@ -78,6 +91,23 @@ export interface Finding {
   evidence: Evidence
   confidence: FindingConfidence
   status: FindingStatus
+  /**
+   * Added for lib/pagespeed/ — distinguishes a real-user measurement
+   * (`field`, from Chrome UX Report — Google's `loadingExperience`/
+   * `originLoadingExperience`) from a single simulated Lighthouse run
+   * (`lab`) from something this engine checked itself with no Google
+   * involvement at all (`internal` — the default when omitted, so every
+   * pre-existing website-analyzer finding stays valid without change)
+   * from a metric Google could not supply at all (`unavailable` — e.g.
+   * CrUX has no field data yet for a low-traffic origin). This is a
+   * different axis from `confidence`: `confidence` answers "how sure is
+   * this," `dataOrigin` answers "what kind of measurement produced it" —
+   * see docs/tools.md "PageSpeedProvider" for why the two must never be
+   * conflated (a lab AND a field measurement can both be fully
+   * `verified`; only their trustworthiness as a stand-in for real user
+   * experience differs).
+   */
+  dataOrigin?: 'internal' | 'lab' | 'field' | 'unavailable'
 }
 
 function stringifyEvidence(evidence: Evidence): Record<string, string | number | boolean | null> {
@@ -113,6 +143,6 @@ export function toToolFinding(finding: Finding): ToolFinding {
     detail: finding.whatWeFound,
     whyItMatters: finding.whyItMatters,
     recommendedAction: finding.recommendedAction,
-    technicalDetails: { status: finding.status, ...stringifyEvidence(finding.evidence) },
+    technicalDetails: { status: finding.status, ...(finding.dataOrigin ? { dataOrigin: finding.dataOrigin } : {}), ...stringifyEvidence(finding.evidence) },
   }
 }

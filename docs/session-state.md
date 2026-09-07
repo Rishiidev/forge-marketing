@@ -11,18 +11,21 @@
 > read that one first. It says what changed, what's unresolved, and what
 > to do next. This one is the detailed backing reference.
 
-Snapshot date: 2026-09-06.
+Snapshot date: 2026-09-07 (regenerated — see the note below).
 
-> **Staleness note (added 2026-09-07, SEO/organic-growth session):** this
-> file was not regenerated for the tools-engine commits (`f51014e`,
-> `6a98d00`) or this session's SEO fixes — it still describes the
-> tailwind-merge-fix checkpoint below as current. For what's actually
-> true now, read `docs/session-handoff.md` §16–§17 first; this file's
-> body is left as a historical reference rather than rewritten wholesale,
-> matching this repo's own "if anything below conflicts with the actual
-> repository contents, the repository wins" rule at the top of this
-> file. A future session doing significant further work here should
-> regenerate this file properly rather than adding a fourth stale layer.
+> **Regenerated 2026-09-07 (PageSpeed Test session), per the previous
+> staleness note's own instruction** ("a future session doing
+> significant further work here should regenerate this file properly
+> rather than adding a fourth stale layer"). §2 (architecture, routing,
+> lib/component inventory) and §8 (new — the tools platform) are updated
+> to the real current state, verified directly against the repository
+> (not from memory of the conversation that produced it), including this
+> session's own work: the Forge PageSpeed Test (`lib/pagespeed/`,
+> `/tools/page-speed-test`, ADR-023). Sections 1, 3-7 describe earlier,
+> still-accurate history (the blog system, the tailwind-merge fix) and
+> are left as written. `docs/session-handoff.md` remains the "what
+> changed, what's next" document — read that first; this one is the
+> detailed backing reference.
 
 ---
 
@@ -57,7 +60,8 @@ processing.
 | `/maintenance` | Real, complete. Reframed as ongoing technical care, not just hosting (ADR-011). Pricing itself still one of two conflicting numbers in the legacy source — HD#3 open. |
 | `/showcases`, `/showcases/[slug]` | Real, complete (ADR-008). |
 | `/blog`, `/blog/[slug]` | **Real, complete as of this session (ADR-014).** Three real articles across three topic clusters, full SEO surface, category filter, related articles, per-post CTA. No longer a placeholder route. |
-| `/tools` | Scaffolded route, **no real content**. `lib/constants.ts` `TOOLS` is an empty array. |
+| `/tools`, `/tools/[slug]` (12 tools) | **Real, complete.** The Forge Website Diagnostic Engine — see §8. |
+| `/tools/page-speed-test` | **Real, complete, new this session.** Its own static route (takes precedence over `/tools/[slug]`) — see §8. |
 | `/design-system` | Internal only, `noindex`/unlinked. |
 | `/r/[code]` | Route Handler (not a page) — referral-link resolution + attribution cookie, always redirects to `/audit` (ADR-012). |
 | `/sitemap.xml`, `/robots.txt` | **New this session (ADR-014).** Native Next.js `MetadataRoute` files, data-driven from the same functions the pages render from. |
@@ -117,7 +121,12 @@ components/
   audit/       AuditForm, AuditTool, AuditInputForm, AuditProcessing,
                AuditResultView, AuditLeadCaptureForm
   showcases/   ShowcaseCard, ShowcaseGrid, ShowcaseViewTracker
-  tools/       ToolCard, ToolGrid
+  tools/       ToolPageShell, ToolHeader, ToolInput, ToolProgress, ToolResult,
+               ToolFinding, ToolFindingList, ToolScore, ToolStatus, ToolError,
+               ToolEmptyState, ToolCTA, RelatedTools, ToolMethodology, ToolFAQ,
+               ToolCard, ToolGrid — see §8
+  pagespeed/   PageSpeedTool, ScoreSummary, CoreWebVitalsPanel, OpportunitiesList,
+               FixFirstCallout — see §8
   blog/        BlogCard, BlogList, ArticleHeader, ArticleBody, TableOfContents,
                RelatedArticles, ArticleCTA, BlogViewTracker
   forms/       TextField, SelectField, Honeypot, SubmitButton, FormStatus, useLeadForm
@@ -143,27 +152,25 @@ lib/
   file-store.ts     JSON-file-backed key-value store — ADR-013
   referrals.ts      Referral codes/attribution/reward status — ADR-012
   reviews.ts        Review collection + showcase-candidate eligibility — ADR-012
+
+lib/tools/           The reusable tools engine — see §8
+lib/website-analyzer/  The Forge Website Diagnostic Engine — see §8
+lib/pagespeed/        The Forge PageSpeed Test's own provider/cache/findings — see §8
 ```
 
-**Testing.** `npm run test` (Vitest, added this session — see
-[`docs/tools-cost-policy.md`](tools-cost-policy.md), ADR-021) now exists,
-scoped to the zero-cost tools policy enforcement
-(`lib/tools/__tests__/cost-policy.test.ts`, 13 tests). No CI still wired
-up (no `.github/workflows/`). Everything else remains manual:
+**Testing.** `npm run test` (Vitest — ADR-021) now covers the whole
+tools platform: 194 tests across 19 files (`lib/tools/__tests__/`,
+`lib/website-analyzer/__tests__/`, `lib/pagespeed/__tests__/`) —
+zero-cost policy enforcement, SSRF/fetch safety (redirects, timeouts,
+oversized responses, private-IP protection), HTML/JSON-LD parsing
+against malformed input, and every PageSpeed provider outcome against
+mocked responses only (never a real Google call in a test). No CI still
+wired up (no `.github/workflows/`). Everything else remains manual:
 `npm run typecheck`/`lint`/`build` plus live-browser checks each session.
 
-**Tools platform.** `lib/tools/types.ts` (`ToolDefinition`/`ToolInput`/
-`ToolResult`/`ToolFinding`/`ToolError`/`ToolStatus`/`ToolCostProfile`/
-`ToolDataSource`/`ToolCapability`/`ToolSecurityPolicy`) and
-`lib/tools/cost-policy.ts` (`findForbiddenDependencies()`,
-`validateToolDefinition()`) — see
-[`docs/tools-cost-policy.md`](tools-cost-policy.md) and
-[`docs/tool-cost-matrix.md`](tool-cost-matrix.md). `lib/constants.ts`
-`TOOLS` is still `[]` — no individual tool was built this session, by
-explicit instruction. `components/tools/ToolCard.tsx`,
-`app/tools/[slug]/page.tsx`, and `app/sitemap.ts` were updated only to
-honor the new type contract (a non-`'available'` tool renders disabled,
-gets no live route, and no sitemap entry) — no visual redesign.
+**§8 below is the current, authoritative summary of the tools
+platform** — superseding the shorter one that used to live in this
+spot describing `TOOLS` as still `[]`.
 
 ---
 
@@ -330,3 +337,64 @@ Full detail: ADR-015 in `docs/decisions.md`. Summary:
   unaffected). Live in browser: both the showcase page's CTA band and
   the blog's `ArticleCTA` now render with correct, distinct text/
   background colors on every button.
+
+## 8. The tools platform (13 live tools) — current, replacing the earlier "still `[]`" summary
+
+Three layers, in order: the reusable **engine** (`lib/tools/`), the
+**Forge Website Diagnostic Engine** built on it (`lib/website-analyzer/`,
+12 tools), and the **Forge PageSpeed Test** (`lib/pagespeed/`, 1 tool,
+new this session, ADR-023). Full detail: `docs/tool-architecture.md`,
+`docs/tool-security.md`, `docs/tools.md`, `docs/tool-cost-matrix.md`.
+
+**The engine (`lib/tools/`).** `types.ts` (`ToolDefinition`, the shared
+`ToolFinding`/`ToolResult`/`ToolStatus`/`ToolCostProfile`/
+`ToolDataSource`/`ToolSecurityPolicy` contract), `registry.ts` (central
+lookups over `lib/constants.ts` `TOOLS`), `validation.ts`,
+`security.ts` (SSRF-safe `safeFetch()` — the one thing every real fetch
+in this platform goes through), `execution.ts` (the
+idle→validating→processing→success|partial|error state machine),
+`results.ts`, `analytics.ts`, `cache.ts`, `errors.ts`,
+`cost-policy.ts` (`validateToolDefinition()` — every tool below is
+checked by this on every `npm run test`).
+
+**The Website Diagnostic Engine (`lib/website-analyzer/`).** One
+reusable homepage analysis (`analyzer.ts`), 13 check modules
+(fetcher/metadata/headings/links/images/schema/robots/sitemap/
+security-headers/mobile/local-signals/content/social), producing a
+flat, normalized `Finding[]` (`types.ts`) that 12 `/tools/*` pages each
+filter to their own category — no tool re-implements any analysis
+logic. `tools.ts` declares all 12: `website-seo-audit`,
+`website-health-check`, `mobile-website-check`, `schema-checker`,
+`meta-checker`, `open-graph-checker`, `robots-txt-checker`,
+`sitemap-checker`, `link-checker`, `image-seo-checker`,
+`security-headers-checker`, `local-seo-checker`. All `FREE_INTERNAL` —
+no third-party API, no key, cached 6h per URL (`analyzer.ts`).
+
+**The PageSpeed Test (`lib/pagespeed/`, new this session).** Layers a
+real, **entirely key-gated** Google PageSpeed Insights v5 integration
+(`provider.ts`/`google-provider.ts` — the `PageSpeedProvider` adapter;
+`normalizer.ts`; `thresholds.ts`, every number cited against current
+official docs; `findings.ts`, LAB/FIELD/UNAVAILABLE clearly
+distinguished per finding) on top of the same internal engine's
+`http`/`metadata`/`headings`/`schema`/`images`/`mobile` categories
+(`actions.ts`). **No `PSI_API_KEY` is set anywhere in this repository —
+this tool runs entirely on the internal engine in this deployment**,
+verified live, not just asserted (`docs/decisions.md` ADR-023's own
+Consequences section). Its own bespoke route
+(`app/tools/page-speed-test/page.tsx`, `components/pagespeed/`) takes
+precedence over the generic `/tools/[slug]` for this one path, reusing
+every existing engine component it can and adding only the
+PageSpeed-specific presentation (score summary, Core Web Vitals grid,
+opportunities, "what to fix first"). Cached 12h (longer than the other
+12 tools' 6h — a real Lighthouse run is expensive to repeat). Rate
+limited independently and more tightly (5/10min vs. 10/10min).
+Analytics: its own `pagespeed_viewed`/`started`/`completed`/`failed`/
+`cta_clicked` taxonomy (`lib/analytics.ts`), distinct from the other 12
+tools' generic `tool_*` events.
+
+**What every tool in this platform still deliberately does not do:**
+guarantee a search ranking, an SEO improvement, or a sales outcome in
+any copy (checked directly in `lib/pagespeed/tool.ts`'s own FAQ);
+scrape Google Search/Maps/GBP; recursively crawl a site beyond its
+declared homepage-only scope; cache anything keyed by visitor identity,
+session, or IP.

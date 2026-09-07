@@ -13,8 +13,22 @@ interface PageProps {
 // 'planned'/'unavailable'/'future-paid' tool must never resolve to a
 // live route that implies it can be used today. See
 // docs/tools-cost-policy.md §I.
+//
+// STATIC_ROUTE_SLUGS: tools with their own hand-built static route
+// (app/tools/<slug>/page.tsx) instead of this generic [slug] page —
+// currently just 'page-speed-test' (components/pagespeed/PageSpeedTool.tsx),
+// which needs richer, tool-specific UX the generic ToolPageShell doesn't
+// give it. Next.js resolves a static sibling route in preference to a
+// dynamic one for an exact match either way, but excluding it here too
+// stops [slug]'s own generateStaticParams from trying to pre-render the
+// same path a second time via this route, which would otherwise be a
+// real build-time conflict, not just redundant work.
+const STATIC_ROUTE_SLUGS = new Set(['page-speed-test'])
+
 export function generateStaticParams() {
-  return getAvailableTools().map((tool) => ({ slug: tool.slug }))
+  return getAvailableTools()
+    .filter((tool) => !STATIC_ROUTE_SLUGS.has(tool.slug))
+    .map((tool) => ({ slug: tool.slug }))
 }
 
 export async function generateMetadata({ params }: PageProps) {

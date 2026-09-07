@@ -78,6 +78,22 @@ export type AnalyticsEvent =
   | { name: 'tool_failed'; props: { slug: string; errorCode: string } }
   | { name: 'tool_result_engaged'; props: { slug: string; findingId: string } }
   | { name: 'tool_cta_clicked'; props: { slug: string; location: string; destination: string } }
+  /**
+   * The Forge PageSpeed Test's own events (lib/pagespeed/,
+   * components/pagespeed/PageSpeedTool.tsx) — named distinctly from the
+   * generic tool_* taxonomy above because this tool's bespoke UX (its
+   * own static route, not the generic ToolPageShell) doesn't go through
+   * lib/tools/analytics.ts's generic wrappers. `pagespeed_completed`
+   * fires whether or not live Google data was actually available —
+   * "completed" means the run finished, not that PageSpeed data was
+   * present; see `dataAvailable` to tell the two apart without a
+   * separate event.
+   */
+  | { name: 'pagespeed_viewed'; props: Record<string, never> }
+  | { name: 'pagespeed_started'; props: Record<string, never> }
+  | { name: 'pagespeed_completed'; props: { dataAvailable: boolean; performanceScore: number | null } }
+  | { name: 'pagespeed_failed'; props: { reason: string } }
+  | { name: 'pagespeed_cta_clicked'; props: { location: string; destination: string } }
 
 export interface AnalyticsProvider {
   name: string

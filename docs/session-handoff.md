@@ -457,3 +457,88 @@ that already exist — this session deliberately added zero new content
 pages, only fixed real gaps and linked existing pages together, per the
 explicit "do keyword research before creating large numbers of pages"
 instruction.
+
+---
+
+## 18. Forge PageSpeed Test (2026-09-07, same day, new session) — 13th tool, first real external provider
+
+Built `/tools/page-speed-test` — real Google PageSpeed Insights v5 data
+(Core Web Vitals: LCP/CLS/INP/FCP/TTFB, performance/accessibility/
+best-practices scores, opportunities/diagnostics) layered on top of the
+same internal Website Diagnostic Engine the other 12 tools already use
+(title/meta/viewport/schema/headings/HTTPS/images/mobile). Full
+rationale: `docs/decisions.md` ADR-023. Full provider documentation
+(quota/cost/limitations/fallback, every claim cited against current
+official Google docs, checked directly before writing any code):
+`docs/tools.md` (new).
+
+**The one load-bearing fact for whoever picks this up next:** this
+integration is **entirely key-gated**. `PSI_API_KEY` is not set
+anywhere in this repository (no `.env` exists, same as every other
+optional integration here) — so **on this deployment, as shipped, the
+PageSpeed half never calls Google at all.** The tool is still fully
+functional: every Core Web Vital/score slot renders an honest
+"unavailable" finding (never a fabricated number), and the SEO/
+technical half (from `lib/website-analyzer/`) runs and renders
+completely normally. Verified live, not just asserted — see ADR-023's
+Consequences section for the exact browser check performed (a real
+fetch of `https://example.com`, no key set, correct `'partial'` state,
+correct honest copy throughout).
+
+**If a future session is asked to make this "actually work" with live
+Google data:** that means a human sets `PSI_API_KEY` in whatever
+environment this is actually deployed to (Vercel's project settings, not
+this repo) — obtaining one requires a Google Cloud project; whether
+billing must be enabled for that project is between that person and
+Google Cloud Console at the time, not something this codebase controls,
+enables, or can verify in advance. No code change is needed for this to
+start working the moment a real key is set — that's the entire point of
+the key-gated design.
+
+**What was built, briefly** (full detail: ADR-023):
+`lib/pagespeed/` — `provider.ts` (the `PageSpeedProvider` adapter
+interface, same swappable pattern as `CrmAdapter`/`AnalyticsProvider`),
+`google-provider.ts` (the real, key-gated implementation),
+`normalizer.ts` (defensive raw-JSON parsing — never fabricates a
+missing field; correctly never populates a lab INP value, since a
+single simulated Lighthouse run has no real user interaction to derive
+it from), `thresholds.ts` (every Good/Needs-attention/Priority
+threshold cited against its own current web.dev source),
+`findings.ts` (LAB/FIELD/UNAVAILABLE tagging via a new optional
+`dataOrigin` field added to the shared `Finding` type,
+`lib/website-analyzer/types.ts`), `cache.ts` (12h TTL, file-backed,
+keyed by URL+strategy only — never visitor identity), `actions.ts` (the
+Server Action bridge, 5/10min rate limit — tighter than the other 12
+tools', since no PSI quota number is published to plan against),
+`tool.ts` (the registry entry). `app/tools/page-speed-test/page.tsx` +
+`components/pagespeed/` (5 new components: `PageSpeedTool`,
+`ScoreSummary`, `CoreWebVitalsPanel`, `OpportunitiesList`,
+`FixFirstCallout`) — a bespoke static route/UI (Next.js resolves it in
+preference to the generic `/tools/[slug]` for this exact path), reusing
+every existing engine component it can. `lib/analytics.ts` gained
+`pagespeed_viewed`/`started`/`completed`/`failed`/`cta_clicked`.
+
+**Tests:** 50 new (194 total across the whole tools platform, up from
+144), all mocked-provider-only per explicit instruction — zero real
+calls to Google anywhere in the suite, including the "successful
+response" test path.
+
+**Docs updated this session:** `docs/tools.md` (new — the full
+PageSpeedProvider reference), `docs/tool-cost-matrix.md` (corrected —
+it had gone stale describing `TOOLS` as still `[]`; now reflects the
+real 13-tool state, with the 12 shared-template website-analyzer tools
+collapsed into one row plus a dedicated PageSpeed row),
+`docs/session-state.md` (§8, regenerated — see that file's own note),
+this file.
+
+**Current branch:** `main`, clean tree once this session's commit
+lands. `git log` order: ..., `4c215d1`, `73db18a`, `f51014e`, `6a98d00`,
+`a059127`, then this session's commit (`feat: add free pagespeed
+analysis`).
+
+**Exact next recommended action, still unchanged:** HD#13 (contact
+channel) and HD#11 (CRM destination) remain the highest-leverage real
+gaps — nothing about the tools platform, however complete it now looks,
+changes that. If continuing tools-platform work specifically: the
+`website-seo-audit`/`website-health-check` category-overlap flag from
+§17 is still open and still a real product decision, not a bug.

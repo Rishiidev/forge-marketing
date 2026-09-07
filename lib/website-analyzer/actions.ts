@@ -50,6 +50,13 @@ const CATEGORY_SUMMARY_LABEL: Record<FindingCategory, string> = {
   'local-signals': 'business information',
   content: 'page content',
   social: 'social links',
+  // Added for lib/pagespeed/ — this generic website-analyzer action
+  // never actually requests these three categories itself (only
+  // lib/pagespeed/actions.ts's own summary logic does), but the shared
+  // Record type must stay exhaustive.
+  performance: 'performance',
+  accessibility: 'accessibility',
+  'best-practices': 'best practices',
 }
 
 function summarize(categories: FindingCategory[], counts: { good: number; warning: number; critical: number; total: number }): string {
