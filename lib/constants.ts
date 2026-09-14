@@ -414,10 +414,15 @@ export const AUDIT_HREF = '/audit'
 /**
  * The one label every "go take the free audit" CTA uses, site-wide.
  * docs/conversion-architecture.md: "Use CTA language consistently." The
- * audit form's own submit button ("Send my free audit") is a distinct
- * micro-moment (submitting vs. navigating) and is not required to match.
+ * audit form's own submit button ("Send me the 7-point review") is a
+ * distinct micro-moment (submitting vs. navigating) and is not required
+ * to match. The label is artifact-named — names what you'll get, not
+ * the abstract noun "audit" — per the homepage CRO pass.
  */
-export const AUDIT_CTA_LABEL = 'Get your free audit'
+export const AUDIT_CTA_LABEL = 'Show me what\u2019s missing in 7 points'
+
+/** Submit-button label on the audit form — distinct from nav CTAs. */
+export const AUDIT_SUBMIT_LABEL = 'Send me the 7-point review'
 
 /**
  * The business-category options used on the legacy audit/waitlist forms

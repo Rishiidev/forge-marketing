@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss'
 import typography from '@tailwindcss/typography'
+import animate from 'tailwindcss-animate'
 import { colors, fontSize, borderRadius, boxShadow, maxWidth, transitionTimingFunction } from './lib/design-tokens'
 
 /**
@@ -46,9 +47,28 @@ const config: Config = {
       // screens (breakpoints) intentionally left at Tailwind's defaults —
       // sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536. Documented in
       // lib/design-tokens.ts `screens`, not overridden here.
+      keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
+        'fade-in': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'accordion-down': 'accordion-down 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'accordion-up': 'accordion-up 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'fade-in': 'fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+      },
     },
   },
-  plugins: [typography],
+  plugins: [typography, animate],
 }
 
 export default config

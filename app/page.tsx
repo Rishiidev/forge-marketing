@@ -6,17 +6,20 @@ import { Button } from '@/components/ui/Button'
 import { FeatureList } from '@/components/marketing/FeatureList'
 import { Hero } from '@/components/marketing/Hero'
 import { TransformationCompare } from '@/components/marketing/TransformationCompare'
+import { ProblemList } from '@/components/marketing/ProblemList'
 import { TrustSignals } from '@/components/marketing/TrustSignals'
 import { ProcessSteps } from '@/components/marketing/ProcessStep'
-import { Metric } from '@/components/marketing/Metric'
 import { FAQ } from '@/components/marketing/FAQ'
 import { CTA } from '@/components/marketing/CTA'
 import { ForgePricing } from '@/components/pricing/ForgePricing'
 import { AuditForm } from '@/components/audit/AuditForm'
+import { AuditPointList } from '@/components/audit/AuditPointList'
+import { MaintenancePlanGrid } from '@/components/marketing/MaintenancePlanGrid'
 import { ShowcaseCard } from '@/components/showcases/ShowcaseCard'
 import { TrackedCtaLink } from '@/components/conversion/TrackedCtaLink'
 import { CapacityStrip } from '@/components/conversion/CapacityStrip'
-import { getFeaturedShowcases, getShowcaseBySlug } from '@/lib/showcases'
+import { ProofStrip } from '@/components/marketing/ProofStrip'
+import { getFeaturedShowcases } from '@/lib/showcases'
 import { AUDIT_CTA_LABEL, AUDIT_HREF, MAINTENANCE_PLANS, CAPACITY } from '@/lib/constants'
 
 export const metadata = buildMetadata({
@@ -66,6 +69,20 @@ const PROCESS_STEPS = [
   { index: 4, title: 'We hand over', description: 'Domain, email, everything — set up in your name, not ours.', meta: 'by tomorrow' },
 ]
 
+// Position 4 — the 7 specific points reviewed in the audit. Each is a real,
+// defensible assessment of GBP quality, not invented scoring. The artifact
+// is shown beside the audit form so visitors see what they're filling out
+// for before they fill it.
+const AUDIT_POINTS = [
+  { title: 'The 10-second first impression', description: 'What a customer sees in the first glance — and whether they stay.' },
+  { title: 'How easy you are to contact', description: 'Whether the next step is obvious or buried three taps deep.' },
+  { title: 'Whether your proof reads as a story', description: 'Reviews presented as evidence, not just a star count.' },
+  { title: 'What shows up when someone searches you', description: 'First-page reality vs. what you think is there.' },
+  { title: 'Photo quality and coverage', description: 'Whether what you have reads as professional or accidental.' },
+  { title: 'Hours, services, and menu clarity', description: 'Whether someone can act on what they find without calling to ask.' },
+  { title: 'What to fix first — and what to ignore', description: 'A ranked list of changes, not a generic checklist.' },
+]
+
 // Position 11 — FAQ. Every answer restates an existing, real policy
 // (docs/forge-business-rules.md) — nothing here is new copy invented for
 // the homepage.
@@ -78,38 +95,37 @@ const FAQ_ITEMS = [
   {
     question: 'Will I own my website and domain?',
     answer:
-      'Yes, always. The domain is registered in your name, not Forge’s. Files transfer to you after final payment — you can leave at any time and take everything with you.',
+      'Yes, always. The domain is registered in your name, not Forge\u2019s. Your Cloudflare login is created and handed to you. Once paid, the site, domain, and email are entirely yours \u2014 you can leave at any time and take everything with you.',
   },
   {
     question: "What if I don't like it?",
     answer:
-      'For the Launch tier, you see the finished site live on a walkthrough call before you pay anything. If it is not right, you simply don’t proceed — there is no charge.',
+      'For the Launch tier, you see the finished site live on a walkthrough call before you pay anything. If it isn\u2019t right, you simply don\u2019t proceed \u2014 there is no charge. Growth and Pro include one or two structured revision rounds after the first preview.',
   },
   {
     question: 'Will I get locked into monthly fees?',
     answer:
-      'No. The Launch, Growth, and Pro websites are one-time purchases. Ongoing maintenance is a fully separate, optional plan you can cancel any month.',
+      'No. The Launch, Growth, and Pro websites are one-time purchases. Ongoing maintenance is a fully separate, optional plan you can cancel any month \u2014 your site, domain, and files stay with you regardless.',
   },
   {
     question: 'Can you actually build for my type of business?',
     answer:
-      'Forge has ready layouts for salons, clinics, cafés and restaurants, studios, trade and repair services, and coaches or consultants — see real examples in Showcases below.',
+      'Forge has ready layouts for salons, clinics, caf\u00e9s and restaurants, studios, trade and repair services, fitness coaches, and consultants \u2014 see real examples in the Showcases section. If your category is unusual, we\u2019ll tell you upfront whether it\u2019s a fit before you commit.',
   },
   {
     question: 'What happens after I request the audit?',
     answer:
-      'We review your Google Business Profile against 7 specific points and send you a private write-up. There is no upsell inside the audit itself — what you do next is your call.',
+      'A real person reviews your Google Business Profile against the 7 specific points and emails you a private write-up within 48 hours. There is no upsell inside the audit itself \u2014 what you do next is your call.',
   },
   {
     question: 'Does this guarantee more customers?',
     answer:
-      'No honest website can guarantee rankings, leads, or revenue, and Forge won’t claim otherwise. What it does is give customers who already find you a clear, trustworthy way to understand and contact you.',
+      'No honest website can guarantee rankings, leads, or revenue, and Forge won\u2019t claim otherwise. What it does is give customers who already find you a clear, trustworthy way to understand and contact you \u2014 so the people who arrive are more likely to choose you.',
   },
 ]
 
 export default function HomePage() {
-  const featuredShowcases = getFeaturedShowcases(6)
-  const smileCare = getShowcaseBySlug('smile-care-dental')
+  const featuredShowcases = getFeaturedShowcases(4)
 
   return (
     <>
@@ -126,8 +142,14 @@ export default function HomePage() {
             Same real information. A different first impression.
           </Heading>
           <Text size="body-lg" className="mt-4">
-            This is an illustrative example, not a real client — real client websites are further down, in
-            Showcases.
+            An illustrative example, not a real client — real client websites are in{' '}
+            <a
+              href="#showcases"
+              className="text-ink underline underline-offset-4 hover:text-ground"
+            >
+              Showcases
+            </a>{' '}
+            below.
           </Text>
         </div>
         <TransformationCompare />
@@ -145,38 +167,32 @@ export default function HomePage() {
           </Text>
         </div>
         <FeatureList items={GBP_MAPPING} />
+        <div className="mt-8">
+          <TrackedCtaLink href="#audit" location="insight-section" variant="secondary">
+            See what your profile already has →
+          </TrackedCtaLink>
+        </div>
       </Section>
 
-      {/* 4. Free audit — embedded, not just linked */}
-      <Section id="audit" spacing="tight" className="grid gap-10 lg:grid-cols-2 lg:items-start">
-        <div>
-          <Text as="span" size="caption" className="mb-3 block text-ground">
-            Start here — free, no obligation
-          </Text>
-          <Heading as="h2" size="heading-lg">
-            Get your free audit.
-          </Heading>
-          <Text size="body-lg" className="mt-4">
-            A manual, 7-point review of what your Google Business Profile is telling customers today — reviewed
-            by a person, not a script. No upsell inside the audit itself.
-          </Text>
-          <ul className="mt-6 grid gap-2">
-            {[
-              'The 10-second first impression',
-              'How easy you are to contact',
-              'Whether your proof reads as a story or looks scattered',
-              'What shows up when someone searches your business',
-            ].map((line) => (
-              <li key={line} className="flex gap-2 text-body-sm text-ink-3">
-                <span aria-hidden className="text-success">
-                  ✓
-                </span>
-                {line}
-              </li>
-            ))}
-          </ul>
+      {/* 4. Free audit — embedded, not just linked, with the 7-point artifact shown beside the form */}
+      <Section id="audit" spacing="tight">
+        <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-start">
+          <div className="grid gap-8">
+            <div>
+              <Text as="span" size="caption" className="mb-3 block text-ground">
+                Start here — free, no obligation
+              </Text>
+              <Heading as="h2" size="heading-lg">
+                Get your free 7-point audit.
+              </Heading>
+              <Text size="body-lg" className="mt-4">
+                A manual review of what your Google Business Profile tells customers today — reviewed by a person, not a script. You get a private write-up with what&rsquo;s working, what&rsquo;s costing you customers, and what to do first. No upsell inside the audit itself.
+              </Text>
+            </div>
+            <AuditPointList items={AUDIT_POINTS} />
+          </div>
+          <AuditForm />
         </div>
-        <AuditForm />
       </Section>
 
       {/* 5. Problem / missed opportunity */}
@@ -186,22 +202,10 @@ export default function HomePage() {
             You do excellent work. Your online presence may not prove it.
           </Heading>
         </div>
-        <div className="grid gap-0 border-t border-border">
-          {MISSED_OPPORTUNITY.map((item, i) => (
-            <div key={item.title} className="grid grid-cols-[auto_1fr] gap-5 border-b border-border py-6">
-              <span className="font-mono text-caption text-muted">{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <strong className="block text-body-lg font-semibold text-ink">{item.title}</strong>
-                <Text size="body-sm" className="mt-1">
-                  {item.description}
-                </Text>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ProblemList items={MISSED_OPPORTUNITY} />
         <div className="mt-8">
           <TrackedCtaLink href="#audit" location="problem-section" variant="secondary">
-            {AUDIT_CTA_LABEL}
+            See where you stand in 7 points →
           </TrackedCtaLink>
         </div>
       </Section>
@@ -270,16 +274,7 @@ export default function HomePage() {
             See maintenance plans
           </Button>
         </div>
-        <div className="mt-10 grid gap-4 border-t border-mark/15 pt-8 sm:grid-cols-3">
-          {MAINTENANCE_PLANS.map((plan) => (
-            <div key={plan.id} className="flex items-baseline justify-between gap-4 sm:block">
-              <Text as="span" size="caption" tone="onDark">
-                {plan.name}
-              </Text>
-              <p className="text-heading-sm text-mark sm:mt-1">{plan.priceLabel}</p>
-            </div>
-          ))}
-        </div>
+        <MaintenancePlanGrid plans={MAINTENANCE_PLANS} />
       </Section>
 
       {/* 10. Reviews / proof */}
@@ -293,28 +288,26 @@ export default function HomePage() {
           </Text>
         </div>
 
-        {smileCare?.fm.metrics?.[0] && (
-          <div className="mb-8 max-w-xs">
-            <Metric value={smileCare.fm.metrics[0].value} label={`${smileCare.fm.metrics[0].label} · ${smileCare.fm.name}`} />
-          </div>
-        )}
+        <ProofStrip />
 
-        <TrustSignals
-          items={[
-            {
-              title: 'See it before you decide',
-              description: 'A live preview and a walkthrough call — before you pay anything for a Launch website.',
-            },
-            {
-              title: 'Your domain, always',
-              description: 'Registered in your name from day one. Files transfer to you after final payment.',
-            },
-            {
-              title: 'A process you can see',
-              description: 'Every step above has a real time estimate — never "we’ll be in touch."',
-            },
-          ]}
-        />
+        <div className="mt-12">
+          <TrustSignals
+            items={[
+              {
+                title: 'See it before you decide',
+                description: 'A live preview and a walkthrough call — before you pay anything for a Launch website.',
+              },
+              {
+                title: 'Your domain, always',
+                description: 'Registered in your name from day one. Files transfer to you after final payment.',
+              },
+              {
+                title: 'A process you can see',
+                description: 'Every step above has a real time estimate — never "we’ll be in touch."',
+              },
+            ]}
+          />
+        </div>
       </Section>
 
       {/* 11. FAQ */}

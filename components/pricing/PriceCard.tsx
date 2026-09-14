@@ -49,18 +49,20 @@ export function PriceCard({ tier, featured = false }: { tier: WebsiteTier; featu
         )}
       </div>
 
-      <Text size="body" className="mb-4">
+      {!isTbd && (
+        <div className="mb-4 rounded-md bg-paper-2 p-4">
+          <Text as="span" size="caption" className="mb-1 block font-semibold text-ink">
+            Best for
+          </Text>
+          <Text as="span" size="body-sm" className="text-ink-3">
+            {tier.bestFor}
+          </Text>
+        </div>
+      )}
+
+      <Text size="body" className="mb-6">
         {tier.tagline}
       </Text>
-
-      {!isTbd && (
-        <Text size="body-sm" className="mb-6 text-ink-3">
-          <Text as="span" size="caption" className="mr-1">
-            Best for:
-          </Text>
-          {tier.bestFor}
-        </Text>
-      )}
 
       {tier.included.length > 0 && (
         <div className="mb-6 border-t border-border pt-6">
@@ -72,6 +74,24 @@ export function PriceCard({ tier, featured = false }: { tier: WebsiteTier; featu
               <li key={item} className="flex gap-2">
                 <span aria-hidden className="text-success">
                   ✓
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {tier.excluded.length > 0 && (
+        <div className="mb-6 border-t border-border pt-6">
+          <Text as="span" size="caption" className="mb-3 block text-ink-3">
+            Not included
+          </Text>
+          <ul className="flex flex-col gap-3 text-body-sm text-ink-3">
+            {tier.excluded.map((item) => (
+              <li key={item} className="flex gap-2">
+                <span aria-hidden className="text-muted-2">
+                  —
                 </span>
                 {item}
               </li>

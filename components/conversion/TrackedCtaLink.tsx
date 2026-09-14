@@ -12,6 +12,9 @@ type ButtonProps = ComponentProps<typeof Button>
  * primitive everywhere it's used without a tracking requirement — only
  * the repeated audit CTAs on the homepage pay the (tiny) client-JS cost
  * for this, per "avoid unnecessary client-side JavaScript."
+ *
+ * Now accepts the shadcn-style API (no `href` prop — wrap a Link or pass
+ * `asChild` with your own Link child for navigation buttons).
  */
 export function TrackedCtaLink({ location, ...props }: ButtonProps & { location: string }) {
   return <Button {...props} onClick={() => trackEvent({ name: 'website_cta_clicked', props: { location } })} />
