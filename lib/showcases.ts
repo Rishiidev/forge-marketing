@@ -51,6 +51,8 @@ export interface ShowcaseFrontmatter extends ContentFrontmatter {
   launchDate?: string
   featured?: boolean
   metrics?: ShowcaseMetric[]
+  /** Explicit display position (ascending). Entries without one fall back to date order, after all ordered entries. */
+  order?: number
 }
 
 export interface Showcase {
@@ -76,17 +78,21 @@ function isPublishable(fm: ShowcaseFrontmatter): boolean {
 }
 
 export function getAllShowcases(): Showcase[] {
-  return getAllContent('showcases')
+  const all = getAllContent('showcases')
     .map(toShowcase)
     .filter((showcase) => isPublishable(showcase.fm))
+
+  const ordered = all
+    .filter((showcase) => typeof showcase.fm.order === 'number')
+    .sort((a, b) => (a.fm.order as number) - (b.fm.order as number))
+  const unordered = all.filter((showcase) => typeof showcase.fm.order !== 'number')
+
+  return [...ordered, ...unordered]
 }
 
-/** Homepage use: featured entries first, capped at `max` (brief: "show 3-6 strong showcases"). */
+/** Homepage/`/websites` use: first `max` in display order (brief: "show 3-6 strong showcases"). */
 export function getFeaturedShowcases(max = 6): Showcase[] {
-  const all = getAllShowcases()
-  const featured = all.filter((showcase) => showcase.fm.featured)
-  const rest = all.filter((showcase) => !showcase.fm.featured)
-  return [...featured, ...rest].slice(0, max)
+  return getAllShowcases().slice(0, max)
 }
 
 export function getShowcaseBySlug(slug: string): Showcase | null {

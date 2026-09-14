@@ -125,7 +125,7 @@ const FAQ_ITEMS = [
 ]
 
 export default function HomePage() {
-  const featuredShowcases = getFeaturedShowcases(6)
+  const featuredShowcases = getFeaturedShowcases(4)
 
   return (
     <>

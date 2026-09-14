@@ -54,7 +54,7 @@ export default async function ShowcasePage({ params }: PageProps) {
     description: fm.description,
     ...(fm.launchDate ? { datePublished: fm.launchDate } : {}),
     about: {
-      '@type': 'LocalBusiness',
+      '@type': fm.location ? 'LocalBusiness' : 'Organization',
       name: fm.name,
       ...(fm.location ? { address: fm.location } : {}),
       url: fm.websiteUrl,
@@ -149,7 +149,7 @@ export default async function ShowcasePage({ params }: PageProps) {
           <div
             role="img"
             aria-label={`${fm.name} website`}
-            className="h-72 w-full rounded-2xl bg-cover bg-center sm:h-96"
+            className="aspect-[32/15] w-full rounded-2xl bg-cover bg-top"
             style={{ backgroundImage: `url(${fm.featuredImage})` }}
           />
         ) : (
@@ -172,7 +172,7 @@ export default async function ShowcasePage({ params }: PageProps) {
                 key={src}
                 role="img"
                 aria-label={`${fm.name} screenshot`}
-                className="h-48 rounded-xl bg-cover bg-center"
+                className="h-48 rounded-xl bg-cover bg-top"
                 style={{ backgroundImage: `url(${src})` }}
               />
             ))}
@@ -245,7 +245,7 @@ export default async function ShowcasePage({ params }: PageProps) {
             Could Forge do this for your business?
           </Heading>
           <Text size="body-lg" tone="onDarkMuted" className="mx-auto mt-5 max-w-content">
-            {fm.name}&rsquo;s site started as a Google Business Profile link — the same place yours would start.
+            This is what Forge builds — see what a free audit finds for your own site.
           </Text>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Button href={fm.websiteUrl} variant="onDark" size="lg" target="_blank" rel="noopener noreferrer">

@@ -18,7 +18,7 @@ export default function ShowcasesPage() {
       <PageHero
         eyebrow="Showcases"
         title="Real client work."
-        description="Every business below is a real Forge client, shown with their actual, checkable details — no invented reviews, names, or results."
+        description="Real work, real sites — client builds and Forge's own products, shown with their actual, checkable details. No invented reviews, names, or results."
       />
       <Section className="pt-0">
         <ShowcaseGrid showcases={showcases} />
